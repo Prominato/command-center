@@ -1,0 +1,4 @@
+# Netlify: static single-file site, no build step. Serves repo root.
+[build]
+  publish = "."
+  command = ""
