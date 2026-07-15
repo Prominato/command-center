@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#070b14">
+<title>🧬 The Cell — Max's Living Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b14; --bg2:#0c1220; --card:#0e1626; --card2:#121b30; --line:#1c2a45; --line2:#27395e;
+  --ink:#dbe7ff; --ink-dim:#8fa3c8; --ink-mut:#5d7099;
+  --glow:#3ee6c1; --glow2:#38bdf8;
+  --disc:#f7b955; --body:#ff6b7a; --hyd:#4fc3f7; --mind:#b388ff; --lang:#ffd54f; --work:#2dd4bf; --life:#9ccc65; --rec:#7986cb;
+  --gold:#ffce54; --danger:#ff7a7a;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{margin:0; background:radial-gradient(1200px 700px at 70% -10%, #0d1830 0%, var(--bg) 55%) fixed, var(--bg); color:var(--ink);
+  font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.45; min-height:100vh;}
+a{color:var(--glow2); text-decoration:none;}
+button{font-family:inherit;}
+.mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;}
+
+/* ===== appbar ===== */
+.appbar{position:sticky; top:0; z-index:60; display:flex; align-items:center; gap:10px; padding:10px 16px;
+  background:rgba(7,11,20,.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+.appbar h1{font-size:1.05rem; font-weight:700; margin:0; letter-spacing:.4px; display:flex; align-items:center; gap:8px; white-space:nowrap;}
+.appbar h1 .dna{filter:drop-shadow(0 0 6px rgba(62,230,193,.7)); animation:spin 9s linear infinite; display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.backlink{font-size:.78rem; color:var(--ink-dim); border:1px solid var(--line); padding:5px 10px; border-radius:20px; white-space:nowrap;}
+.backlink:hover{border-color:var(--glow2); color:var(--ink);}
+.spacer{flex:1 1 auto;}
+.pill{font-family:'IBM Plex Mono',monospace; font-size:.72rem; padding:4px 10px; border-radius:20px; background:var(--bg2); border:1px solid var(--line); white-space:nowrap;}
+.pill b{font-weight:600;}
+.streakpill{color:var(--gold);}
+.stagepill{color:var(--glow);}
+#syncPill{color:var(--ink-mut);}
+.iconbtn{background:var(--bg2); border:1px solid var(--line); color:var(--ink-dim); border-radius:9px; padding:5px 10px; font-size:.75rem; cursor:pointer;}
+.iconbtn:hover{border-color:var(--glow2); color:var(--ink);}
+
+/* ===== layout ===== */
+.wrap{max-width:1220px; margin:0 auto; padding:18px 16px 90px;}
+.grid{display:grid; grid-template-columns:minmax(340px,5fr) minmax(360px,6fr); gap:18px; align-items:start;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.card{background:linear-gradient(180deg,var(--card) 0%,var(--bg2) 100%); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:18px; position:relative; overflow:hidden;}
+.card h2{margin:0 0 4px; font-size:.95rem; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-dim); font-weight:600; display:flex; align-items:center; gap:8px;}
+.card h2 .sub{font-size:.72rem; text-transform:none; letter-spacing:0; color:var(--ink-mut); font-weight:400; margin-left:auto;}
+
+/* ===== the cell ===== */
+.cellcard{padding:8px 12px 14px;}
+.cellwrap{position:relative; width:100%; aspect-ratio:1/1; max-height:480px; display:flex; align-items:center; justify-content:center;}
+.cellwrap svg{width:100%; height:100%; overflow:visible;}
+.breathe{animation:breathe 6.5s ease-in-out infinite; transform-origin:200px 200px;}
+@keyframes breathe{0%,100%{transform:scale(1) rotate(0deg);}50%{transform:scale(1.035) rotate(1.2deg);}}
+.drift{animation:drift 9s ease-in-out infinite; transform-origin:center;}
+@keyframes drift{0%,100%{transform:translate(0,0);}33%{transform:translate(3px,-4px);}66%{transform:translate(-3px,3px);}}
+.wag{animation:wag 2.2s ease-in-out infinite; transform-origin:var(--wagx,200px) var(--wagy,200px);}
+@keyframes wag{0%,100%{transform:rotate(-7deg);}50%{transform:rotate(7deg);}}
+.org{cursor:pointer; transition:filter .25s;}
+.org:hover{filter:brightness(1.5) drop-shadow(0 0 8px rgba(255,255,255,.35));}
+.stageband{text-align:center; margin-top:2px;}
+.stagename{font-size:1.25rem; font-weight:700; letter-spacing:.5px; color:var(--glow); text-shadow:0 0 18px rgba(62,230,193,.45);}
+.stagesub{font-size:.75rem; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+.evobar{height:9px; background:var(--bg); border:1px solid var(--line); border-radius:6px; margin:10px auto 2px; max-width:420px; overflow:hidden;}
+.evobar>i{display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,var(--glow2),var(--glow)); box-shadow:0 0 12px rgba(62,230,193,.6); transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.evolabels{display:flex; justify-content:space-between; max-width:420px; margin:4px auto 0; font-size:.68rem; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace;}
+.particle{position:absolute; border-radius:50%; pointer-events:none; opacity:.5; animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(14px);opacity:0;}12%{opacity:.55;}88%{opacity:.4;}100%{transform:translateY(-30px);opacity:0;}}
+@media (prefers-reduced-motion: reduce){.breathe,.drift,.wag,.particle,.dna{animation:none !important;}}
+
+/* ===== stats strip ===== */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:9px 10px; text-align:center;}
+.stat .v{font-family:'IBM Plex Mono',monospace; font-size:1.12rem; font-weight:600; color:var(--ink);}
+.stat .l{font-size:.66rem; color:var(--ink-mut); letter-spacing:.5px; text-transform:uppercase; margin-top:1px;}
+
+/* ===== area cards ===== */
+.areas{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+@media(max-width:440px){.areas{grid-template-columns:1fr;}}
+.area{background:var(--bg2); border:1px solid var(--line); border-radius:13px; padding:10px 11px; transition:box-shadow .3s,border-color .3s; position:relative;}
+.area.flash{border-color:var(--ac); box-shadow:0 0 20px color-mix(in srgb,var(--ac) 45%,transparent);}
+.area .top{display:flex; align-items:center; gap:7px;}
+.area .nm{font-weight:600; font-size:.86rem;}
+.area .lvl{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--ac); font-weight:600;}
+.area .orgn{font-size:.66rem; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace; margin:1px 0 6px 1px;}
+.area .bar{height:6px; background:var(--bg); border-radius:4px; overflow:hidden; border:1px solid var(--line);}
+.area .bar>i{display:block; height:100%; background:var(--ac); border-radius:4px; box-shadow:0 0 8px var(--ac); transition:width .5s;}
+.area .xps{display:flex; justify-content:space-between; font-size:.62rem; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace; margin-top:3px;}
+.area .today{color:var(--glow);}
+
+/* ===== quests ===== */
+.daynav{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.daynav .dlabel{font-weight:600; font-size:.95rem;}
+.daynav .dtype{font-size:.68rem; font-family:'IBM Plex Mono',monospace; color:var(--ink-mut); border:1px solid var(--line); padding:2px 8px; border-radius:12px;}
+.daynav button{background:var(--bg2); border:1px solid var(--line); color:var(--ink-dim); border-radius:9px; width:30px; height:30px; cursor:pointer; font-size:.9rem;}
+.daynav button:disabled{opacity:.3; cursor:default;}
+.ring{margin-left:auto; position:relative; width:52px; height:52px;}
+.ring svg{transform:rotate(-90deg);}
+.ring .pct{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:.68rem; font-weight:600; color:var(--glow);}
+.qsec{margin:11px 0 3px; font-size:.7rem; letter-spacing:1.2px; text-transform:uppercase; color:var(--ink-mut); display:flex; align-items:center; gap:8px;}
+.qsec::after{content:""; flex:1; height:1px; background:var(--line);}
+.quest{display:flex; align-items:center; gap:10px; padding:7px 9px; border-radius:10px; border:1px solid transparent; position:relative;}
+.quest:hover{background:var(--card2); border-color:var(--line);}
+.quest input[type=checkbox]{appearance:none; width:20px; height:20px; min-width:20px; border:2px solid var(--line2); border-radius:7px; background:var(--bg); cursor:pointer; position:relative; transition:all .18s;}
+.quest input[type=checkbox]:checked{background:var(--ac,#3ee6c1); border-color:var(--ac,#3ee6c1); box-shadow:0 0 10px var(--ac,#3ee6c1);}
+.quest input[type=checkbox]:checked::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#04121c; font-size:.8rem; font-weight:700;}
+.quest .qtxt{flex:1; font-size:.88rem;}
+.quest.done .qtxt{color:var(--ink-mut); text-decoration:line-through; text-decoration-color:rgba(143,163,200,.5);}
+.quest .qxp{font-family:'IBM Plex Mono',monospace; font-size:.66rem; color:var(--ink-mut); white-space:nowrap;}
+.quest.done .qxp{color:var(--ac,#3ee6c1);}
+.quest .adot{width:7px; height:7px; min-width:7px; border-radius:50%; background:var(--ac);}
+.quest .opt{font-size:.6rem; color:var(--ink-mut); border:1px solid var(--line); border-radius:8px; padding:1px 6px;}
+.quest input.dwtxt, .quest textarea.plantxt{flex:1; background:var(--bg); border:1px dashed var(--line2); color:var(--ink); border-radius:8px; padding:6px 9px; font-family:inherit; font-size:.84rem;}
+.quest input.dwtxt:focus, .quest textarea.plantxt:focus{outline:none; border-color:var(--mind); border-style:solid;}
+.quest textarea.plantxt{resize:vertical; min-height:36px;}
+.xpfloat{position:absolute; right:8px; top:-6px; font-family:'IBM Plex Mono',monospace; font-size:.78rem; font-weight:700; color:var(--glow); pointer-events:none; animation:rise 1.1s ease-out forwards; text-shadow:0 0 8px rgba(62,230,193,.8); z-index:5;}
+@keyframes rise{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(-26px);opacity:0;}}
+
+/* ===== monthly boss ===== */
+.boss{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+.boss .face{font-size:2rem; filter:drop-shadow(0 0 10px rgba(255,107,122,.5)); animation:drift 5s ease-in-out infinite;}
+.boss .bwrap{flex:1;}
+.boss .bname{font-size:.8rem; font-weight:600; display:flex; justify-content:space-between;}
+.boss .bname .hp{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-mut);}
+.hpbar{height:12px; background:var(--bg); border:1px solid var(--line2); border-radius:7px; overflow:hidden; margin-top:4px;}
+.hpbar>i{display:block; height:100%; background:linear-gradient(90deg,#ff5f6d,#ffc371); border-radius:7px; transition:width .6s; box-shadow:0 0 10px rgba(255,95,109,.55);}
+.boss.slain .face{filter:grayscale(1) opacity(.5); animation:none;}
+.slainflag{color:var(--glow); font-size:.72rem; font-family:'IBM Plex Mono',monospace;}
+
+/* ===== bounties ===== */
+.bcat{font-size:.68rem; letter-spacing:1px; text-transform:uppercase; margin:10px 0 3px; display:flex; align-items:center; gap:7px;}
+.bcat .wdot{width:8px;height:8px;border-radius:50%;}
+.bounty{display:flex; align-items:center; gap:10px; padding:6px 9px; border-radius:10px;}
+.bounty:hover{background:var(--card2);}
+.bounty .btxt{flex:1; font-size:.86rem;}
+.bounty .brew{font-family:'IBM Plex Mono',monospace; font-size:.66rem; color:var(--gold); white-space:nowrap;}
+.bounty.urgent .btxt::after{content:" ⚠"; color:var(--danger);}
+.emptymsg{color:var(--ink-mut); font-size:.8rem; padding:6px 2px;}
+
+/* ===== heatmap ===== */
+.heatwrap{overflow-x:auto; padding-bottom:4px;}
+.heat{display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,13px); gap:3px; width:max-content;}
+.hcell{width:13px; height:13px; border-radius:3px; background:var(--bg2); border:1px solid var(--line);}
+.hcell.h1{background:#123b33;} .hcell.h2{background:#17604e;} .hcell.h3{background:#1fa27c;} .hcell.h4{background:#3ee6c1; box-shadow:0 0 6px rgba(62,230,193,.6);}
+.hcell.today{outline:1.5px solid var(--gold);}
+.heatlegend{display:flex; gap:6px; align-items:center; font-size:.64rem; color:var(--ink-mut); margin-top:7px; font-family:'IBM Plex Mono',monospace;}
+.heatlegend .hcell{display:inline-block;}
+
+/* ===== achievements ===== */
+.achgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:9px;}
+.ach{background:var(--bg2); border:1px solid var(--line); border-radius:12px; padding:10px; text-align:center; transition:all .3s;}
+.ach .ic{font-size:1.55rem; filter:grayscale(1) opacity(.28);}
+.ach .nm{font-size:.72rem; font-weight:600; margin-top:4px; color:var(--ink-mut);}
+.ach .ds{font-size:.62rem; color:var(--ink-mut); margin-top:2px; opacity:.8;}
+.ach.won{border-color:rgba(255,206,84,.5); background:linear-gradient(180deg,rgba(255,206,84,.08),var(--bg2));}
+.ach.won .ic{filter:drop-shadow(0 0 8px rgba(255,206,84,.6));}
+.ach.won .nm{color:var(--gold);}
+
+/* ===== toasts & confetti ===== */
+#toasts{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast{background:var(--card2); border:1px solid var(--glow); color:var(--ink); border-radius:14px; padding:10px 18px; font-size:.88rem; box-shadow:0 0 24px rgba(62,230,193,.35); animation:toastin .3s ease-out, toastout .4s ease-in 3.2s forwards;}
+.toast.gold{border-color:var(--gold); box-shadow:0 0 24px rgba(255,206,84,.4);}
+@keyframes toastin{from{transform:translateY(16px);opacity:0;}}
+@keyframes toastout{to{transform:translateY(10px);opacity:0;}}
+.confetti{position:fixed; width:8px; height:8px; z-index:190; pointer-events:none; animation:cfall 1.5s ease-in forwards;}
+@keyframes cfall{0%{transform:translate(0,0) rotate(0);opacity:1;}100%{transform:translate(var(--cx),var(--cy)) rotate(540deg);opacity:0;}}
+
+.footer{color:var(--ink-mut); font-size:.7rem; text-align:center; margin-top:6px; font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <a class="backlink" href="index.html">← Command Center</a>
+  <h1><span class="dna">🧬</span> The Cell</h1>
+  <div class="spacer"></div>
+  <span class="pill streakpill" id="streakPill">🔥 —</span>
+  <span class="pill stagepill" id="stagePillTop">—</span>
+  <span class="pill" id="syncPill">●</span>
+  <button class="iconbtn" onclick="exportData()" title="Download a JSON backup of everything">⬇︎</button>
+</div>
+
+<div class="wrap">
+<div class="grid">
+
+  <!-- LEFT: organism -->
+  <div>
+    <div class="card cellcard">
+      <div class="cellwrap" id="cellwrap"><svg id="cellsvg" viewBox="0 0 400 400"></svg></div>
+      <div class="stageband">
+        <div class="stagename" id="stageName">—</div>
+        <div class="stagesub" id="stageSub">—</div>
+        <div class="evobar"><i id="evoFill" style="width:0%"></i></div>
+        <div class="evolabels"><span id="evoNow">—</span><span id="evoNext">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Vitals <span class="sub">lifetime, from real data</span></h2>
+      <div class="stats" id="statsRow"></div>
+    </div>
+
+    <div class="card">
+      <h2>Organelles <span class="sub">milestone areas — tap the cell</span></h2>
+      <div class="areas" id="areaCards"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: quests -->
+  <div>
+    <div class="card">
+      <h2>Daily Quests</h2>
+      <div class="daynav">
+        <button id="dPrev" onclick="navDay(-1)">‹</button>
+        <div><div class="dlabel" id="dLabel">—</div></div>
+        <span class="dtype" id="dType">—</span>
+        <button id="dNext" onclick="navDay(1)">›</button>
+        <div class="ring">
+          <svg width="52" height="52"><circle cx="26" cy="26" r="21" fill="none" stroke="var(--line)" stroke-width="5"/>
+          <circle id="ringFg" cx="26" cy="26" r="21" fill="none" stroke="var(--glow)" stroke-width="5" stroke-linecap="round" stroke-dasharray="131.9" stroke-dashoffset="131.9" style="transition:stroke-dashoffset .5s"/></svg>
+          <span class="pct" id="ringPct">0%</span>
+        </div>
+      </div>
+      <div id="questList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Monthly Boss <span class="sub" id="bossMonth">—</span></h2>
+      <div class="boss" id="bossBar"></div>
+      <div id="mcList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Bounty Board <span class="sub">from your to-do lists</span></h2>
+      <div id="bountyList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Growth Map <span class="sub">daily quest completion — last 16 weeks</span></h2>
+  <div class="heatwrap"><div class="heat" id="heat"></div></div>
+  <div class="heatlegend">less <span class="hcell"></span><span class="hcell h1"></span><span class="hcell h2"></span><span class="hcell h3"></span><span class="hcell h4"></span> more</div>
+</div>
+
+<div class="card">
+  <h2>Achievements <span class="sub" id="achCount">—</span></h2>
+  <div class="achgrid" id="achGrid"></div>
+</div>
+
+<div class="footer">The Cell grows from the same data as your <a href="index.html">Command Center</a> — check things off in either place. XP is derived, never double-counted.</div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* =========================================================
+   THE CELL — gamified agenda-book companion.
+   Same-origin sister app to index.html: shares localStorage
+   keys (water:: pushup:: dw:: plan:: cc_lists cc_mc_*) and
+   the same Apps Script sync backend. All XP/levels/streaks
+   are PURE DERIVATIONS of that data — idempotent, retroactive,
+   and impossible to double-count.
+   ========================================================= */
+
+/* ===== time helpers ===== */
+function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function fromISO(iso){return new Date(iso+"T12:00:00");}
+function addISO(iso,n){const d=fromISO(iso); d.setDate(d.getDate()+n); return ymd(d);}
+function todayISO(){return ymd(new Date());}
+const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const escAttr=s=>escHtml(s).replace(/"/g,"&quot;");
+
+/* ===== sync (same backend + protocol as index.html) ===== */
+const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
+const SYNC=(function(){
+  const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen'];
+  let q={}, timer=null, meta={};
+  try{meta=JSON.parse(localStorage.getItem('cc_sync_meta')||'{}');}catch(e){meta={};}
+  function saveMeta(){try{localStorage.setItem('cc_sync_meta',JSON.stringify(meta));}catch(e){}}
+  function pill(s){const el=document.getElementById('syncPill'); if(!el)return;
+    const m={local:['● this device','var(--ink-mut)'],saving:['⟳ saving…','var(--glow2)'],syncing:['⟳ syncing…','var(--glow2)'],synced:['✓ synced','#3ee6c1'],offline:['⚠ offline','var(--danger)']};
+    const x=m[s]||m.local; el.textContent=x[0]; el.style.color=x[1];}
+  function queue(k,v){if(!SYNC_URL||SKIP.indexOf(k)>=0)return; const t=Date.now(); meta[k]=t; saveMeta(); q[k]={k:k,v:v,t:t}; pill('saving'); clearTimeout(timer); timer=setTimeout(flush,800);}
+  async function flush(){const items=Object.values(q); if(!items.length)return; q={};
+    try{
+      const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({items:items})});
+      const j=await r.json(); if(!j.ok)throw new Error('save failed');
+      pill('synced');
+    }catch(e){ items.forEach(it=>{ if(!q[it.k]) q[it.k]=it; }); pill('offline'); setTimeout(flush,8000); }}
+  async function pull(){if(!SYNC_URL){pill('local');return;} pill('syncing');
+    try{
+      const r=await fetch(SYNC_URL+'?action=state'); const j=await r.json(); if(!j.ok)throw new Error('bad response');
+      let changed=false;
+      Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
+        if(o.t>=lt){ if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
+      saveMeta(); pill('synced');
+      const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'&&ae.type==='text'||ae.tagName==='TEXTAREA');
+      if(changed && !typing) renderAll();   // re-derive, no reload needed — everything is derived
+    }catch(e){ pill('offline'); }}
+  function start(){ pull(); setInterval(pull,5*60*1000);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush();} else {pull();} });
+    window.addEventListener('pagehide',flush); }
+  return {queue:queue,flush:flush,pull:pull,start:start};
+})();
+function setKey(k,v){localStorage.setItem(k,v); SYNC.queue(k,v);}
+
+/* ===== milestone areas → organelles ===== */
+const AREAS={
+  discipline:{nm:'Discipline', ic:'🌅', org:'Cell Membrane',   c:'var(--disc)', hex:'#f7b955'},
+  body:      {nm:'Body',       ic:'💪', org:'Mitochondria',    c:'var(--body)', hex:'#ff6b7a'},
+  hydration: {nm:'Hydration',  ic:'💧', org:'Vacuole',         c:'var(--hyd)',  hex:'#4fc3f7'},
+  mind:      {nm:'Mind',       ic:'🧠', org:'Nucleus',         c:'var(--mind)', hex:'#b388ff'},
+  language:  {nm:'Español',    ic:'🇪🇸', org:'Ribosomes',       c:'var(--lang)', hex:'#ffd54f'},
+  work:      {nm:'Work',       ic:'💼', org:'Golgi Apparatus', c:'var(--work)', hex:'#2dd4bf'},
+  life:      {nm:'Life Ops',   ic:'🏡', org:'Endoplasmic Reticulum', c:'var(--life)', hex:'#9ccc65'},
+  recovery:  {nm:'Recovery',   ic:'🌙', org:'Lysosomes',       c:'var(--rec)',  hex:'#7986cb'},
+};
+const AREA_KEYS=Object.keys(AREAS);
+
+/* ===== stages of evolution (by sum of area levels) ===== */
+const STAGES=[
+  {at:0,  nm:'Speck of Life',      sub:'a stirring in the primordial soup'},
+  {at:6,  nm:'Protocell',          sub:'a membrane forms — habits hold shape'},
+  {at:14, nm:'Prokaryote',         sub:'simple, tough, relentless'},
+  {at:26, nm:'Eukaryote',          sub:'organelles online — systems thinking'},
+  {at:42, nm:'Flagellate',         sub:'momentum — it moves on its own'},
+  {at:62, nm:'Radiant Cell',       sub:'bioluminescent — discipline glows'},
+  {at:86, nm:'Ciliate Apex',       sub:'a thousand small motions, mastered'},
+  {at:114,nm:'Transcendent Organism', sub:'the routine became a life'},
+];
+
+/* ===== daily quest generator — mirrors the agenda book routine ===== */
+const GYM_BY={1:'Pull',2:'Push',3:'Legs',4:'Pull',5:'Push',6:'Legs'};
+const ACT_BY={1:'Run 🏃',2:'Tennis 🎾',4:'Ruck 🥾',5:'Bike ride 🚴'};
+function dayType(iso){const dow=fromISO(iso).getDay(); return dow===0?'rest':(dow===6?'golf':'work');}
+function questsFor(iso){
+  const dow=fromISO(iso).getDay(), type=dayType(iso), Q=[];
+  const cq=(slug,label,area,xp,sec,opt)=>Q.push({key:`cq::${iso}::${slug}`,label,area,xp,sec,type:'check',opt:!!opt});
+  const sk=(key,label,area,xp,sec)=>Q.push({key,label,area,xp,sec,type:'check',opt:false});
+  // Morning — every day
+  cq('bed','🛏️ Make the bed','discipline',10,'Morning');
+  cq('meditate','🌬️ Meditate + today’s concept','discipline',10,'Morning');
+  cq('stretch','🧘 Morning stretch','discipline',10,'Morning');
+  cq('tao','📖 Tao of Joy passage','discipline',10,'Morning');
+  cq('vitamins','💊 Vitamins','discipline',10,'Morning');
+  sk(`water::${iso}::0`,'💧 Water #1 — 1 qt','hydration',10,'Morning');
+  sk(`pushup::${iso}::0`,'💪 Push-ups set 1/5 (20 reps)','body',10,'Morning');
+  // Training
+  if(type==='rest'){ cq('walk','🚶 Morning walk outside','body',15,'Training'); }
+  else{ cq('gym',`🏋️ Gym — ${GYM_BY[dow]} + core + cardio`,'body',25,'Training'); }
+  if(type==='golf'){ cq('golf','⛳ Golf round','body',25,'Training'); }
+  if(type==='work'&&ACT_BY[dow]){ cq('activity',`${ACT_BY[dow]} — afternoon outside`,'body',15,'Training'); }
+  if(type==='work'&&dow===3){ cq('pickleball','🏓 Pickleball night','body',20,'Training'); }
+  if(type==='work'&&(dow===1||dow===2||dow===4)){ cq('class','🥊 Evening workout class','body',20,'Training'); }
+  // Deep work
+  if(type==='work'){ for(let i=1;i<=5;i++)Q.push({key:`dw::${iso}::${i}`,label:`Deep work block ${i}`,area:'mind',xp:15,sec:'Deep Work',type:'text',opt:false}); }
+  if(type==='golf'){ Q.push({key:`dw::${iso}::1`,label:'Optional work block',area:'mind',xp:15,sec:'Deep Work',type:'text',opt:true}); }
+  // Habits — every day
+  sk(`water::${iso}::1`,'💧 Water #2 — 1 qt','hydration',10,'Habits');
+  sk(`water::${iso}::2`,'💧 Water #3 — 1 qt','hydration',10,'Habits');
+  sk(`water::${iso}::3`,'💧 Water #4 — gallon done 🏆','hydration',10,'Habits');
+  for(let n=1;n<=4;n++) sk(`pushup::${iso}::${n}`,`💪 Push-ups set ${n+1}/5 (20 reps)`,'body',10,'Habits');
+  cq('babbel','🇪🇸 Babbel — 10 min Spanish','language',15,'Habits');
+  // Life ops — Sunday
+  if(type==='rest'){
+    cq('market','🧺 Farmers market','life',10,'Life Ops');
+    cq('mealprep','🍱 Meal prep the week','life',15,'Life Ops');
+    cq('laundry','👕 Laundry','life',10,'Life Ops');
+    cq('clean','🧹 Clean the house','life',10,'Life Ops');
+    cq('planweek','🗒️ Plan the week ahead','mind',15,'Life Ops');
+  }
+  if(type==='work'&&dow===5){ cq('friend','📞 Call a friend','life',10,'Evening'); }
+  // Evening — every day
+  cq('dinner','🍽️ Last meal by 6pm','discipline',10,'Evening');
+  cq('skincare','🧴 Nightly skincare','recovery',10,'Evening');
+  if(type==='rest'||(type==='work'&&dow!==5)){
+    cq('reading','📖 In bed reading by 8:40','recovery',10,'Evening');
+    cq('lights','🌙 Lights out by 9pm','recovery',15,'Evening');
+  }
+  Q.push({key:`plan::${addISO(iso,1)}`,label:'✍️ Tomorrow’s plan (one headline)',area:'mind',xp:10,sec:'Evening',type:'plan',opt:false});
+  return Q;
+}
+function questDone(q){const v=localStorage.getItem(q.key); return q.type==='check' ? v==='1' : !!(v&&v.trim());}
+
+/* ===== derivation engine — the single source of truth ===== */
+const PERFECT_BONUS=40;           // extra Discipline XP for a 100% day
+const XP_WORK_BOUNTY=25, XP_TODO_BOUNTY=15, XP_MONTHLY=40, XP_GOAL=60;
+function lvlFromXP(xp){let l=0,need=0,cost=80; while(xp>=need+cost&&l<99){need+=cost; l++; cost=80+l*45;} return {lvl:l,into:xp-need,next:cost};}
+
+function earliestDataISO(){
+  let min=null;
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+    const m=k.match(/^(water|pushup|dw|cq)::(\d{4}-\d{2}-\d{2})::/)||k.match(/^(plan)::(\d{4}-\d{2}-\d{2})$/);
+    if(!m)continue; const v=localStorage.getItem(k); if(!v||v==='0')continue;
+    if(!min||m[2]<min)min=m[2];}
+  return min;
+}
+function loadLists(){try{return JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){return{};}}
+function loadMC(){let L=[],S={},U={};
+  try{L=JSON.parse(localStorage.getItem('cc_mc_labels'))||[];}catch(e){}
+  try{S=JSON.parse(localStorage.getItem('cc_mc_state'))||{};}catch(e){}
+  try{U=JSON.parse(localStorage.getItem('cc_mc_urgent'))||{};}catch(e){}
+  return {L,S,U};}
+function loadBountyLog(){try{return JSON.parse(localStorage.getItem('cell_bounty_log'))||{};}catch(e){return{};}}
+
+/* capture to-do completions into a durable log so deleting a finished
+   item never takes its XP back */
+function harvestBounties(){
+  const log=loadBountyLog(), lists=loadLists(); let changed=false;
+  (lists.work||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'work',t:it.archivedAt||Date.now(),text:it.text}; changed=true;} });
+  (lists.todo||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'todo',t:Date.now(),text:it.text}; changed=true;} });
+  (lists.goals||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'goal',t:Date.now(),text:it.text}; changed=true;} });
+  if(changed)setKey('cell_bounty_log',JSON.stringify(log));
+  return log;
+}
+
+let D=null; // derived world state
+function derive(){
+  const T=todayISO();
+  const start=earliestDataISO()||T;
+  const areaXP={}; AREA_KEYS.forEach(a=>areaXP[a]=0);
+  const days=[]; // {iso,done,total,pct}
+  const tally={gallons:0,pushSets:0,dwBlocks:0,es:0,gymish:0,plans:0,perfect:0,questsDone:0};
+  for(let iso=start; iso<=T; iso=addISO(iso,1)){
+    const qs=questsFor(iso); let done=0,total=0;
+    let waters=0;
+    qs.forEach(q=>{const d=questDone(q);
+      if(!q.opt)total++;
+      if(d){ areaXP[q.area]+=q.xp; tally.questsDone++; if(!q.opt)done++;
+        if(q.key.indexOf('water::')===0)waters++;
+        if(q.key.indexOf('pushup::')===0)tally.pushSets++;
+        if(q.key.indexOf('dw::')===0)tally.dwBlocks++;
+        if(q.key.indexOf('::babbel')>0)tally.es++;
+        if(/::(gym|class|pickleball|golf|activity|walk)$/.test(q.key))tally.gymish++;
+        if(q.key.indexOf('plan::')===0)tally.plans++;
+      }});
+    if(waters>=4)tally.gallons++;
+    const pct=total?done/total:0;
+    if(pct>=1){areaXP.discipline+=PERFECT_BONUS; tally.perfect++;}
+    days.push({iso,done,total,pct});
+  }
+  // streak: consecutive days ≥70%, counting back from today (today only counts if already ≥70%)
+  let streak=0;
+  for(let i=days.length-1;i>=0;i--){const d=days[i];
+    if(i===days.length-1&&d.pct<0.7)continue;
+    if(d.pct>=0.7)streak++; else break;}
+  // bounties (durable log)
+  const log=harvestBounties(); let nWork=0,nTodo=0,nGoal=0;
+  Object.values(log).forEach(b=>{ if(b.w==='work'){areaXP.work+=XP_WORK_BOUNTY;nWork++;}
+    else if(b.w==='goal'){areaXP.life+=XP_GOAL;nGoal++;} else {areaXP.life+=XP_TODO_BOUNTY;nTodo++;} });
+  // monthly constants — every month ever
+  const mc=loadMC(); let mcDoneAll=0, monthsCleared=0;
+  Object.keys(mc.S).forEach(mk=>{const st=mc.S[mk]||{}; const doneL=Object.keys(st).filter(l=>st[l]);
+    mcDoneAll+=doneL.length; areaXP.life+=doneL.length*XP_MONTHLY;
+    const labels=mk===mcMonthKey()?mc.L:Object.keys(st); // past months: judge by what was tracked
+    if(labels.length&&labels.every(l=>st[l]))monthsCleared++;});
+  // levels & stage
+  const levels={}, prog={}; let totalLvl=0,totalXP=0;
+  AREA_KEYS.forEach(a=>{const r=lvlFromXP(areaXP[a]); levels[a]=r.lvl; prog[a]=r; totalLvl+=r.lvl; totalXP+=areaXP[a];});
+  let stage=0; STAGES.forEach((s,i)=>{if(totalLvl>=s.at)stage=i;});
+  D={T,start,areaXP,levels,prog,totalLvl,totalXP,stage,days,streak,tally,nWork,nTodo,nGoal,mcDoneAll,monthsCleared,mc};
+  return D;
+}
+function mcMonthKey(){const t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,'0');}
+function dayRec(iso){return D.days.find(d=>d.iso===iso)||{done:0,total:1,pct:0};}
+
+/* ===== achievements — all derivable, all retroactive ===== */
+const ACH=[
+  {id:'spark',   ic:'✨', nm:'First Spark',      ds:'Complete your first quest',            t:s=>s.tally.questsDone>=1},
+  {id:'perfect', ic:'🌟', nm:'Perfect Day',      ds:'100% of a day’s quests',               t:s=>s.tally.perfect>=1},
+  {id:'perfect7',ic:'👑', nm:'Flawless Week',    ds:'7 perfect days',                       t:s=>s.tally.perfect>=7},
+  {id:'streak3', ic:'🔥', nm:'Kindling',         ds:'3-day streak (≥70%)',                  t:s=>s.streak>=3},
+  {id:'streak7', ic:'🔥', nm:'On Fire',          ds:'7-day streak',                         t:s=>s.streak>=7},
+  {id:'streak14',ic:'🌋', nm:'Unstoppable',      ds:'14-day streak',                        t:s=>s.streak>=14},
+  {id:'streak30',ic:'☄️', nm:'Force of Nature',  ds:'30-day streak',                        t:s=>s.streak>=30},
+  {id:'gal7',    ic:'🌊', nm:'Gallon Club',      ds:'7 full-gallon days',                   t:s=>s.tally.gallons>=7},
+  {id:'gal30',   ic:'🐋', nm:'Aquatic',          ds:'30 full-gallon days',                  t:s=>s.tally.gallons>=30},
+  {id:'push500', ic:'💪', nm:'500 Club',         ds:'500 push-up reps',                     t:s=>s.tally.pushSets*20>=500},
+  {id:'push2500',ic:'🦾', nm:'Iron Arms',        ds:'2,500 push-up reps',                   t:s=>s.tally.pushSets*20>=2500},
+  {id:'push10k', ic:'🗿', nm:'Ten Thousand',     ds:'10,000 push-up reps',                  t:s=>s.tally.pushSets*20>=10000},
+  {id:'dw25',    ic:'🎯', nm:'Deep Diver',       ds:'25 deep work blocks',                  t:s=>s.tally.dwBlocks>=25},
+  {id:'dw100',   ic:'🧠', nm:'Flow State',       ds:'100 deep work blocks',                 t:s=>s.tally.dwBlocks>=100},
+  {id:'es10',    ic:'🇪🇸', nm:'Hola',             ds:'10 Spanish sessions',                  t:s=>s.tally.es>=10},
+  {id:'es50',    ic:'🗣️', nm:'Conversador',      ds:'50 Spanish sessions',                  t:s=>s.tally.es>=50},
+  {id:'gym10',   ic:'🏋️', nm:'Regular',          ds:'10 workouts / sport sessions',         t:s=>s.tally.gymish>=10},
+  {id:'gym50',   ic:'🏆', nm:'Athlete',          ds:'50 workouts / sport sessions',         t:s=>s.tally.gymish>=50},
+  {id:'plan7',   ic:'✍️', nm:'The Architect',    ds:'7 tomorrow-plans written',             t:s=>s.tally.plans>=7},
+  {id:'boss1',   ic:'⚔️', nm:'Boss Slayer',      ds:'Clear every monthly constant',         t:s=>s.monthsCleared>=1},
+  {id:'boss3',   ic:'🐉', nm:'Dragon Hunter',    ds:'Clear 3 months',                       t:s=>s.monthsCleared>=3},
+  {id:'bounty10',ic:'💼', nm:'Closer',           ds:'10 work bounties done',                t:s=>s.nWork>=10},
+  {id:'bounty50',ic:'💎', nm:'Rainmaker',        ds:'50 work bounties done',                t:s=>s.nWork>=50},
+  {id:'allL3',   ic:'🧬', nm:'Balanced Organism',ds:'Every organelle level 3+',             t:s=>AREA_KEYS.every(a=>s.levels[a]>=3)},
+  {id:'allL5',   ic:'🌌', nm:'Homeostasis',      ds:'Every organelle level 5+',             t:s=>AREA_KEYS.every(a=>s.levels[a]>=5)},
+  {id:'stage4',  ic:'🦠', nm:'It Moves!',        ds:'Reach the Flagellate stage',           t:s=>s.stage>=4},
+  {id:'stage6',  ic:'💫', nm:'Bioluminous',      ds:'Reach the Ciliate Apex stage',         t:s=>s.stage>=6},
+  {id:'stage7',  ic:'🌠', nm:'Transcendent',     ds:'Reach the final form',                 t:s=>s.stage>=7},
+];
+
+/* ===== the cell — procedural SVG ===== */
+function rng(seed){let a=seed>>>0; return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function blobPath(cx,cy,r,wob,n,seed){
+  const rnd=rng(seed), pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2; const rr=r*(1+(rnd()-.5)*wob); pts.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]);}
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  const m0=mid(pts[0],pts[1]);
+  let d=`M ${m0[0].toFixed(1)} ${m0[1].toFixed(1)} `;
+  for(let i=1;i<=n;i++){const p=pts[i%n], m=mid(p,pts[(i+1)%n]);
+    d+=`Q ${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)} `;}
+  return d+'Z';
+}
+function polar(cx,cy,r,deg){const a=deg*Math.PI/180; return [cx+Math.cos(a)*r, cy+Math.sin(a)*r];}
+function renderCell(){
+  const s=D, C=200, svg=document.getElementById('cellsvg');
+  const L=s.levels, stage=s.stage;
+  const memR=132+Math.min(stage*4,28);
+  const memW=2+Math.min(L.discipline*.35,7);
+  const gh=a=>AREAS[a].hex;
+  const ghost=a=>L[a]===0?'opacity:.14':'';
+  let g='';
+  // defs
+  g+=`<defs>
+    <radialGradient id="cyto" cx="45%" cy="40%"><stop offset="0%" stop-color="#16264a"/><stop offset="70%" stop-color="#0d1830"/><stop offset="100%" stop-color="#0a1224"/></radialGradient>
+    <radialGradient id="aura" cx="50%" cy="50%"><stop offset="55%" stop-color="rgba(62,230,193,0)"/><stop offset="85%" stop-color="rgba(62,230,193,.14)"/><stop offset="100%" stop-color="rgba(62,230,193,0)"/></radialGradient>
+  </defs>`;
+  // aura (stage 5+)
+  if(stage>=5) g+=`<circle cx="${C}" cy="${C}" r="${memR+42}" fill="url(#aura)"><animate attributeName="r" values="${memR+36};${memR+50};${memR+36}" dur="5s" repeatCount="indefinite"/></circle>`;
+  if(stage>=7) g+=`<circle cx="${C}" cy="${C}" r="${memR+58}" fill="none" stroke="rgba(255,206,84,.35)" stroke-width="1.5" stroke-dasharray="3 9"><animateTransform attributeName="transform" type="rotate" from="0 ${C} ${C}" to="360 ${C} ${C}" dur="40s" repeatCount="indefinite"/></circle>`;
+  g+=`<g class="breathe">`;
+  // flagellum (stage 4+)
+  if(stage>=4){const bx=C+memR-6;
+    g+=`<g class="wag" style="--wagx:${bx}px;--wagy:${C}px"><path d="M ${bx} ${C} q 30 -18 52 -6 q 26 14 44 -4" fill="none" stroke="${gh('body')}" stroke-width="4" stroke-linecap="round" opacity=".8"/></g>`;}
+  // cilia (stage 6+)
+  if(stage>=6){for(let i=0;i<24;i++){const a=i*15; const p1=polar(C,C,memR+2,a), p2=polar(C,C,memR+13,a+4);
+    g+=`<line x1="${p1[0].toFixed(1)}" y1="${p1[1].toFixed(1)}" x2="${p2[0].toFixed(1)}" y2="${p2[1].toFixed(1)}" stroke="rgba(121,134,203,.7)" stroke-width="2" stroke-linecap="round"/>`;}}
+  // membrane + cytoplasm  (Discipline) — glow = layered strokes (cheap), not blur filters
+  const memD=blobPath(C,C,memR,0.09,14,7);
+  g+=`<g class="org" data-area="discipline"><title>Cell Membrane — Discipline (Lv ${L.discipline})</title>
+    <path d="${memD}" fill="url(#cyto)" stroke="${gh('discipline')}" stroke-width="${memW*3.2}" stroke-opacity="${L.discipline===0?.06:.18}"/>
+    <path d="${memD}" fill="none" stroke="${gh('discipline')}" stroke-width="${memW}" ${L.discipline===0?'stroke-opacity=".25"':''}/>
+    ${stage>=2?`<path d="${blobPath(C,C,memR-9,0.07,14,7)}" fill="none" stroke="${gh('discipline')}" stroke-width="1" stroke-opacity=".35"/>`:''}</g>`;
+  // ER (Life Ops) — waves around nucleus
+  const erO=(L.life===0?0.12:Math.min(.2+L.life*.06,.85));
+  g+=`<g class="org drift" data-area="life" style="animation-duration:11s"><title>Endoplasmic Reticulum — Life Ops (Lv ${L.life})</title>`;
+  for(let i=0;i<3;i++){const rr=52+i*11;
+    g+=`<path d="${blobPath(C-8,C-4,rr,0.16,10,21+i)}" fill="none" stroke="${gh('life')}" stroke-width="2" stroke-opacity="${(erO*(1-i*.22)).toFixed(2)}" stroke-dasharray="7 5"/>`;}
+  g+=`</g>`;
+  // vacuole (Hydration)
+  const vacR=13+Math.min(L.hydration*1.6,42);
+  const vp=polar(C,C,memR*.52,145);
+  g+=`<g class="org drift" data-area="hydration" style="animation-duration:8s"><title>Vacuole — Hydration (Lv ${L.hydration})</title>
+    <circle cx="${vp[0]}" cy="${vp[1]}" r="${vacR}" fill="${gh('hydration')}" fill-opacity="${L.hydration===0?.06:.18}" stroke="${gh('hydration')}" stroke-opacity=".65" stroke-width="1.5" style="${ghost('hydration')}"/>
+    <circle cx="${vp[0]-vacR*.3}" cy="${vp[1]-vacR*.35}" r="${Math.max(vacR*.18,2)}" fill="rgba(255,255,255,.5)"/></g>`;
+  // nucleus (Mind)
+  const nucR=20+Math.min(L.mind*1.5,42);
+  g+=`<g class="org" data-area="mind"><title>Nucleus — Mind (Lv ${L.mind})</title>
+    <circle cx="${C-8}" cy="${C-4}" r="${nucR+3}" fill="none" stroke="${gh('mind')}" stroke-width="7" stroke-opacity=".14" style="${ghost('mind')}"/>
+    <circle cx="${C-8}" cy="${C-4}" r="${nucR}" fill="${gh('mind')}" fill-opacity="${L.mind===0?.08:.22}" stroke="${gh('mind')}" stroke-width="2.5" style="${ghost('mind')}"/>
+    <circle cx="${C-8}" cy="${C-4}" r="${nucR*.38}" fill="${gh('mind')}" fill-opacity=".55"/>
+    ${stage>=3?`<path d="M ${C-8-nucR*.7} ${C-4} q ${nucR*.35} -${nucR*.5} ${nucR*.7} 0 t ${nucR*.7} 0" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>`:''}</g>`;
+  // mitochondria (Body)
+  const mitoN=L.body===0?1:Math.min(1+Math.floor(L.body/3),7);
+  const mitoS=.75+Math.min(L.body*.045,.9);
+  g+=`<g class="org" data-area="body"><title>Mitochondria — Body (Lv ${L.body})</title>`;
+  const mitoSlots=[25,300,205,340,160,65,255];
+  for(let i=0;i<mitoN;i++){const p=polar(C,C,memR*.62,mitoSlots[i]); const w=22*mitoS,h=11*mitoS;
+    g+=`<g transform="translate(${p[0].toFixed(0)},${p[1].toFixed(0)}) rotate(${mitoSlots[i]%80-40})"><g class="drift" style="animation-duration:${7+i*1.3}s;animation-delay:-${i*2}s">
+      <ellipse rx="${w}" ry="${h}" fill="${gh('body')}" fill-opacity="${L.body===0?.08:.25}" stroke="${gh('body')}" stroke-width="1.8" style="${ghost('body')}"/>
+      <path d="M ${-w*.6} 0 q ${w*.18} -${h*.8} ${w*.38} 0 t ${w*.38} 0 t ${w*.38} 0" fill="none" stroke="${gh('body')}" stroke-width="1.4" stroke-opacity=".8" style="${ghost('body')}"/></g></g>`;}
+  g+=`</g>`;
+  // golgi (Work)
+  const golgiN=L.work===0?2:Math.min(2+Math.floor(L.work/4),6);
+  const gp=polar(C,C,memR*.55,255);
+  g+=`<g class="org drift" data-area="work" style="animation-duration:10s"><title>Golgi Apparatus — Work (Lv ${L.work})</title>`;
+  for(let i=0;i<golgiN;i++){const rr=14+i*6;
+    g+=`<path d="M ${gp[0]-rr} ${gp[1]+i*5} q ${rr} ${-rr*.75} ${rr*2} 0" fill="none" stroke="${gh('work')}" stroke-width="3" stroke-linecap="round" stroke-opacity="${L.work===0?.14:(0.9-i*.1).toFixed(2)}"/>`;}
+  g+=`</g>`;
+  // lysosomes (Recovery)
+  const lysoN=L.recovery===0?1:Math.min(1+Math.floor(L.recovery/3),5);
+  const lysoSlots=[110,80,130,95,60];
+  g+=`<g class="org" data-area="recovery"><title>Lysosomes — Recovery (Lv ${L.recovery})</title>`;
+  for(let i=0;i<lysoN;i++){const p=polar(C,C,memR*.68,lysoSlots[i]); const r0=5.5+Math.min(L.recovery*.4,5);
+    g+=`<circle class="drift" style="animation-duration:${6+i}s" cx="${p[0].toFixed(0)}" cy="${p[1].toFixed(0)}" r="${r0}" fill="${gh('recovery')}" fill-opacity="${L.recovery===0?.1:.4}" stroke="${gh('recovery')}" stroke-width="1.5" ${L.recovery===0?'opacity=".2"':''}/>`;}
+  g+=`</g>`;
+  // ribosomes (Language) — seeded scatter
+  const riboN=L.language===0?4:Math.min(6+L.language*3,52);
+  const rr2=rng(99);
+  g+=`<g class="org" data-area="language" ${L.language===0?'opacity=".18"':''}><title>Ribosomes — Español (Lv ${L.language})</title>`;
+  for(let i=0;i<riboN;i++){const a=rr2()*360, rd=(0.35+rr2()*0.55)*memR; const p=polar(C,C,rd,a);
+    g+=`<circle cx="${p[0].toFixed(0)}" cy="${p[1].toFixed(0)}" r="2.1" fill="${gh('language')}" fill-opacity=".85"/>`;}
+  g+=`</g>`;
+  g+=`</g>`; // breathe
+  svg.innerHTML=g;
+  svg.querySelectorAll('.org').forEach(el=>{el.addEventListener('click',()=>flashArea(el.dataset.area));});
+  spawnParticles();
+}
+let particlesDone=false;
+function spawnParticles(){
+  if(particlesDone)return; particlesDone=true;
+  const w=document.getElementById('cellwrap'); const rnd=rng(4242);
+  for(let i=0;i<14;i++){const p=document.createElement('div'); p.className='particle';
+    const sz=(2+rnd()*3).toFixed(1);
+    p.style.cssText=`left:${(8+rnd()*84).toFixed(0)}%;top:${(10+rnd()*80).toFixed(0)}%;width:${sz}px;height:${sz}px;background:${rnd()>.5?'#3ee6c1':'#38bdf8'};animation-duration:${(6+rnd()*8).toFixed(1)}s;animation-delay:-${(rnd()*8).toFixed(1)}s;`;
+    w.appendChild(p);}
+}
+function flashArea(a){const el=document.querySelector(`.area[data-area="${a}"]`); if(!el)return;
+  el.scrollIntoView({block:'nearest',behavior:'smooth'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),1600);}
+
+/* ===== UI renderers ===== */
+let VIEW_ISO=todayISO();
+function navDay(n){const nx=addISO(VIEW_ISO,n); if(nx>todayISO())return; if(addISO(nx,45)<todayISO())return; VIEW_ISO=nx; renderQuests();}
+function renderQuests(){
+  const T=todayISO(); if(VIEW_ISO>T)VIEW_ISO=T;
+  const d=fromISO(VIEW_ISO), qs=questsFor(VIEW_ISO);
+  document.getElementById('dLabel').textContent=(VIEW_ISO===T?'Today · ':'')+d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  document.getElementById('dType').textContent={work:'work day',golf:'golf day',rest:'rest day'}[dayType(VIEW_ISO)];
+  document.getElementById('dNext').disabled=VIEW_ISO>=T;
+  const secs=[]; qs.forEach(q=>{if(secs.indexOf(q.sec)<0)secs.push(q.sec);});
+  let html='';
+  secs.forEach(sec=>{
+    html+=`<div class="qsec">${sec}</div>`;
+    qs.filter(q=>q.sec===sec).forEach(q=>{
+      const done=questDone(q), a=AREAS[q.area];
+      const style=`--ac:${a.hex}`;
+      if(q.type==='check'){
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <input type="checkbox" ${done?'checked':''} onchange="toggleQuest('${q.key}',this)">
+          <span class="adot" title="${a.nm}"></span><span class="qtxt">${q.label}</span>
+          ${q.opt?'<span class="opt">optional</span>':''}<span class="qxp">+${q.xp}</span></div>`;
+      }else if(q.type==='text'){
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <span class="adot" title="${a.nm}"></span>
+          <input class="dwtxt" data-tkey="${q.key}" placeholder="${q.label} — type your focus…" value="${escAttr(localStorage.getItem(q.key)||'')}">
+          ${q.opt?'<span class="opt">optional</span>':''}<span class="qxp">+${q.xp}</span></div>`;
+      }else{ // plan
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <span class="adot" title="${a.nm}"></span>
+          <textarea class="plantxt" data-tkey="${q.key}" placeholder="${q.label}…">${escHtml(localStorage.getItem(q.key)||'')}</textarea>
+          <span class="qxp">+${q.xp}</span></div>`;
+      }});
+  });
+  document.getElementById('questList').innerHTML=html;
+  document.querySelectorAll('[data-tkey]').forEach(el=>{
+    let t=null; el.addEventListener('input',()=>{clearTimeout(t); t=setTimeout(()=>{const was=questDone({key:el.dataset.tkey,type:'text'});
+      setKey(el.dataset.tkey,el.value); afterChange(el.closest('.quest'), !was && !!el.value.trim());},600);});
+  });
+  renderRing();
+}
+function renderRing(){
+  const qs=questsFor(VIEW_ISO).filter(q=>!q.opt); const done=qs.filter(questDone).length;
+  const pct=qs.length?done/qs.length:0; const CIRC=131.9;
+  document.getElementById('ringFg').style.strokeDashoffset=(CIRC*(1-pct)).toFixed(1);
+  document.getElementById('ringPct').textContent=Math.round(pct*100)+'%';
+}
+function toggleQuest(key,el){
+  setKey(key,el.checked?'1':'0');
+  afterChange(el.closest('.quest'), el.checked);
+}
+function afterChange(qEl,gained){
+  const prevStage=D?D.stage:0, prevLv=D?{...D.levels}:{}, prevAch=earnedAchIds();
+  derive();
+  if(qEl){qEl.classList.toggle('done',questDone({key:qEl.dataset.qkey,type:qEl.querySelector('input[type=checkbox]')?'check':'text'}));
+    if(gained){const f=document.createElement('span'); f.className='xpfloat'; f.textContent='+XP ✨'; qEl.appendChild(f); setTimeout(()=>f.remove(),1200);}}
+  renderRing(); renderAreas(); renderStats(); renderStage(); renderCell(); renderHeat(); renderMC(); renderBounties(); renderAch();
+  celebrate(prevStage,prevLv,prevAch);
+}
+function earnedAchIds(){return D?ACH.filter(a=>a.t(D)).map(a=>a.id):[];}
+function celebrate(prevStage,prevLv,prevAch){
+  AREA_KEYS.forEach(a=>{ if(D.levels[a]>(prevLv[a]||0)){toast(`${AREAS[a].ic} ${AREAS[a].nm} reached <b>Lv ${D.levels[a]}</b> — ${AREAS[a].org} grows!`); confetti(AREAS[a].hex); flashArea(a);} });
+  if(D.stage>prevStage){toast(`🧬 EVOLUTION — you are now a <b>${STAGES[D.stage].nm}</b>!`,'gold'); confetti('#ffce54'); confetti('#3ee6c1');}
+  earnedAchIds().forEach(id=>{ if(prevAch.indexOf(id)<0){const a=ACH.find(x=>x.id===id); toast(`🏅 Achievement — <b>${a.nm}</b>: ${a.ds}`,'gold'); confetti('#ffce54');} });
+  const today=dayRec(D.T); if(today.pct>=1&&today.total>0&&!celebrate._perfectShown){celebrate._perfectShown=true; toast(`🌟 <b>PERFECT DAY</b> — every quest complete. +${PERFECT_BONUS} bonus XP`,'gold'); confetti('#ffd54f');}
+}
+function renderStage(){
+  const st=STAGES[D.stage], nx=STAGES[D.stage+1];
+  document.getElementById('stageName').textContent=`${st.nm}`;
+  document.getElementById('stageSub').textContent=st.sub+` · total level ${D.totalLvl} · ${D.totalXP.toLocaleString()} XP`;
+  document.getElementById('stagePillTop').textContent=`🦠 Stage ${D.stage+1}/8 · ${st.nm}`;
+  document.getElementById('streakPill').innerHTML=`🔥 <b>${D.streak}</b> day${D.streak===1?'':'s'}`;
+  if(nx){const span=nx.at-st.at, into=D.totalLvl-st.at;
+    document.getElementById('evoFill').style.width=Math.min(100,into/span*100).toFixed(1)+'%';
+    document.getElementById('evoNow').textContent=st.nm;
+    document.getElementById('evoNext').textContent=`${nx.nm} @ lvl ${nx.at}`;
+  }else{document.getElementById('evoFill').style.width='100%';
+    document.getElementById('evoNow').textContent=st.nm; document.getElementById('evoNext').textContent='FINAL FORM';}
+}
+function renderAreas(){
+  const host=document.getElementById('areaCards');
+  const todayXP={}; AREA_KEYS.forEach(a=>todayXP[a]=0);
+  questsFor(D.T).forEach(q=>{if(questDone(q))todayXP[q.area]+=q.xp;});
+  host.innerHTML=AREA_KEYS.map(a=>{const A=AREAS[a],p=D.prog[a];
+    return `<div class="area" data-area="${a}" style="--ac:${A.hex}">
+      <div class="top"><span>${A.ic}</span><span class="nm">${A.nm}</span><span class="lvl">Lv ${p.lvl}</span></div>
+      <div class="orgn">${A.org}</div>
+      <div class="bar"><i style="width:${(p.into/p.next*100).toFixed(1)}%"></i></div>
+      <div class="xps"><span>${D.areaXP[a].toLocaleString()} xp</span><span class="today">${todayXP[a]?'+'+todayXP[a]+' today':''}</span><span>${p.next-p.into} to Lv ${p.lvl+1}</span></div>
+    </div>`;}).join('');
+}
+function renderStats(){
+  const t=D.tally;
+  const rows=[
+    [D.totalXP.toLocaleString(),'total xp'], [D.streak+'🔥','day streak'],
+    [t.perfect,'perfect days'], [t.gallons,'gallons 💧'],
+    [(t.pushSets*20).toLocaleString(),'push-up reps'], [t.dwBlocks,'deep work blocks'],
+    [t.es,'spanish sessions'], [D.nWork+D.nTodo+D.nGoal,'bounties claimed'],
+  ];
+  document.getElementById('statsRow').innerHTML=rows.map(r=>`<div class="stat"><div class="v">${r[0]}</div><div class="l">${r[1]}</div></div>`).join('');
+}
+function renderHeat(){
+  const host=document.getElementById('heat'); const T=todayISO();
+  const end=fromISO(T); const cells=[];
+  const back=111+end.getDay(); // full weeks, ending on today's column
+  for(let i=back;i>=0;i--){const iso=addISO(T,-i); const d=fromISO(iso);
+    if(cells.length===0){for(let k=0;k<d.getDay();k++)cells.push(null);} // pad first column
+    const rec=D.days.find(x=>x.iso===iso);
+    cells.push({iso,rec});}
+  host.innerHTML=cells.map(c=>{
+    if(!c)return `<span class="hcell" style="visibility:hidden"></span>`;
+    let cls=''; if(c.rec&&c.rec.total){const p=c.rec.pct; cls=p>=1?'h4':p>=.7?'h3':p>=.4?'h2':p>0?'h1':'';}
+    const tip=c.rec?`${c.iso} — ${c.rec.done}/${c.rec.total} quests (${Math.round(c.rec.pct*100)}%)`:c.iso+' — before the beginning';
+    return `<span class="hcell ${cls} ${c.iso===T?'today':''}" title="${tip}"></span>`;}).join('');
+}
+/* monthly boss */
+function renderMC(){
+  const mk=mcMonthKey(), mc=D.mc, st=mc.S[mk]||{};
+  const monthName=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('bossMonth').textContent=monthName;
+  const total=mc.L.length, done=mc.L.filter(l=>st[l]).length, hp=total-done;
+  const faces=['👾','🐙','🦑','🐲','👹','🤖','🦠','🐍','🦂','🕷️','🐉','💀'];
+  const face=faces[new Date().getMonth()];
+  const slain=total>0&&hp===0;
+  document.getElementById('bossBar').className='boss'+(slain?' slain':'');
+  document.getElementById('bossBar').innerHTML=`<span class="face">${face}</span><div class="bwrap">
+    <div class="bname"><span>${slain?'BOSS SLAIN — the month is yours 🏆':'The '+monthName.split(' ')[0]+' Beast'}</span><span class="hp">${hp}/${total} HP</span></div>
+    <div class="hpbar"><i style="width:${total?(hp/total*100).toFixed(1):0}%"></i></div>
+    ${slain?'':'<div class="slainflag" style="color:var(--ink-mut)">each monthly constant completed = 1 hit · +'+XP_MONTHLY+' xp</div>'}</div>`;
+  document.getElementById('mcList').innerHTML=mc.L.length?mc.L.map((lab,i)=>{
+    const d=!!st[lab];
+    return `<div class="quest ${d?'done':''}" style="--ac:${AREAS.life.hex}">
+      <input type="checkbox" ${d?'checked':''} onchange="mcToggle(${i},this)">
+      <span class="adot" style="background:${AREAS.life.hex}"></span>
+      <span class="qtxt">${mc.U[lab]?'⚠ ':''}${escHtml(lab)}</span><span class="qxp">+${XP_MONTHLY}</span></div>`;
+  }).join(''):'<div class="emptymsg">No monthly constants yet — add them in the Command Center.</div>';
+}
+function mcToggle(i,el){
+  const mc=loadMC(), mk=mcMonthKey(); const lab=mc.L[i]; if(lab===undefined)return;
+  mc.S[mk]=mc.S[mk]||{}; mc.S[mk][lab]=el.checked;
+  setKey('cc_mc_state',JSON.stringify(mc.S));
+  afterChange(el.closest('.quest'), el.checked);
+}
+/* bounty board */
+function renderBounties(){
+  const lists=loadLists(); const host=document.getElementById('bountyList');
+  const cats=[['work','💼 Professional',[['prominato','Prominato','#ffce54'],['highmark','Highmark','#7986cb'],['ai','AI Creation','#2dd4bf']],XP_WORK_BOUNTY],
+              ['todo','🏡 Personal',null,XP_TODO_BOUNTY],['goals','🎯 Goals',null,XP_GOAL]];
+  let html='';
+  cats.forEach(([w,title,sub,xp])=>{
+    const items=(lists[w]||[]).filter(x=>!x.done);
+    if(w==='goals'&&!items.length)return;
+    html+=`<div class="bcat" style="color:var(--ink-dim)">${title} <span style="color:var(--ink-mut)">· ${items.length} open</span></div>`;
+    if(!items.length){html+='<div class="emptymsg">Board clear ✨</div>'; return;}
+    items.forEach(it=>{
+      const catCol=sub?(sub.find(c=>c[0]===it.cat)||[])[2]:null;
+      html+=`<div class="bounty ${it.urgent?'urgent':''}">
+        <input type="checkbox" onchange="claimBounty('${w}','${it.id}',this)" style="appearance:none;width:20px;height:20px;min-width:20px;border:2px solid var(--line2);border-radius:7px;background:var(--bg);cursor:pointer;">
+        ${catCol?`<span class="wdot" style="width:7px;height:7px;border-radius:50%;background:${catCol}"></span>`:''}
+        <span class="btxt">${escHtml(it.text)}</span><span class="brew">+${xp} xp</span></div>`;});
+  });
+  host.innerHTML=html||'<div class="emptymsg">Nothing on the board.</div>';
+}
+function claimBounty(w,id,el){
+  const lists=loadLists(); const it=(lists[w]||[]).find(x=>x.id===id); if(!it)return;
+  it.done=true; if(w==='work')it.archivedAt=Date.now();
+  setKey('cc_lists',JSON.stringify(lists));
+  toast(`💰 Bounty claimed — <b>${escHtml(it.text)}</b>`);
+  afterChange(null,true);
+}
+/* achievements */
+function renderAch(){
+  const earned=earnedAchIds();
+  document.getElementById('achCount').textContent=`${earned.length} / ${ACH.length} unlocked`;
+  document.getElementById('achGrid').innerHTML=ACH.map(a=>{
+    const won=earned.indexOf(a.id)>=0;
+    return `<div class="ach ${won?'won':''}"><div class="ic">${a.ic}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div></div>`;}).join('');
+}
+
+/* ===== toasts / confetti ===== */
+function toast(html,cls){const t=document.createElement('div'); t.className='toast '+(cls||''); t.innerHTML=html;
+  document.getElementById('toasts').appendChild(t); setTimeout(()=>t.remove(),3800);}
+function confetti(color){
+  for(let i=0;i<26;i++){const c=document.createElement('div'); c.className='confetti';
+    const x=(Math.random()*100).toFixed(0), cx=(Math.random()*160-80).toFixed(0), cy=(120+Math.random()*260).toFixed(0);
+    c.style.cssText=`left:${x}vw;top:-12px;background:${color};--cx:${cx}px;--cy:${cy}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${(Math.random()*.4).toFixed(2)}s;`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),2100);}
+}
+
+/* ===== level-up detection across sessions ===== */
+function seenCheck(){
+  let seen=null; try{seen=JSON.parse(localStorage.getItem('cell_seen'));}catch(e){}
+  if(seen){
+    AREA_KEYS.forEach(a=>{if(D.levels[a]>(seen.lv[a]||0))toast(`${AREAS[a].ic} While you were away: <b>${AREAS[a].nm}</b> hit Lv ${D.levels[a]}`);});
+    if(D.stage>seen.stage)toast(`🧬 EVOLUTION — welcome, <b>${STAGES[D.stage].nm}</b>`,'gold');
+  }
+  localStorage.setItem('cell_seen',JSON.stringify({lv:D.levels,stage:D.stage,t:Date.now()}));
+}
+
+/* ===== export ===== */
+function exportData(){
+  const all={}; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); all[k]=localStorage.getItem(k);}
+  const blob=new Blob([JSON.stringify(all,null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cell-backup-'+todayISO()+'.json'; a.click();
+}
+
+/* ===== boot ===== */
+function renderAll(){
+  derive();
+  renderStage(); renderCell(); renderAreas(); renderStats();
+  renderQuests(); renderMC(); renderBounties(); renderHeat(); renderAch();
+  localStorage.setItem('cell_seen',JSON.stringify({lv:D.levels,stage:D.stage,t:Date.now()}));
+}
+derive(); seenCheck(); renderAll();
+SYNC.start();
+window.addEventListener('storage',()=>renderAll());          // live-update if index.html is open in another tab
+setInterval(()=>{ if(todayISO()!==D.T){VIEW_ISO=todayISO(); renderAll();} },60*1000);  // midnight rollover
+</script>
+</body>
+</html>
