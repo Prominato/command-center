@@ -713,6 +713,56 @@ function importData(input){const f=input.files[0]; if(!f)return; const r=new Fil
 function resetData(){if(confirm('Reset ALL Command Center data on this device? This cannot be undone — consider exporting a backup first.')){const keys=[]; for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i)); keys.forEach(k=>localStorage.removeItem(k)); location.reload();}}
 
 /* ===== init ===== */
+/* ===== one-time data seed (Max's backup · exported 2026-07-15) =====
+   Fills each key only if this browser has nothing saved for it — never
+   overwrites newer local data. Runs once per browser (cc_seed_v1). */
+const CC_SEED = {
+  "avd::2026-06-21::0": "1",
+  "avd::2026-06-21::1": "1",
+  "avd::2026-06-21::2": "1",
+  "avd::2026-06-21::3": "1",
+  "avd::2026-06-21::4": "1",
+  "avdt::2026-06-21::0": "SUGAR",
+  "avdt::2026-06-21::1": "TAKE OUT",
+  "avdt::2026-06-21::2": "SPENDING $",
+  "cc_events": "[{\"id\":\"seed-dallas\",\"label\":\"Dallas for World Cup matchup✈️\",\"start\":\"2026-06-26\",\"end\":\"2026-06-28\",\"color\":\"#6E7FB8\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Dallas, Texas, US\",\"lat\":32.7767,\"lon\":-96.797},{\"id\":\"1782089302412\",\"label\":\"4th of July\",\"start\":\"2026-07-02\",\"end\":\"2026-07-05\",\"color\":\"#6FA38B\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Tawas City, Michigan, US\",\"lat\":44.2698,\"lon\":-83.5147},{\"id\":\"1782089430671\",\"label\":\"Alex Bachelor Party\",\"start\":\"2026-08-27\",\"end\":\"2026-08-30\",\"color\":\"#E8A94C\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Traverse City, Michigan, US\",\"lat\":44.7631,\"lon\":-85.6206},{\"id\":\"1782089525810\",\"label\":\"Tigers/Phillies Game\",\"start\":\"2026-07-11\",\"end\":\"2026-07-11\",\"color\":\"#D9737A\"},{\"id\":\"1783020951831\",\"label\":\"TEST A\",\"start\":\"2026-07-06\",\"end\":\"2026-07-08\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Orlando, Florida, US\",\"lat\":28.5383,\"lon\":-81.3792,\"color\":\"#6B7C99\"},{\"id\":\"1783946520185\",\"label\":\"Siam Wedding\",\"start\":\"2026-07-17\",\"end\":\"2026-07-18\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3E6E8E\"},{\"id\":\"1783946641326\",\"label\":\"Dad in town\",\"start\":\"2026-07-20\",\"end\":\"2026-07-23\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":null,\"lat\":null,\"lon\":null,\"color\":\"#5C6BA0\"},{\"id\":\"1783946699365\",\"label\":\"colin in town\",\"start\":\"2026-08-24\",\"end\":\"2026-08-26\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3F8487\"}]",
+  "cc_lists": "{\"todo\":[{\"id\":\"178213456565723\",\"text\":\"Amazon Return\",\"done\":false,\"urgent\":true},{\"id\":\"1782839174141429\",\"text\":\"Nrodstrom Rack Retrun\",\"done\":false,\"urgent\":false},{\"id\":\"1782839121935499\",\"text\":\"Schedule Robert\",\"done\":false,\"urgent\":false},{\"id\":\"1782839127657888\",\"text\":\"Schedule Maria\",\"done\":false,\"urgent\":false},{\"id\":\"1782839168791859\",\"text\":\"Danielle Bday Gift\",\"done\":true,\"urgent\":false},{\"id\":\"1782088731025345\",\"text\":\"Order/Buy Mulch\",\"done\":true,\"urgent\":false},{\"id\":\"1782839148638804\",\"text\":\"Call Hersch's Fertilizer\",\"done\":true,\"urgent\":false}],\"house\":[{\"id\":\"1782088110971682\",\"text\":\"Stain Deck\",\"done\":false,\"pri\":\"normal\"},{\"id\":\"1782088737861339\",\"text\":\"Mulch\",\"done\":true,\"urgent\":false},{\"id\":\"1782088772927758\",\"text\":\"Buy 2-3 more plants?\",\"done\":true,\"urgent\":false},{\"id\":\"1782088783688277\",\"text\":\"Plant garden beds\",\"done\":true,\"urgent\":false}],\"goals\":[{\"id\":\"178394687523592\",\"text\":\"Finish the Porminato Portal build-out\",\"done\":false,\"urgent\":true}],\"dconst\":[{\"id\":\"dc0\",\"text\":\"⏰ Up at 4:45am\",\"done\":false,\"urgent\":false},{\"id\":\"dc1\",\"text\":\"🛏️ Make the bed\",\"done\":false,\"urgent\":false},{\"id\":\"dc2\",\"text\":\"🌬️ Meditate + reflect on today's concept\",\"done\":false,\"urgent\":false},{\"id\":\"dc3\",\"text\":\"🧘 Morning stretch\",\"done\":false,\"urgent\":false},{\"id\":\"dc4\",\"text\":\"📖 Read \\\"The Tao of Joy\\\" passage\",\"done\":false,\"urgent\":false},{\"id\":\"dc5\",\"text\":\"💊 Take vitamins\",\"done\":false,\"urgent\":false},{\"id\":\"dc6\",\"text\":\"🇪🇸 10 min Babbel — Spanish\",\"done\":false,\"urgent\":false},{\"id\":\"dc7\",\"text\":\"🚿 Shower & brush teeth (AM & PM)\",\"done\":false,\"urgent\":false},{\"id\":\"dc8\",\"text\":\"🥗 Eat clean — meals 10am–6pm only\",\"done\":false,\"urgent\":false},{\"id\":\"dc9\",\"text\":\"🧴 Nightly skincare\",\"done\":false,\"urgent\":false},{\"id\":\"dc10\",\"text\":\"🎧 Podcasts when I can\",\"done\":false,\"urgent\":false},{\"id\":\"dc11\",\"text\":\"💧 1 gallon water (4 × 1qt)\",\"done\":false,\"urgent\":false},{\"id\":\"dc_read20\",\"text\":\"📚 Read 20 mins\",\"done\":false,\"urgent\":false}]}",
+  "cc_mc_labels": "[\"Schedule Maria\",\"📊 Review monthly budget & spending\",\"🏃 Log a benchmark workout / weigh-in\",\"Complete 1 house project\",\"📞 Call family / check in with friends\",\"🧾 Pay bills & review subscriptions\",\"📚 Finish 1 book\"]",
+  "cc_mc_state": "{}",
+  "cc_mig_books": "1",
+  "cc_secorder": "[\"week\",\"constants\",\"agenda\",\"calendar\",\"goals\",\"house\"]",
+  "cc_theme": "slate",
+  "pdmin::2026-06-21": "15",
+  "plan::2026-06-22": "testings a",
+  "pushup::2026-06-21::0": "1",
+  "pushup::2026-06-21::1": "1",
+  "pushup::2026-06-21::2": "1",
+  "pushup::2026-06-21::3": "1",
+  "pushup::2026-06-21::4": "1",
+  "pushup::2026-07-01::0": "1",
+  "pushup::2026-07-01::1": "1",
+  "pushup::2026-07-01::2": "1",
+  "pushup::2026-07-01::3": "1",
+  "pushup::2026-07-01::4": "1",
+  "pushup::2026-07-13::0": "0",
+  "rdmin::2026-06-21": "15",
+  "rdmin::2026-07-01": "15",
+  "water::2026-06-21::0": "1",
+  "water::2026-06-21::1": "1",
+  "water::2026-06-21::2": "1",
+  "water::2026-06-21::3": "1",
+  "water::2026-07-01::0": "1",
+  "water::2026-07-01::1": "1",
+  "water::2026-07-01::2": "1",
+  "water::2026-07-01::3": "1",
+  "water::2026-07-02::0": "1",
+  "water::2026-07-13::0": "0"
+};
+if(!localStorage.getItem('cc_seed_v1')){
+  Object.entries(CC_SEED).forEach(([k,v])=>{ if(localStorage.getItem(k)===null) localStorage.setItem(k,v); });
+  localStorage.setItem('cc_seed_v1','1');
+}
+
 document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODAY.getMonth()].slice(0,3)+" "+TODAY.getDate()+", "+TODAY.getFullYear();
 document.getElementById('monthName').textContent=MON[TODAY.getMonth()]+" "+TODAY.getFullYear();
 document.getElementById('agendaRange').textContent=new Date(DAYS[0].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(DAYS[DAYS.length-1].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
