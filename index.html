@@ -29,6 +29,7 @@
   .appbar .spacer{flex:1 1 auto;}
   .appbar .datepill{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace; font-size:.76rem; color:var(--ink-muted); background:var(--bg2); padding:5px 10px; border-radius:20px; white-space:nowrap;}
   .appbar select{background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-family:inherit; font-size:.8rem; padding:6px 9px; border-radius:9px; cursor:pointer;}
+  .syncpill{font-size:.7rem; font-weight:600; border:1px solid currentColor; border-radius:20px; padding:3px 10px; white-space:nowrap; color:var(--ink-muted);}
   .appbar .databtn{position:relative;}
   .appbar .databtn>button{background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-size:.8rem; padding:6px 11px; border-radius:9px; cursor:pointer;}
   .menu{position:absolute; right:0; top:38px; background:var(--card); border:1px solid var(--divider); border-radius:11px; box-shadow:var(--shadow); padding:6px; min-width:180px; display:none;}
@@ -244,6 +245,7 @@
 <div class="appbar">
   <div class="brand"><h1>Command Center</h1><span class="loc">Royal Oak, MI</span></div>
   <div class="spacer"></div>
+  <span class="syncpill" id="syncPill">●</span>
   <span class="datepill" id="datePill">—</span>
   <select id="themeSelect" title="Color theme"></select>
   <div class="databtn">
@@ -369,8 +371,57 @@ const THEMES={
   paper:{name:"Warm Paper", vars:{'--bg':'#F6F1E7','--bg2':'#EDE5D6','--card':'#FFFDF8','--card-hover':'#F2EBDD','--ink':'#2B2519','--ink-muted':'#6E6353','--amber':'#9C7A3C','--gold':'#8A7330','--teal':'#5E7E5C','--dusk':'#6E6C8E','--rain':'#5A7494','--rose':'#A56450','--gym':'#7E7560','--urgent':'#B0563F','--divider':'#E0D6C2','--wknd':'#F1E9D6','--wknd-bd':'#DDCBA8','--wknd-hover':'#EBE2CC','--accent':'#8A6D3B'}},
   midnight:{name:"Midnight", vars:{'--bg':'#121821','--bg2':'#0B1016','--card':'#212D3A','--card-hover':'#2B3947','--ink':'#F4EFE6','--ink-muted':'#9FB0BE','--amber':'#7FA9D4','--gold':'#6E9BC0','--teal':'#74BBA0','--dusk':'#9098D6','--rain':'#8FB7E0','--rose':'#C98F7E','--gym':'#8794AC','--urgent':'#E0726A','--divider':'#3C4A59','--wknd':'#293650','--wknd-bd':'#3F5170','--wknd-hover':'#31415F','--accent':'#6E9BC0'}}
 };
-function applyTheme(key){const th=THEMES[key]||THEMES.sky; Object.entries(th.vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v)); localStorage.setItem('cc_theme',key); const s=document.getElementById('themeSelect'); if(s)s.value=key;}
-function renderThemeSelect(){const s=document.getElementById('themeSelect'); s.innerHTML=Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value);}
+function applyTheme(key,fromUser){const th=THEMES[key]||THEMES.sky; Object.entries(th.vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v)); localStorage.setItem('cc_theme',key); if(fromUser&&typeof SYNC!=='undefined')SYNC.queue('cc_theme',key); const s=document.getElementById('themeSelect'); if(s)s.value=key;}
+function renderThemeSelect(){const s=document.getElementById('themeSelect'); s.innerHTML=Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
+
+/* ===== cloud sync — Phase 2 (Apps Script data API) =====
+   localStorage stays the instant cache; the backend Google Sheet is the
+   cross-device source of truth, merged last-write-wins per key. */
+const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
+const SYNC=(function(){
+  const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1'];
+  let q={}, timer=null, meta={};
+  try{meta=JSON.parse(localStorage.getItem('cc_sync_meta')||'{}');}catch(e){meta={};}
+  function saveMeta(){try{localStorage.setItem('cc_sync_meta',JSON.stringify(meta));}catch(e){}}
+  function pill(s){const el=document.getElementById('syncPill'); if(!el)return;
+    const m={local:['● this device','var(--ink-muted)'],saving:['⟳ saving…','var(--rain)'],syncing:['⟳ syncing…','var(--rain)'],synced:['✓ synced','#2E9E5B'],offline:['⚠ offline — saved here','var(--urgent)']};
+    const x=m[s]||m.local; el.textContent=x[0]; el.style.color=x[1];}
+  function queue(k,v){if(!SYNC_URL||SKIP.indexOf(k)>=0)return; const t=Date.now(); meta[k]=t; saveMeta(); q[k]={k:k,v:v,t:t}; pill('saving'); clearTimeout(timer); timer=setTimeout(flush,800);}
+  async function flush(){const items=Object.values(q); if(!items.length)return; q={};
+    try{
+      const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({items:items})});
+      const j=await r.json(); if(!j.ok)throw new Error('save failed');
+      pill('synced');
+    }catch(e){ items.forEach(it=>{ if(!q[it.k]) q[it.k]=it; }); pill('offline'); setTimeout(flush,8000); }}
+  async function pull(){if(!SYNC_URL){pill('local');return;} pill('syncing');
+    try{
+      const r=await fetch(SYNC_URL+'?action=all'); const j=await r.json(); if(!j.ok)throw new Error('bad response');
+      let changed=false;
+      Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
+        if(o.t>=lt){ if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
+      saveMeta();
+      if(!localStorage.getItem('cc_sync_init')){  // first sync from this browser: send up anything the cloud doesn't have yet
+        Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return; if(!(j.state&&j.state[k])) queue(k,localStorage.getItem(k)); });
+        localStorage.setItem('cc_sync_init','1');
+      }
+      applyCal(j.events||[]);
+      pill('synced');
+      const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
+      if(changed && !typing) location.reload();   // pick up remote changes; skipped while you're typing
+    }catch(e){ pill('offline'); }}
+  function start(){ pull(); setInterval(pull,5*60*1000);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush();} else {pull();} });
+    window.addEventListener('pagehide',flush); }
+  return {queue:queue,flush:flush,pull:pull,start:start};
+})();
+function applyCal(list){ try{
+  const cal=(list||[]).map((ev,i)=>({id:ev.id||('cal-'+i),
+    label:((ev.status==='INVITED'||ev.status==='MAYBE')?'⏳ ':'')+(ev.label||'(busy)'),
+    start:ev.start, end:ev.end||ev.start, startTime:ev.startTime||'', endTime:ev.endTime||'',
+    loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal'}));
+  EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
+  renderEvents(); renderMonths(); renderWeek(); renderGlance();
+}catch(e){} }
 
 /* ===== data ===== */
 const CONSTANTS=["⏰ Up at 4:45am","🛏️ Make the bed","🌬️ Meditate + reflect on today's concept","🧘 Morning stretch","📖 Read \"The Tao of Joy\" passage","📚 Read 20 mins","💊 Take vitamins","🇪🇸 10 min Babbel — Spanish","🚿 Shower & brush teeth (AM & PM)","🥗 Eat clean — meals 10am–6pm only","🧴 Nightly skincare","🎧 Podcasts when I can","💧 1 gallon water (4 × 1qt)"];
@@ -484,24 +535,10 @@ function fetchEventWeather(){const jobs=EVENTS.filter(e=>e.lat!=null&&e.lon!=nul
   Promise.allSettled(jobs).then(()=>refreshDayEvents());}
 let EVENTS=[], EDIT_ID=null, PICK=false, PICK_STEP=0, PICK_START=null, PICK_END=null;
 function evload(){const s=localStorage.getItem('cc_events'); if(s){try{EVENTS=JSON.parse(s);}catch(e){EVENTS=DEFAULT_EVENTS.slice();}} else {EVENTS=DEFAULT_EVENTS.slice(); evsave();}}
-function evsave(){localStorage.setItem('cc_events',JSON.stringify(EVENTS.filter(e=>e.src!=='cal')));}
-const CAL_TOOL='mcp__c9e55e27-91f2-4628-9add-882002087712__list_events';
-function extractCal(res){ if(res==null)return null; if(typeof res==='string'){try{return JSON.parse(res);}catch(e){return null;}} if(res.content&&Array.isArray(res.content)){const t=res.content.map(c=>c&&c.text||'').join(''); try{return JSON.parse(t);}catch(e){return null;}} return res; }
-async function loadGoogleCal(){ if(!(window.cowork&&window.cowork.callMcpTool))return;
-  try{ const start=new Date(TODAY), end=addDays(start,90);
-    const res=await window.cowork.callMcpTool(CAL_TOOL,{startTime:isoLocal(start),endTime:isoLocal(end),timeZone:'America/Detroit',pageSize:100,orderBy:'startTime'});
-    const data=extractCal(res); let items=(data&&data.items)||(Array.isArray(data)?data:[]);
-    const cal=items.filter(ev=>ev&&ev.status!=='cancelled').map((ev,i)=>{
-      const s=ev.start&&(ev.start.dateTime||ev.start.date)||'', e=ev.end&&(ev.end.dateTime||ev.end.date)||'';
-      const allDay=!!(ev.start&&ev.start.date&&!ev.start.dateTime); let endD=(e||'').slice(0,10);
-      if(allDay&&endD){const ed=new Date(endD+'T12:00:00'); ed.setDate(ed.getDate()-1); endD=ymd(ed);}
-      let self=null; if(Array.isArray(ev.attendees)){const me=ev.attendees.find(a=>a.self); if(me)self=me.responseStatus;}
-      return {id:'cal-'+(ev.id||i), label:ev.summary||'(busy)', start:(s||'').slice(0,10), end:endD||(s||'').slice(0,10), startTime: allDay?'':(s.length>10?s.slice(11,16):''), endTime:'', loc:ev.location||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal', selfStatus:self};
-    }).filter(ev=>ev.selfStatus!=='declined' && ev.start);
-    EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
-    renderEvents(); renderMonths(); renderWeek(); renderGlance();
-  }catch(e){}
-}
+function evsave(){const v=JSON.stringify(EVENTS.filter(e=>e.src!=='cal')); localStorage.setItem('cc_events',v); SYNC.queue('cc_events',v);}
+/* Google Calendar events now arrive via SYNC.pull() → applyCal() — read-only,
+   fetched server-side by the Apps Script backend. Declined events are filtered
+   there; tentative ones show with a ⏳ prefix. */
 function eventsOnISO(ds){return EVENTS.filter(e=>ds>=e.start && ds<=e.end);}
 function to12(t){if(!t)return""; let[h,m]=t.split(":").map(Number); const ap=h>=12?"pm":"am"; h=h%12||12; return h+(m?":"+String(m).padStart(2,"0"):"")+ap;}
 async function addEvent(){const l=document.getElementById('evLabel').value.trim(); let s=document.getElementById('evStart').value, e=document.getElementById('evEnd').value; const st=document.getElementById('evStartTime').value, et=document.getElementById('evEndTime').value; const locStr=document.getElementById('evLoc').value.trim(); if(!l||!s||!e)return; if(e<s){const t=s;s=e;e=t;}
@@ -597,7 +634,7 @@ const LISTS={todo:[],house:[],goals:[],dconst:[]};
 function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urgent:false}));}
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
   LISTS.todo=o.todo||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC(); lsave();}
-function lsave(){localStorage.setItem('cc_lists',JSON.stringify(LISTS));}
+function lsave(){const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
   LISTS[w].push({id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false}); inp.value=""; lsave(); renderList(w);}
 function toggleUrgent(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.urgent=!it.urgent; lsave(); renderList(w);}}
@@ -633,7 +670,9 @@ function mcMonthKey(){return TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).
 function mcload(){const l=localStorage.getItem('cc_mc_labels'); if(l){try{MC_LABELS=JSON.parse(l);}catch(e){MC_LABELS=MC_DEFAULT.slice();}} else {MC_LABELS=MC_DEFAULT.slice(); localStorage.setItem('cc_mc_labels',JSON.stringify(MC_LABELS));}
   const s=localStorage.getItem('cc_mc_state'); try{MC_STATE=s?JSON.parse(s):{};}catch(e){MC_STATE={};}
   const u=localStorage.getItem('cc_mc_urgent'); try{MC_URGENT=u?JSON.parse(u):{};}catch(e){MC_URGENT={};}}
-function mcsave(){localStorage.setItem('cc_mc_labels',JSON.stringify(MC_LABELS)); localStorage.setItem('cc_mc_state',JSON.stringify(MC_STATE)); localStorage.setItem('cc_mc_urgent',JSON.stringify(MC_URGENT));}
+function mcsave(){const l=JSON.stringify(MC_LABELS), s=JSON.stringify(MC_STATE), u=JSON.stringify(MC_URGENT);
+  localStorage.setItem('cc_mc_labels',l); localStorage.setItem('cc_mc_state',s); localStorage.setItem('cc_mc_urgent',u);
+  SYNC.queue('cc_mc_labels',l); SYNC.queue('cc_mc_state',s); SYNC.queue('cc_mc_urgent',u);}
 function mcToggle(i){const mk=mcMonthKey(); MC_STATE[mk]=MC_STATE[mk]||{}; const lab=MC_LABELS[i]; MC_STATE[mk][lab]=!MC_STATE[mk][lab]; mcsave(); renderMC(); renderGlance();}
 function mcToggleUrgent(i){const lab=MC_LABELS[i]; MC_URGENT[lab]=!MC_URGENT[lab]; mcsave(); renderMC();}
 function mcAdd(){const inp=document.getElementById('mcInput'),v=inp.value.trim(); if(!v)return; MC_LABELS.push(v); inp.value=""; mcsave(); renderMC();}
@@ -663,7 +702,7 @@ function renderMC(){const ul=document.getElementById('mcList'),mk=mcMonthKey(),s
 function refreshDisplays(key,val){document.querySelectorAll('[data-display="'+CSS.escape(key)+'"]').forEach(el=>{el.innerHTML = val && val.trim() ? escHtml(val) : '<span class="empty">— nothing carried over —</span>';});}
 function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{const key=el.dataset.key, isCheck=el.type==='checkbox'; const saved=localStorage.getItem(key);
   if(saved!==null){if(isCheck)el.checked=(saved==='1'); else el.value=saved;} if(!isCheck) refreshDisplays(key,el.value);
-  const h=()=>{if(isCheck){localStorage.setItem(key,el.checked?'1':'0'); document.querySelectorAll('[data-key="'+CSS.escape(key)+'"]').forEach(o=>{if(o!==el)o.checked=el.checked;});}else{localStorage.setItem(key,el.value); document.querySelectorAll('[data-key="'+CSS.escape(key)+'"]').forEach(o=>{if(o!==el)o.value=el.value;}); refreshDisplays(key,el.value);} renderGlance(); refreshDayTrackers();};
+  const h=()=>{if(isCheck){localStorage.setItem(key,el.checked?'1':'0'); document.querySelectorAll('[data-key="'+CSS.escape(key)+'"]').forEach(o=>{if(o!==el)o.checked=el.checked;});}else{localStorage.setItem(key,el.value); document.querySelectorAll('[data-key="'+CSS.escape(key)+'"]').forEach(o=>{if(o!==el)o.value=el.value;}); refreshDisplays(key,el.value);} SYNC.queue(key, isCheck?(el.checked?'1':'0'):el.value); renderGlance(); refreshDayTrackers();};
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
@@ -671,7 +710,7 @@ const SEC_DEFAULT=['week','agenda','calendar','constants','goals','house'];
 const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Do & Constants',goals:'Goals',house:'House'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice(); SEC_DEFAULT.forEach(id=>{if(o.indexOf(id)<0)o.push(id);}); return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
-function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; localStorage.setItem('cc_secorder',JSON.stringify(order)); applySectionOrder();}
+function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function buildNav(){const nav=document.getElementById('quicknav'); const items=[['today','Today']].concat(secLoad().map(id=>[id,SEC_LABEL[id]]));
   nav.innerHTML=items.map(([id,lbl])=>`<button onclick="jumpTo('${id}')">${lbl}</button>`).join("");}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -725,7 +764,7 @@ const CC_SEED = {
   "avdt::2026-06-21::0": "SUGAR",
   "avdt::2026-06-21::1": "TAKE OUT",
   "avdt::2026-06-21::2": "SPENDING $",
-  "cc_events": "[{\"id\":\"seed-dallas\",\"label\":\"Dallas for World Cup matchup✈️\",\"start\":\"2026-06-26\",\"end\":\"2026-06-28\",\"color\":\"#6E7FB8\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Dallas, Texas, US\",\"lat\":32.7767,\"lon\":-96.797},{\"id\":\"1782089302412\",\"label\":\"4th of July\",\"start\":\"2026-07-02\",\"end\":\"2026-07-05\",\"color\":\"#6FA38B\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Tawas City, Michigan, US\",\"lat\":44.2698,\"lon\":-83.5147},{\"id\":\"1782089430671\",\"label\":\"Alex Bachelor Party\",\"start\":\"2026-08-27\",\"end\":\"2026-08-30\",\"color\":\"#E8A94C\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Traverse City, Michigan, US\",\"lat\":44.7631,\"lon\":-85.6206},{\"id\":\"1782089525810\",\"label\":\"Tigers/Phillies Game\",\"start\":\"2026-07-11\",\"end\":\"2026-07-11\",\"color\":\"#D9737A\"},{\"id\":\"1783020951831\",\"label\":\"TEST A\",\"start\":\"2026-07-06\",\"end\":\"2026-07-08\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Orlando, Florida, US\",\"lat\":28.5383,\"lon\":-81.3792,\"color\":\"#6B7C99\"},{\"id\":\"1783946520185\",\"label\":\"Siam Wedding\",\"start\":\"2026-07-17\",\"end\":\"2026-07-18\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3E6E8E\"},{\"id\":\"1783946641326\",\"label\":\"Dad in town\",\"start\":\"2026-07-20\",\"end\":\"2026-07-23\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":null,\"lat\":null,\"lon\":null,\"color\":\"#5C6BA0\"},{\"id\":\"1783946699365\",\"label\":\"colin in town\",\"start\":\"2026-08-24\",\"end\":\"2026-08-26\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3F8487\"}]",
+  "cc_events": "[{\"id\":\"seed-dallas\",\"label\":\"Dallas for World Cup matchup✈️\",\"start\":\"2026-06-26\",\"end\":\"2026-06-28\",\"color\":\"#6E7FB8\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Dallas, Texas, US\",\"lat\":32.7767,\"lon\":-96.797},{\"id\":\"1782089302412\",\"label\":\"4th of July\",\"start\":\"2026-07-02\",\"end\":\"2026-07-05\",\"color\":\"#6FA38B\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Tawas City, Michigan, US\",\"lat\":44.2698,\"lon\":-83.5147},{\"id\":\"1782089430671\",\"label\":\"Alex Bachelor Party\",\"start\":\"2026-08-27\",\"end\":\"2026-08-30\",\"color\":\"#E8A94C\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Traverse City, Michigan, US\",\"lat\":44.7631,\"lon\":-85.6206},{\"id\":\"1782089525810\",\"label\":\"Tigers/Phillies Game\",\"start\":\"2026-07-11\",\"end\":\"2026-07-11\",\"color\":\"#D9737A\"},{\"id\":\"1783946520185\",\"label\":\"Siam Wedding\",\"start\":\"2026-07-17\",\"end\":\"2026-07-18\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3E6E8E\"},{\"id\":\"1783946641326\",\"label\":\"Dad in town\",\"start\":\"2026-07-20\",\"end\":\"2026-07-23\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":null,\"lat\":null,\"lon\":null,\"color\":\"#5C6BA0\"},{\"id\":\"1783946699365\",\"label\":\"colin in town\",\"start\":\"2026-08-24\",\"end\":\"2026-08-26\",\"startTime\":\"\",\"endTime\":\"\",\"loc\":\"Detroit, Michigan, US\",\"lat\":42.3314,\"lon\":-83.0458,\"color\":\"#3F8487\"}]",
   "cc_lists": "{\"todo\":[{\"id\":\"178213456565723\",\"text\":\"Amazon Return\",\"done\":false,\"urgent\":true},{\"id\":\"1782839174141429\",\"text\":\"Nrodstrom Rack Retrun\",\"done\":false,\"urgent\":false},{\"id\":\"1782839121935499\",\"text\":\"Schedule Robert\",\"done\":false,\"urgent\":false},{\"id\":\"1782839127657888\",\"text\":\"Schedule Maria\",\"done\":false,\"urgent\":false},{\"id\":\"1782839168791859\",\"text\":\"Danielle Bday Gift\",\"done\":true,\"urgent\":false},{\"id\":\"1782088731025345\",\"text\":\"Order/Buy Mulch\",\"done\":true,\"urgent\":false},{\"id\":\"1782839148638804\",\"text\":\"Call Hersch's Fertilizer\",\"done\":true,\"urgent\":false}],\"house\":[{\"id\":\"1782088110971682\",\"text\":\"Stain Deck\",\"done\":false,\"pri\":\"normal\"},{\"id\":\"1782088737861339\",\"text\":\"Mulch\",\"done\":true,\"urgent\":false},{\"id\":\"1782088772927758\",\"text\":\"Buy 2-3 more plants?\",\"done\":true,\"urgent\":false},{\"id\":\"1782088783688277\",\"text\":\"Plant garden beds\",\"done\":true,\"urgent\":false}],\"goals\":[{\"id\":\"178394687523592\",\"text\":\"Finish the Porminato Portal build-out\",\"done\":false,\"urgent\":true}],\"dconst\":[{\"id\":\"dc0\",\"text\":\"⏰ Up at 4:45am\",\"done\":false,\"urgent\":false},{\"id\":\"dc1\",\"text\":\"🛏️ Make the bed\",\"done\":false,\"urgent\":false},{\"id\":\"dc2\",\"text\":\"🌬️ Meditate + reflect on today's concept\",\"done\":false,\"urgent\":false},{\"id\":\"dc3\",\"text\":\"🧘 Morning stretch\",\"done\":false,\"urgent\":false},{\"id\":\"dc4\",\"text\":\"📖 Read \\\"The Tao of Joy\\\" passage\",\"done\":false,\"urgent\":false},{\"id\":\"dc5\",\"text\":\"💊 Take vitamins\",\"done\":false,\"urgent\":false},{\"id\":\"dc6\",\"text\":\"🇪🇸 10 min Babbel — Spanish\",\"done\":false,\"urgent\":false},{\"id\":\"dc7\",\"text\":\"🚿 Shower & brush teeth (AM & PM)\",\"done\":false,\"urgent\":false},{\"id\":\"dc8\",\"text\":\"🥗 Eat clean — meals 10am–6pm only\",\"done\":false,\"urgent\":false},{\"id\":\"dc9\",\"text\":\"🧴 Nightly skincare\",\"done\":false,\"urgent\":false},{\"id\":\"dc10\",\"text\":\"🎧 Podcasts when I can\",\"done\":false,\"urgent\":false},{\"id\":\"dc11\",\"text\":\"💧 1 gallon water (4 × 1qt)\",\"done\":false,\"urgent\":false},{\"id\":\"dc_read20\",\"text\":\"📚 Read 20 mins\",\"done\":false,\"urgent\":false}]}",
   "cc_mc_labels": "[\"Schedule Maria\",\"📊 Review monthly budget & spending\",\"🏃 Log a benchmark workout / weigh-in\",\"Complete 1 house project\",\"📞 Call family / check in with friends\",\"🧾 Pay bills & review subscriptions\",\"📚 Finish 1 book\"]",
   "cc_mc_state": "{}",
@@ -733,7 +772,6 @@ const CC_SEED = {
   "cc_secorder": "[\"week\",\"constants\",\"agenda\",\"calendar\",\"goals\",\"house\"]",
   "cc_theme": "slate",
   "pdmin::2026-06-21": "15",
-  "plan::2026-06-22": "testings a",
   "pushup::2026-06-21::0": "1",
   "pushup::2026-06-21::1": "1",
   "pushup::2026-06-21::2": "1",
@@ -769,7 +807,7 @@ document.getElementById('agendaRange').textContent=new Date(DAYS[0].date+'T12:00
 document.getElementById('evStart').value=TODAY_ISO; document.getElementById('evEnd').value=ymd(addDays(TODAY,2));
 document.getElementById('days').innerHTML=DAYS.map(renderDay).join("");
 renderThemeSelect();
-evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); loadGoogleCal(); fetchHomeWeather();
+evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
 (function(){const el=document.getElementById('evLoc'); let t=null; el.addEventListener('input',()=>{clearTimeout(t); const q=el.value.trim(); if(q.length<3)return; t=setTimeout(()=>geoSearch(q),250);});})();
 lload(); mcload();
 if(!localStorage.getItem('cc_mig_books')){
@@ -782,6 +820,7 @@ refreshDayTrackers();
 applySectionOrder();
 renderGlance();
 applyTheme(localStorage.getItem('cc_theme')||'sky');
+SYNC.start();
 </script>
 </body>
 </html>
