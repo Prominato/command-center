@@ -311,20 +311,31 @@
   </details>
 
   <details class="drop" data-sec="constants" open>
-    <summary><span class="arrow">▸</span> To-Do &amp; Monthly Constants<span class="secmove"><button onclick="moveSection(event,'constants',-1)" title="Move up">▲</button><button onclick="moveSection(event,'constants',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> To-Do Lists<span class="secmove"><button onclick="moveSection(event,'constants',-1)" title="Move up">▲</button><button onclick="moveSection(event,'constants',1)" title="Move down">▼</button></span></summary>
     <div class="drop-body">
-      <div class="hint">Drag <b>⠿</b> to reorder, <b>✎</b> to edit, <b>!</b> for urgent. Monthly checkmarks reset each month.</div>
+      <div class="hint">Drag <b>⠿</b> to reorder, <b>✎</b> to edit, <b>!</b> for urgent.</div>
       <div class="lists">
         <div class="listcard">
-          <h3>✅ To-Do List</h3><div class="lh">Day-to-day tasks</div>
+          <h3>✅ Personal To-Do</h3><div class="lh">Day-to-day tasks</div>
           <div class="addrow"><input id="todoInput" placeholder="Add a to-do…" onkeydown="if(event.key==='Enter')addItem('todo')"><button onclick="addItem('todo')">Add</button></div>
           <ul class="items" id="todoList"></ul>
         </div>
         <div class="listcard">
-          <h3>🔁 Monthly Constants</h3><div class="lh">Recurring each month</div>
-          <div class="addrow"><input id="mcInput" placeholder="Add a monthly constant…" onkeydown="if(event.key==='Enter')mcAdd()"><button onclick="mcAdd()">Add</button></div>
-          <ul class="items" id="mcList"></ul>
+          <h3>💼 Professional To-Do</h3><div class="lh">Work &amp; business tasks</div>
+          <div class="addrow"><input id="workInput" placeholder="Add a work to-do…" onkeydown="if(event.key==='Enter')addItem('work')"><button onclick="addItem('work')">Add</button></div>
+          <ul class="items" id="workList"></ul>
         </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="drop" data-sec="mc" open>
+    <summary><span class="arrow">▸</span> Monthly Constants<span class="secmove"><button onclick="moveSection(event,'mc',-1)" title="Move up">▲</button><button onclick="moveSection(event,'mc',1)" title="Move down">▼</button></span></summary>
+    <div class="drop-body">
+      <div class="listcard">
+        <h3>🔁 Monthly Constants</h3><div class="lh">Recurring each month — checkmarks reset monthly · drag ⠿, edit ✎, ! for urgent</div>
+        <div class="addrow"><input id="mcInput" placeholder="Add a monthly constant…" onkeydown="if(event.key==='Enter')mcAdd()"><button onclick="mcAdd()">Add</button></div>
+        <ul class="items" id="mcList"></ul>
       </div>
     </div>
   </details>
@@ -630,10 +641,10 @@ function refreshDayTrackers(){
 }
 
 /* ===== lists ===== */
-const LISTS={todo:[],house:[],goals:[],dconst:[]};
+const LISTS={todo:[],work:[],house:[],goals:[],dconst:[]};
 function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urgent:false}));}
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
-  LISTS.todo=o.todo||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
+  LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
   localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
 function lsave(){const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
@@ -707,9 +718,11 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
-const SEC_DEFAULT=['week','agenda','calendar','constants','goals','house'];
-const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Do & Constants',goals:'Goals',house:'House'};
-function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice(); SEC_DEFAULT.forEach(id=>{if(o.indexOf(id)<0)o.push(id);}); return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
+const SEC_DEFAULT=['week','agenda','calendar','constants','mc','goals','house'];
+const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Dos',mc:'Monthly Constants',goals:'Goals',house:'House'};
+function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
+  SEC_DEFAULT.forEach(id=>{if(o.indexOf(id)<0){ if(id==='mc'&&o.indexOf('constants')>=0){o.splice(o.indexOf('constants')+1,0,'mc');} else {o.push(id);} }});
+  return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function buildNav(){const nav=document.getElementById('quicknav'); const items=[['today','Today']].concat(secLoad().map(id=>[id,SEC_LABEL[id]]));
@@ -721,7 +734,9 @@ function updateCounts(){
   setCount('week', null);
   setCount('house', LISTS.house.filter(x=>!x.done).length+" open");
   setCount('goals', LISTS.goals.filter(x=>!x.done).length+" goals");
-  setCount('constants', LISTS.todo.filter(x=>!x.done).length+" to-dos");
+  setCount('constants', (LISTS.todo.filter(x=>!x.done).length+LISTS.work.filter(x=>!x.done).length)+" open");
+  const mcMk=mcMonthKey(), mcSt=MC_STATE[mcMk]||{};
+  setCount('mc', MC_LABELS.filter(l=>mcSt[l]).length+"/"+MC_LABELS.length+" this month");
   setCount('calendar', EVENTS.length+" events");
   setCount('agenda', null);
 }
@@ -730,7 +745,7 @@ function renderGlance(){
   const day=DAYS.find(d=>d.date===TODAY_ISO)||DAYS[0];
   const waterDone=[0,1,2,3].filter(n=>localStorage.getItem('water::'+TODAY_ISO+'::'+n)==='1').length;
   const mk=mcMonthKey(); const mst=MC_STATE[mk]||{}; const dcDone=MC_LABELS.filter(l=>mst[l]).length, dcTot=MC_LABELS.length||1;
-  const urgent=[...LISTS.todo,...LISTS.house,...LISTS.goals].filter(x=>x.urgent&&!x.done).length;
+  const urgent=[...LISTS.todo,...LISTS.work,...LISTS.house,...LISTS.goals].filter(x=>x.urgent&&!x.done).length;
   const evToday=eventsOnISO(TODAY_ISO);
   const focus=day.type==='rest'?'Rest day 🛌':(day.type==='golf'?(day.gym+' + Golf ⛳'):(day.gym+' + Core 🔥'));
   const ghr=new Date().getHours(); const greet=(ghr<12?'Good morning':ghr<18?'Good afternoon':'Good evening')+', Max';
@@ -815,7 +830,7 @@ if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
-renderList('todo'); renderList('house'); renderList('goals'); renderMC();
+renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderMC();
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
