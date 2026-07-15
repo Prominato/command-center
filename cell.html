@@ -619,6 +619,7 @@ function renderQuests(){
   document.getElementById('dLabel').textContent=(VIEW_ISO===T?'Today · ':'')+d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
   document.getElementById('dType').textContent={work:'work day',golf:'golf day',rest:'rest day'}[dayType(VIEW_ISO)];
   document.getElementById('dNext').disabled=VIEW_ISO>=T;
+  document.getElementById('dPrev').disabled=addISO(VIEW_ISO,44)<T;   // 45-day history floor (mirrors navDay guard)
   const secs=[]; qs.forEach(q=>{if(secs.indexOf(q.sec)<0)secs.push(q.sec);});
   let html='';
   secs.forEach(sec=>{
@@ -825,7 +826,7 @@ function renderAll(){
 derive(); seenCheck(); renderAll();
 SYNC.start();
 window.addEventListener('storage',()=>renderAll());          // live-update if index.html is open in another tab
-setInterval(()=>{ if(todayISO()!==D.T){VIEW_ISO=todayISO(); renderAll();} },60*1000);  // midnight rollover
+setInterval(()=>{ if(todayISO()!==D.T){VIEW_ISO=todayISO(); celebrate._perfectShown=false; renderAll();} },60*1000);  // midnight rollover (reset perfect-day toast for the new day)
 </script>
 </body>
 </html>
