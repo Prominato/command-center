@@ -633,7 +633,8 @@ function refreshDayTrackers(){
 const LISTS={todo:[],house:[],goals:[],dconst:[]};
 function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urgent:false}));}
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
-  LISTS.todo=o.todo||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC(); lsave();}
+  LISTS.todo=o.todo||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
+  localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
 function lsave(){const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
   LISTS[w].push({id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false}); inp.value=""; lsave(); renderList(w);}
