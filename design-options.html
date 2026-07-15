@@ -520,6 +520,21 @@
   .o7 .cd.td{background:#1E2A22; color:#FBFAF7; font-weight:600}
   .o7 .cd.ev{box-shadow:inset 0 -2px 0 #8C6A1D}
   .o7 .foot{margin:24px 28px 0; padding-top:10px; border-top:3px double #1E2A22; font-family:'Newsreader',serif; font-style:italic; font-size:.85rem; color:#5C6A5E; text-align:center; letter-spacing:.04em}
+  /* o7 — extra color: earth-tone signal system */
+  .o7 .stat:nth-child(1){box-shadow:inset 0 3px 0 #8C6A1D}
+  .o7 .stat:nth-child(2){box-shadow:inset 0 3px 0 #9C3D22}
+  .o7 .stat:nth-child(3){box-shadow:inset 0 3px 0 #2E5641}
+  .o7 .stat:nth-child(4){box-shadow:inset 0 3px 0 #557C9E}
+  .o7 .stat:nth-child(5){box-shadow:inset 0 3px 0 #566288}
+  .o7 .seclab.gy{color:#9C3D22} .o7 .seclab.wd{color:#2E5641} .o7 .seclab.ev{color:#566288}
+  .o7 .cat.c2{color:#566288} .o7 .cat.c3{color:#2E5641}
+  .o7 .trk .th.rf{color:#9C3D22}
+  .o7 .trow.rf b{color:#9C3D22}
+  .o7 .wat{color:#557C9E}
+  .o7 .nfol div::before{content:""; display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:7px; vertical-align:1px; background:#8C6A1D}
+  .o7 .nfol div:nth-child(2)::before{background:#2E5641}
+  .o7 .nfol div:nth-child(3)::before{background:#566288}
+  .o7 .nfol div:nth-child(4)::before{background:#9C3D22}
   @media(max-width:760px){ .o7 .stats{grid-template-columns:1fr 1fr} .o7 .day,.o7 .todos,.o7 .notes{grid-template-columns:1fr} .o7 .tcard:first-child,.o7 .daymain,.o7 .nfol{border-right:none} }
 </style>
 </head>
@@ -1221,13 +1236,13 @@
           <div class="seclab">Morning</div>
           <div class="drow"><span class="tm">4:45–4:50a</span><span class="du">5′</span><span>Wake + make the bed</span></div>
           <div class="drow"><span class="tm">4:50–5:00a</span><span class="du">10′</span><span>Meditate + today's concept</span></div>
-          <div class="seclab">Gym</div>
+          <div class="seclab gy">Gym</div>
           <div class="drow"><span class="tm">5:40–6:40a</span><span class="du">60′</span><span>Strength — <em style="color:#8C6A1D">legs + core</em></span></div>
-          <div class="seclab">The Work Day · 8–4</div>
+          <div class="seclab wd">The Work Day · 8–4</div>
           <div class="drow"><span class="tm">8:00–9:30a</span><span class="du">90′</span><input class="dwi" value="Prominato portal build-out"></div>
           <div class="drow"><span class="tm">9:40–11:10a</span><span class="du">90′</span><input class="dwi" placeholder="Deep work II — a single focus…"></div>
-          <div class="drow"><span class="tm">~11:10a</span><span class="du">💧</span><span>Water, the second quart</span></div>
-          <div class="seclab">Evening</div>
+          <div class="drow"><span class="tm">~11:10a</span><span class="du">💧</span><span class="wat">💧 Water, the second quart</span></div>
+          <div class="seclab ev">Evening</div>
           <div class="drow"><span class="tm">5:00–6:30p</span><span class="du">90′</span><span>Pickleball at the courts</span></div>
           <div class="drow"><span class="tm">9:00p</span><span class="du">—</span><span>Lights out</span></div>
         </div>
@@ -1236,9 +1251,9 @@
           <div class="trow"><span>Water</span><b>2 of 4</b></div>
           <div class="trow"><span>Push-ups</span><b>3 of 5</b></div>
           <div class="trow"><span>Reading</span><b>15′ ✓</b></div>
-          <div class="th" style="margin-top:12px">To Refuse</div>
-          <div class="trow"><span>Sugar</span><b>—</b></div>
-          <div class="trow"><span>Take-out</span><b>—</b></div>
+          <div class="th rf" style="margin-top:12px">To Refuse</div>
+          <div class="trow rf"><span>Sugar</span><b>—</b></div>
+          <div class="trow rf"><span>Take-out</span><b>—</b></div>
         </aside>
       </div>
 
@@ -1255,9 +1270,9 @@
           <div class="cat">Prominato</div>
           <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">urgent</span></div>
           <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
-          <div class="cat">Highmark</div>
+          <div class="cat c2">Highmark</div>
           <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
-          <div class="cat">AI Creation</div>
+          <div class="cat c3">AI Creation</div>
           <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
           <div class="arch">Archive — four completed, resting quietly</div>
         </div>
