@@ -114,6 +114,7 @@
   .phead button:hover{color:var(--ink); border-color:var(--accent);}
   .dayline{display:flex; gap:12px; padding:9px 8px; border-bottom:1px solid var(--divider); align-items:baseline; border-radius:6px;}
   .dayline.wknd{background:rgba(79,124,172,.06);}
+  .dayline.today{border:1px solid var(--accent); border-radius:8px;}
   .dayline:last-child{border-bottom:none;}
   .dayline .dn{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace; font-size:.78rem; color:var(--ink-muted); min-width:120px;}
   .dayline .dn b{color:var(--ink); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;}
@@ -132,6 +133,7 @@
   details.day.has-ev{border-color:var(--evc); box-shadow:inset 5px 0 0 var(--evc);}
   details.day.has-ev>summary:hover{background:transparent;}
   details.day[open]{border-color:var(--accent);}
+  details.day.today{border:1px solid var(--accent);}
   .day-mid{flex:1 1 auto; text-align:center; font-size:.8rem; font-weight:600; padding:0 8px;}
   .day-mid:empty{display:none;}
   .day-mid .evwx{color:var(--ink-muted); font-weight:500;}
@@ -583,7 +585,7 @@ function renderDay(day){const date=day.date;
   }
   const open=day.date===TODAY_ISO?" open":"";
   const wk=([0,6].indexOf(new Date(date+"T12:00:00").getDay())>=0)?" wknd":"";
-  return `<details class="day${wk}"${open} data-date="${date}"><summary><span class="day-date">${day.dow}<small>${new Date(date+"T12:00:00").toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></span><span class="day-mid" data-ev-name="${date}"></span>${wx}</summary><div class="day-body"><div class="day-main">${body}</div>${dayTrack(date)}</div></details>`;
+  return `<details class="day${wk}${open?' today':''}"${open} data-date="${date}"><summary><span class="day-date">${day.dow}<small>${new Date(date+"T12:00:00").toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></span><span class="day-mid" data-ev-name="${date}"></span>${wx}</summary><div class="day-body"><div class="day-main">${body}</div>${dayTrack(date)}</div></details>`;
 }
 
 /* ===== events ===== */
@@ -673,7 +675,7 @@ function renderWeek(){const end=addDays(currentWeekStart,6), isThis=sameDay(curr
     const evchips=evs.map(e=>`<span class="chip ev" style="background:${e.color};border-color:${e.color};color:#fff">📍 ${escHtml(e.label)}</span>`).join("");
     const wknd=(d.getDay()===0||d.getDay()===6)?' wknd':'';
     const evStyle=evs.length?` style="background:${hexToRgba(evs[0].color,0.12)};box-shadow:inset 4px 0 0 ${evs[0].color}"`:'';
-    html+=`<div class="dayline${wknd}${evs.length?' evday':''}"${evStyle}><span class="dn"><b>${DOW[d.getDay()]}</b> ${MON[d.getMonth()].slice(0,3)} ${d.getDate()}${sameDay(d,TODAY)?" · now":""}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="chip ${c[0]}">${c[1]}</span>`).join("")}</span></div>`;}
+    html+=`<div class="dayline${wknd}${evs.length?' evday':''}${sameDay(d,TODAY)?' today':''}"${evStyle}><span class="dn"><b>${DOW[d.getDay()]}</b> ${MON[d.getMonth()].slice(0,3)} ${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="chip ${c[0]}">${c[1]}</span>`).join("")}</span></div>`;}
   document.getElementById('weekBody').innerHTML=html; highlightSelectedWeek();}
 function highlightSelectedWeek(){document.querySelectorAll('tr.wk').forEach(tr=>tr.classList.toggle('selected',tr.dataset.wkstart===ymd(currentWeekStart)));}
 

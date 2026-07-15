@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center — Design Directions (Full Mockups)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Franklin:wght@400;500;600;700&family=Archivo:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:#101318; color:#E8E6E1; font-family:'Inter',system-ui,sans-serif; padding:0 0 60px}
+  .shell{max-width:1080px; margin:0 auto; padding:26px 20px}
+  .shell h1{font-family:'Space Grotesk',sans-serif; font-size:1.5rem; margin:0 0 4px; letter-spacing:-.02em}
+  .shell .sub{color:#9AA3AE; font-size:.88rem; margin:0 0 18px}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; position:sticky; top:0; background:#101318; padding:12px 0; z-index:10}
+  .tabs button{font-family:'Inter',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; color:#9AA3AE;
+    background:#1A1F27; border:1px solid #2A313B; border-radius:22px; padding:9px 16px; transition:.15s}
+  .tabs button:hover{color:#fff; border-color:#4A5461}
+  .tabs button.on{color:#101318; background:#E8E6E1; border-color:#E8E6E1}
+  .pane{display:none} .pane.on{display:block}
+  .spec{display:flex; gap:18px; flex-wrap:wrap; align-items:center; background:#1A1F27; border:1px solid #2A313B;
+    border-radius:12px; padding:13px 16px; margin:14px 0 0; font-size:.82rem; color:#9AA3AE}
+  .spec b{color:#E8E6E1; font-weight:600}
+  .sw{display:inline-flex; gap:4px; vertical-align:middle}
+  .sw i{width:16px; height:16px; border-radius:4px; display:inline-block; border:1px solid rgba(255,255,255,.15)}
+  .hintline{margin-top:10px; font-size:.8rem; color:#8A93A0}
+  .hintline code{background:#1A1F27; border:1px solid #2A313B; border-radius:6px; padding:1px 7px; color:#E8E6E1}
+  .frame{border-radius:14px; overflow:hidden; border:1px solid #2A313B; box-shadow:0 20px 60px rgba(0,0,0,.45)}
+
+  /* ================= OPTION 1 — EXECUTIVE LEDGER ================= */
+  .o1{background:#F7F3E8; color:#1E2A22; font-family:'Libre Franklin',sans-serif; padding:0 0 30px}
+  .o1 .mast{border-bottom:3px double #1E2A22; padding:20px 28px 14px; display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px}
+  .o1 .mast .brand{font-family:'Libre Caslon Display',serif; font-size:1.7rem}
+  .o1 .mast .folio{font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:#5C6A5E}
+  .o1 .mast .folio b{color:#2E5641; font-weight:600}
+  .o1 .greet{padding:20px 28px 2px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap}
+  .o1 .greet h2{font-family:'Libre Caslon Display',serif; font-weight:400; font-size:1.6rem; margin:0}
+  .o1 .greet .dt{font-size:.76rem; letter-spacing:.14em; text-transform:uppercase; color:#5C6A5E}
+  .o1 .stats{display:grid; grid-template-columns:repeat(5,1fr); margin:16px 28px 0; border-top:1px solid #1E2A22; border-bottom:1px solid #1E2A22}
+  .o1 .stat{padding:13px 15px; border-right:1px solid #D8D0BC}
+  .o1 .stat:last-child{border-right:none}
+  .o1 .stat .l{font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:#5C6A5E; margin-bottom:5px}
+  .o1 .stat .v{font-family:'Libre Caslon Display',serif; font-size:1.35rem}
+  .o1 .stat .v em{font-style:normal; color:#8C6A1D}
+  .o1 .sh{font-size:.66rem; letter-spacing:.24em; text-transform:uppercase; color:#5C6A5E; margin:26px 28px 8px; display:flex; align-items:center; gap:12px}
+  .o1 .sh::after{content:""; flex:1; border-bottom:1px solid #1E2A22}
+  .o1 .wk{margin:0 28px}
+  .o1 .wrow{display:flex; align-items:baseline; gap:14px; padding:9px 2px; border-bottom:1px solid #D8D0BC; flex-wrap:wrap}
+  .o1 .wrow.today{background:linear-gradient(90deg, rgba(140,106,29,.12), transparent 75%); border-bottom:1px solid #8C6A1D}
+  .o1 .wrow .d{font-family:'Libre Caslon Display',serif; font-size:.95rem; min-width:92px}
+  .o1 .chip{font-size:.7rem; padding:2px 10px; border:1px solid #1E2A22}
+  .o1 .chip.g{border-color:#8C6A1D; color:#8C6A1D} .o1 .chip.t{border-color:#2E5641; color:#2E5641}
+  .o1 .day{margin:0 28px; border:1px solid #1E2A22; display:grid; grid-template-columns:1fr 210px}
+  .o1 .daymain{padding:14px 18px; border-right:1px solid #D8D0BC}
+  .o1 .dayhead{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid #1E2A22; padding-bottom:8px; margin-bottom:6px}
+  .o1 .dayhead .dn{font-family:'Libre Caslon Display',serif; font-size:1.25rem}
+  .o1 .dayhead .wx{font-size:.78rem; color:#5C6A5E}
+  .o1 .seclab{font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; margin:10px 0 3px; color:#8C6A1D}
+  .o1 .seclab.work{color:#2E5641} .o1 .seclab.eve{color:#5C6A5E}
+  .o1 .drow{display:flex; gap:12px; padding:5px 0; align-items:baseline; font-size:.86rem; border-bottom:1px dotted #C9C0A8}
+  .o1 .drow:last-child{border-bottom:none}
+  .o1 .tm{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#5C6A5E; min-width:92px}
+  .o1 .du{font-size:.66rem; color:#8C6A1D; min-width:38px}
+  .o1 .dwi{flex:1; border:none; border-bottom:1px solid #1E2A22; background:transparent; font-family:'Libre Caslon Display',serif; font-style:italic; font-size:.9rem; color:#1E2A22; padding:2px 0}
+  .o1 .trk{padding:14px 16px; background:rgba(140,106,29,.05)}
+  .o1 .trk .th{font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:#5C6A5E; margin-bottom:8px}
+  .o1 .trow{display:flex; justify-content:space-between; font-size:.8rem; padding:4px 0; border-bottom:1px dotted #C9C0A8}
+  .o1 .trow b{font-family:'IBM Plex Mono',monospace; font-weight:500; color:#2E5641}
+  .o1 .todos{display:grid; grid-template-columns:1fr 1fr; gap:0; margin:0 28px; border:1px solid #1E2A22}
+  .o1 .tcard{padding:14px 18px}
+  .o1 .tcard:first-child{border-right:1px solid #D8D0BC}
+  .o1 .tcard h3{font-family:'Libre Caslon Display',serif; font-weight:400; font-size:1.05rem; margin:0 0 8px}
+  .o1 .it{display:flex; gap:10px; align-items:baseline; padding:5px 0; font-size:.85rem; border-bottom:1px dotted #C9C0A8}
+  .o1 .bx{width:11px; height:11px; border:1.5px solid #2E5641; flex:0 0 auto; align-self:center}
+  .o1 .bx.ck{background:#2E5641}
+  .o1 .it.done span{text-decoration:line-through; color:#8A917F}
+  .o1 .urg{font-size:.6rem; letter-spacing:.14em; color:#9C3D22; border:1px solid #9C3D22; padding:0 6px; text-transform:uppercase}
+  .o1 .cat{font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:#8C6A1D; margin:9px 0 2px}
+  .o1 .arch{font-size:.74rem; color:#5C6A5E; margin-top:9px; border-top:1px solid #D8D0BC; padding-top:7px}
+  .o1 .mc{margin:0 28px; border:1px solid #1E2A22; padding:13px 18px; display:grid; grid-template-columns:1fr 1fr; gap:2px 26px}
+  .o1 .notes{margin:0 28px; border:1px solid #1E2A22; display:grid; grid-template-columns:180px 1fr}
+  .o1 .nfol{border-right:1px solid #D8D0BC; padding:12px 14px}
+  .o1 .nfol div{font-size:.8rem; padding:5px 8px; border-left:2px solid transparent}
+  .o1 .nfol div.on{border-left-color:#8C6A1D; background:rgba(140,106,29,.08); font-weight:600}
+  .o1 .nlist{padding:12px 16px}
+  .o1 .ncard{border-bottom:1px solid #D8D0BC; padding:8px 0}
+  .o1 .ncard .nt{font-family:'Libre Caslon Display',serif; font-size:.98rem}
+  .o1 .ncard .np{font-size:.76rem; color:#5C6A5E; margin-top:2px}
+  .o1 .cal{margin:0 28px; border:1px solid #1E2A22; padding:14px 18px; max-width:360px}
+  .o1 .cal h4{font-family:'Libre Caslon Display',serif; font-weight:400; margin:0 0 8px; text-align:center; letter-spacing:.04em}
+  .o1 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:.7rem}
+  .o1 .cg .h{color:#8C6A1D; font-size:.6rem; letter-spacing:.1em}
+  .o1 .cd{padding:4px 0; color:#1E2A22}
+  .o1 .cd.dim{color:#B4AB93}
+  .o1 .cd.td{background:#1E2A22; color:#F7F3E8}
+  .o1 .cd.ev{box-shadow:inset 0 -2px 0 #8C6A1D}
+  .o1 .foot{margin:22px 28px 0; padding-top:10px; border-top:3px double #1E2A22; font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:#5C6A5E; text-align:center}
+  @media(max-width:760px){ .o1 .stats{grid-template-columns:1fr 1fr} .o1 .day,.o1 .todos,.o1 .notes{grid-template-columns:1fr} .o1 .tcard:first-child,.o1 .daymain,.o1 .nfol{border-right:none} }
+
+  /* ================= OPTION 2 — SWISS INTERNATIONAL ================= */
+  .o2{background:#FFFFFF; color:#0A0A0A; font-family:'Inter Tight',sans-serif; padding:0 0 26px}
+  .o2 .bar{display:grid; grid-template-columns:1fr auto; border-bottom:2px solid #0A0A0A; padding:16px 24px}
+  .o2 .bar .b{font-weight:800; font-size:1.05rem; letter-spacing:-.02em; text-transform:uppercase}
+  .o2 .bar .r{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:#666}
+  .o2 .grid{display:grid; grid-template-columns:190px 1fr}
+  .o2 .rail{border-right:1px solid #0A0A0A; padding:18px 0}
+  .o2 .rail a{display:block; padding:9px 24px; font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#666; border-left:3px solid transparent}
+  .o2 .rail a.on{color:#0A0A0A; border-left-color:#E33D26}
+  .o2 .main{padding:22px 24px}
+  .o2 h2{font-size:2.2rem; font-weight:800; letter-spacing:-.04em; margin:0 0 2px}
+  .o2 .dt{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:#666; margin-bottom:16px}
+  .o2 .sh{font-size:.64rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#0A0A0A; margin:22px 0 8px; padding-top:8px; border-top:2px solid #0A0A0A}
+  .o2 .stats{display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #0A0A0A}
+  .o2 .stat{padding:13px; border-right:1px solid #0A0A0A}
+  .o2 .stat:last-child{border-right:none}
+  .o2 .stat .l{font-size:.58rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#666}
+  .o2 .stat .v{font-size:1.9rem; font-weight:800; letter-spacing:-.04em; line-height:1.15}
+  .o2 .stat .v.red{color:#E33D26}
+  .o2 .wrow{display:grid; grid-template-columns:96px 1fr; border-bottom:1px solid #E3E3E3; padding:8px 0; align-items:baseline}
+  .o2 .wrow.today{background:#0A0A0A; color:#fff; padding-left:8px; margin-left:-8px}
+  .o2 .wrow.today .chip{border-color:#fff; color:#fff}
+  .o2 .wrow.today .chip.red{background:#E33D26; border-color:#E33D26; color:#fff}
+  .o2 .wrow .d{font-family:'IBM Plex Mono',monospace; font-size:.72rem}
+  .o2 .chip{display:inline-block; font-size:.68rem; font-weight:600; border:1px solid #0A0A0A; padding:2px 9px; margin:0 6px 4px 0}
+  .o2 .chip.red{border-color:#E33D26; color:#E33D26}
+  .o2 .daybox{display:grid; grid-template-columns:1fr 190px; border:1px solid #0A0A0A}
+  .o2 .dayl{padding:12px 16px; border-right:1px solid #0A0A0A}
+  .o2 .dayr{padding:12px 14px; background:#F4F4F4}
+  .o2 .seclab{font-size:.6rem; font-weight:800; letter-spacing:.16em; color:#E33D26; margin:10px 0 4px}
+  .o2 .seclab:first-child{margin-top:0}
+  .o2 .drow{display:flex; gap:12px; align-items:baseline; font-size:.84rem; padding:4px 0; border-bottom:1px solid #EEE}
+  .o2 .drow:last-child{border-bottom:none}
+  .o2 .tm{font-family:'IBM Plex Mono',monospace; font-size:.72rem; min-width:52px}
+  .o2 .du{font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:#999; margin-left:auto}
+  .o2 .dwi{flex:1; border:none; border-bottom:2px solid #0A0A0A; background:transparent; font-family:'Inter Tight',sans-serif; font-weight:700; font-size:.8rem; letter-spacing:.02em; padding:2px 0; color:#0A0A0A}
+  .o2 .dwi::placeholder{color:#BBB}
+  .o2 .trow{display:flex; justify-content:space-between; font-size:.74rem; font-weight:600; padding:5px 0; border-bottom:1px solid #E3E3E3}
+  .o2 .trow b{font-family:'IBM Plex Mono',monospace; font-weight:600}
+  .o2 .todos{display:grid; grid-template-columns:1fr 1fr; border:1px solid #0A0A0A}
+  .o2 .tcol{padding:13px 16px}
+  .o2 .tcol:first-child{border-right:1px solid #0A0A0A}
+  .o2 .tcol h3{font-size:.72rem; font-weight:800; letter-spacing:.14em; margin:0 0 8px}
+  .o2 .it{display:flex; gap:9px; align-items:center; font-size:.84rem; padding:5px 0; border-bottom:1px solid #EEE}
+  .o2 .bx{width:12px; height:12px; border:2px solid #0A0A0A; flex:0 0 auto}
+  .o2 .bx.ck{background:#0A0A0A}
+  .o2 .it.done span{text-decoration:line-through; color:#999}
+  .o2 .strk{text-decoration:line-through; color:#999}
+  .o2 .urg{margin-left:auto; background:#E33D26; color:#fff; font-weight:800; font-size:.7rem; width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center}
+  .o2 .cat{font-size:.58rem; font-weight:800; letter-spacing:.18em; color:#666; margin:9px 0 2px}
+  .o2 .arch{font-family:'IBM Plex Mono',monospace; font-size:.66rem; color:#666; margin-top:9px; border-top:1px solid #0A0A0A; padding-top:7px}
+  .o2 .mcg{display:grid; grid-template-columns:1fr 1fr; gap:2px 24px; border:1px solid #0A0A0A; padding:11px 16px}
+  .o2 .nwrap{display:grid; grid-template-columns:170px 1fr; border:1px solid #0A0A0A}
+  .o2 .nfol{border-right:1px solid #0A0A0A; padding:10px}
+  .o2 .nfol div{font-size:.68rem; font-weight:700; letter-spacing:.08em; padding:6px 8px; color:#666}
+  .o2 .nfol div.on{color:#0A0A0A; border-left:3px solid #E33D26; background:#F4F4F4}
+  .o2 .nlist{padding:10px 14px}
+  .o2 .ncard{border-bottom:1px solid #E3E3E3; padding:7px 0}
+  .o2 .ncard .nt{font-size:.8rem; font-weight:800; letter-spacing:.03em}
+  .o2 .ncard .np{font-size:.74rem; color:#666; margin-top:2px}
+  .o2 .cal{border:1px solid #0A0A0A; padding:12px 14px; max-width:340px}
+  .o2 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:.7rem}
+  .o2 .cg .h{font-weight:700; color:#E33D26}
+  .o2 .cd{padding:4px 0}
+  .o2 .cd.dim{color:#CCC}
+  .o2 .cd.td{background:#0A0A0A; color:#fff; font-weight:700}
+  .o2 .cd.ev{box-shadow:inset 0 -2px 0 #E33D26}
+  @media(max-width:760px){ .o2 .grid{grid-template-columns:1fr} .o2 .rail{display:flex; overflow-x:auto; border-right:none; border-bottom:1px solid #0A0A0A; padding:0}
+    .o2 .stats{grid-template-columns:1fr 1fr} .o2 .daybox,.o2 .todos,.o2 .nwrap{grid-template-columns:1fr} .o2 .dayl,.o2 .tcol:first-child,.o2 .nfol{border-right:none} }
+
+  /* ================= OPTION 3 — MISSION CONTROL ================= */
+  .o3{background:#080C12; color:#D7E2EC; font-family:'Inter',sans-serif; padding:0 0 26px; position:relative}
+  .o3::before{content:""; position:absolute; inset:0; background:
+    linear-gradient(rgba(90,140,190,.05) 1px, transparent 1px) 0 0/100% 28px,
+    linear-gradient(90deg, rgba(90,140,190,.04) 1px, transparent 1px) 0 0/28px 100%; pointer-events:none}
+  .o3 .bar{display:flex; align-items:center; gap:14px; padding:14px 22px; border-bottom:1px solid #1B2836; background:rgba(10,16,24,.9); position:relative; z-index:1}
+  .o3 .bar .b{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.95rem; letter-spacing:.08em; color:#5FD4C4}
+  .o3 .bar .b::before{content:"▮▮ "; color:#E8B14C}
+  .o3 .bar .st{margin-left:auto; display:flex; gap:14px; font-family:'JetBrains Mono',monospace; font-size:.66rem; color:#7C8DA0}
+  .o3 .dot{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:1px}
+  .o3 .dot.g{background:#57C97B; box-shadow:0 0 8px #57C97B}
+  .o3 .dot.a{background:#E8B14C; box-shadow:0 0 8px #E8B14C}
+  .o3 .main{padding:20px 22px; position:relative; z-index:1}
+  .o3 h2{font-family:'JetBrains Mono',monospace; font-weight:600; font-size:1.25rem; margin:0; color:#EAF3FA}
+  .o3 .dt{font-family:'JetBrains Mono',monospace; font-size:.68rem; color:#7C8DA0; margin:2px 0 16px}
+  .o3 .sh{font-family:'JetBrains Mono',monospace; font-size:.66rem; letter-spacing:.16em; color:#5FD4C4; margin:20px 0 8px}
+  .o3 .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  .o3 .stat{background:linear-gradient(180deg,#0E1620,#0B1119); border:1px solid #1B2836; border-radius:8px; padding:12px 13px; position:relative}
+  .o3 .stat::before{content:""; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,#5FD4C4,transparent)}
+  .o3 .stat .l{font-family:'JetBrains Mono',monospace; font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:#7C8DA0; margin-bottom:6px}
+  .o3 .stat .v{font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:#EAF3FA}
+  .o3 .stat .v .u{color:#5FD4C4; font-size:.78rem}
+  .o3 .stat.warn::before{background:linear-gradient(90deg,#E8B14C,transparent)}
+  .o3 .stat.warn .v{color:#E8B14C}
+  .o3 .panel{border:1px solid #1B2836; border-radius:8px; overflow:hidden; background:rgba(14,22,32,.6)}
+  .o3 .wrow{display:flex; gap:12px; align-items:center; padding:8px 14px; border-bottom:1px solid #131E2A; font-size:.8rem; flex-wrap:wrap}
+  .o3 .wrow:last-child{border-bottom:none}
+  .o3 .wrow.today{background:rgba(95,212,196,.07); box-shadow:inset 3px 0 0 #5FD4C4}
+  .o3 .wrow .d{font-family:'JetBrains Mono',monospace; font-size:.7rem; color:#7C8DA0; min-width:96px}
+  .o3 .chip{font-family:'JetBrains Mono',monospace; font-size:.64rem; border:1px solid #24405B; color:#8FBBE0; border-radius:4px; padding:1px 8px}
+  .o3 .chip.g{border-color:#3F6B52; color:#7BDF9E} .o3 .chip.a{border-color:#6B5A2E; color:#E8B14C}
+  .o3 .daybox{display:grid; grid-template-columns:1fr 200px; border:1px solid #1B2836; border-radius:8px; overflow:hidden; background:rgba(14,22,32,.6)}
+  .o3 .dayl{padding:12px 16px; border-right:1px solid #1B2836}
+  .o3 .dayr{padding:12px 14px; background:rgba(8,12,18,.7)}
+  .o3 .seclab{font-family:'JetBrains Mono',monospace; font-size:.6rem; letter-spacing:.18em; color:#7BDF9E; margin:10px 0 4px}
+  .o3 .seclab:first-child{margin-top:0}
+  .o3 .drow{display:flex; gap:12px; align-items:baseline; font-size:.8rem; padding:4px 0; border-bottom:1px dotted #16222F}
+  .o3 .drow:last-child{border-bottom:none}
+  .o3 .tm{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:#5FD4C4; min-width:44px}
+  .o3 .du{font-family:'JetBrains Mono',monospace; font-size:.6rem; color:#7C8DA0; margin-left:auto}
+  .o3 .dwi{flex:1; background:rgba(95,212,196,.05); border:1px solid #1B2836; border-radius:5px; font-family:'JetBrains Mono',monospace; font-size:.72rem; color:#EAF3FA; padding:4px 8px}
+  .o3 .dwi::placeholder{color:#4A5A6C}
+  .o3 .trow{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:.68rem; padding:5px 0; border-bottom:1px dotted #16222F; color:#B9C6D4}
+  .o3 .trow b{color:#7BDF9E; font-weight:500}
+  .o3 .todos{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .o3 .tcol{border:1px solid #1B2836; border-radius:8px; padding:12px 14px; background:rgba(14,22,32,.6)}
+  .o3 .tcol h3{font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.14em; margin:0 0 8px; color:#EAF3FA}
+  .o3 .it{display:flex; gap:9px; align-items:center; font-size:.78rem; padding:5px 0; border-bottom:1px dotted #16222F; font-family:'JetBrains Mono',monospace}
+  .o3 .bx{width:11px; height:11px; border:1px solid #5FD4C4; border-radius:3px; flex:0 0 auto}
+  .o3 .bx.ck{background:#5FD4C4; box-shadow:0 0 6px rgba(95,212,196,.6)}
+  .o3 .it.done span{text-decoration:line-through; color:#5A6B7C}
+  .o3 .strk{text-decoration:line-through; color:#5A6B7C}
+  .o3 .urg{margin-left:auto; font-size:.56rem; color:#E0726A; border:1px solid #E0726A; border-radius:3px; padding:0 5px; letter-spacing:.1em}
+  .o3 .cat{font-size:.56rem; letter-spacing:.2em; margin:8px 0 2px; font-family:'JetBrains Mono',monospace}
+  .o3 .arch{font-family:'JetBrains Mono',monospace; font-size:.62rem; color:#7C8DA0; margin-top:8px; border-top:1px solid #1B2836; padding-top:6px}
+  .o3 .mcg{display:grid; grid-template-columns:1fr 1fr; gap:0 22px; padding:10px 14px}
+  .o3 .nwrap{display:grid; grid-template-columns:170px 1fr; border:1px solid #1B2836; border-radius:8px; overflow:hidden; background:rgba(14,22,32,.6)}
+  .o3 .nfol{border-right:1px solid #1B2836; padding:10px}
+  .o3 .nfol div{font-family:'JetBrains Mono',monospace; font-size:.64rem; padding:6px 8px; color:#7C8DA0}
+  .o3 .nfol div.on{color:#5FD4C4; background:rgba(95,212,196,.08); border-left:2px solid #5FD4C4}
+  .o3 .nlist{padding:10px 14px}
+  .o3 .ncard{border-bottom:1px dotted #16222F; padding:7px 0}
+  .o3 .ncard .nt{font-family:'JetBrains Mono',monospace; font-size:.74rem; color:#EAF3FA}
+  .o3 .ncard .np{font-size:.72rem; color:#7C8DA0; margin-top:2px}
+  .o3 .cal{border:1px solid #1B2836; border-radius:8px; padding:12px 14px; max-width:340px; background:rgba(14,22,32,.6)}
+  .o3 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:.68rem}
+  .o3 .cg .h{color:#5FD4C4; font-size:.58rem}
+  .o3 .cd{padding:4px 0; color:#B9C6D4}
+  .o3 .cd.dim{color:#3A4756}
+  .o3 .cd.td{background:#5FD4C4; color:#080C12; font-weight:700; border-radius:4px}
+  .o3 .cd.ev{box-shadow:inset 0 -2px 0 #E8B14C}
+  @media(max-width:760px){ .o3 .stats{grid-template-columns:1fr 1fr} .o3 .daybox,.o3 .todos,.o3 .nwrap{grid-template-columns:1fr} .o3 .dayl,.o3 .nfol{border-right:none} }
+
+  /* ================= OPTION 4 — ATELIER EDITORIAL ================= */
+  .o4{background:#FBFAF7; color:#141210; font-family:'Inter',sans-serif; padding:0 0 30px}
+  .o4 .bar{display:flex; justify-content:space-between; align-items:baseline; padding:20px 30px 12px}
+  .o4 .bar .b{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.5rem}
+  .o4 .bar .r{font-size:.68rem; letter-spacing:.26em; text-transform:uppercase; color:#8A8578}
+  .o4 .hero{display:grid; grid-template-columns:auto 1fr; gap:28px; padding:10px 30px 0; align-items:end}
+  .o4 .hero .num{font-family:'Newsreader',serif; font-size:6.4rem; line-height:.85; letter-spacing:-.03em}
+  .o4 .hero .num small{display:block; font-family:'Inter',sans-serif; font-size:.64rem; letter-spacing:.3em; text-transform:uppercase; color:#8A8578; margin-bottom:10px}
+  .o4 .hero .side{border-left:1px solid #141210; padding-left:24px; padding-bottom:6px}
+  .o4 .hero .side h2{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.5rem; margin:0 0 4px}
+  .o4 .hero .side p{margin:0; font-size:.84rem; color:#6E6A5E; line-height:1.6; max-width:52ch}
+  .o4 .hero .side p b{color:#7A2E1D; font-weight:600}
+  .o4 .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; padding:24px 30px 0}
+  .o4 .stat{border-top:1px solid #141210; padding-top:10px}
+  .o4 .stat .l{font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; color:#8A8578}
+  .o4 .stat .v{font-family:'Newsreader',serif; font-size:1.6rem; margin-top:4px}
+  .o4 .stat .v i{font-style:italic; color:#7A2E1D}
+  .o4 .sh{font-size:.62rem; letter-spacing:.3em; text-transform:uppercase; color:#8A8578; margin:28px 30px 10px; text-align:center; display:flex; align-items:center; gap:16px}
+  .o4 .sh::before,.o4 .sh::after{content:""; flex:1; border-top:1px solid #E4E0D3}
+  .o4 .wk{padding:0 30px}
+  .o4 .wrow{display:flex; align-items:baseline; gap:16px; padding:9px 0; border-bottom:1px solid #E4E0D3; font-size:.86rem}
+  .o4 .wrow.today{border-bottom:2px solid #7A2E1D}
+  .o4 .wrow.today .d{color:#7A2E1D; font-weight:600}
+  .o4 .wrow .d{min-width:96px; font-size:.76rem; letter-spacing:.06em; text-transform:uppercase}
+  .o4 .it2{color:#3E3A30}
+  .o4 .it2 em{font-family:'Newsreader',serif; font-style:italic; color:#141210}
+  .o4 .day{display:grid; grid-template-columns:1fr 210px; gap:26px; padding:0 30px}
+  .o4 .daymain{}
+  .o4 .seclab{font-family:'Newsreader',serif; font-style:italic; font-size:1rem; color:#7A2E1D; margin:14px 0 4px}
+  .o4 .seclab:first-child{margin-top:0}
+  .o4 .drow{display:flex; gap:14px; align-items:baseline; font-size:.86rem; padding:5px 0; border-bottom:1px solid #EFEBE0}
+  .o4 .drow:last-child{border-bottom:none}
+  .o4 .tm{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#8A8578; min-width:48px}
+  .o4 .du{font-size:.68rem; color:#8A8578; margin-left:auto; font-family:'Newsreader',serif; font-style:italic}
+  .o4 .dwi{flex:1; border:none; border-bottom:1px solid #141210; background:transparent; font-family:'Newsreader',serif; font-style:italic; font-size:.94rem; color:#141210; padding:2px 0}
+  .o4 .dwi::placeholder{color:#B9B2A0}
+  .o4 .trk{border-left:1px solid #141210; padding-left:22px}
+  .o4 .trk .th{font-size:.6rem; letter-spacing:.26em; text-transform:uppercase; color:#8A8578; margin-bottom:8px}
+  .o4 .trow{display:flex; justify-content:space-between; font-size:.8rem; padding:5px 0; border-bottom:1px solid #EFEBE0}
+  .o4 .trow b{font-family:'Newsreader',serif; font-style:italic; font-weight:500; color:#7A2E1D}
+  .o4 .todos{display:grid; grid-template-columns:1fr 1fr; gap:26px; padding:0 30px}
+  .o4 .tcard h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.15rem; margin:0 0 8px}
+  .o4 .it{display:flex; gap:10px; align-items:center; font-size:.86rem; padding:6px 0; border-bottom:1px solid #EFEBE0}
+  .o4 .bx{width:11px; height:11px; border:1px solid #141210; border-radius:50%; flex:0 0 auto}
+  .o4 .bx.ck{background:#7A2E1D; border-color:#7A2E1D}
+  .o4 .it.done span,.o4 .strk{text-decoration:line-through; color:#A39D8C}
+  .o4 .urg{margin-left:auto; font-family:'Newsreader',serif; font-style:italic; font-size:.76rem; color:#7A2E1D}
+  .o4 .cat{font-size:.6rem; letter-spacing:.24em; text-transform:uppercase; color:#8A8578; margin:10px 0 2px}
+  .o4 .arch{font-family:'Newsreader',serif; font-style:italic; font-size:.8rem; color:#8A8578; margin-top:10px; border-top:1px solid #141210; padding-top:8px}
+  .o4 .mc{display:grid; grid-template-columns:1fr 1fr; gap:0 30px; padding:0 30px}
+  .o4 .notes{display:grid; grid-template-columns:190px 1fr; gap:26px; padding:0 30px}
+  .o4 .nfol div{font-size:.8rem; padding:6px 0; border-bottom:1px solid #EFEBE0; color:#6E6A5E}
+  .o4 .nfol div.on{color:#141210; font-weight:600; border-bottom:2px solid #7A2E1D}
+  .o4 .ncard{border-bottom:1px solid #E4E0D3; padding:9px 0}
+  .o4 .ncard .nt{font-family:'Newsreader',serif; font-size:1.02rem}
+  .o4 .ncard .np{font-size:.78rem; color:#6E6A5E; margin-top:2px}
+  .o4 .cal{padding:0 30px; max-width:380px; margin:0 auto}
+  .o4 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:.72rem}
+  .o4 .cg .h{font-family:'Inter',sans-serif; font-size:.58rem; letter-spacing:.2em; color:#8A8578}
+  .o4 .cd{padding:5px 0; color:#3E3A30}
+  .o4 .cd.dim{color:#C9C3B2}
+  .o4 .cd.td{border:1px solid #7A2E1D; border-radius:50%; color:#7A2E1D; font-weight:600}
+  .o4 .cd.ev{box-shadow:inset 0 -2px 0 #141210}
+  .o4 .foot{margin-top:26px; text-align:center; font-family:'Newsreader',serif; font-style:italic; color:#8A8578; font-size:.9rem}
+  @media(max-width:760px){ .o4 .hero{grid-template-columns:1fr} .o4 .stats{grid-template-columns:1fr 1fr} .o4 .day,.o4 .todos,.o4 .notes,.o4 .mc{grid-template-columns:1fr} .o4 .trk{border-left:none; padding-left:0} }
+
+  /* ================= OPTION 5 — AURORA GLASS ================= */
+  .o5{background:#0B0D1A; color:#EDEFF7; font-family:'Space Grotesk',sans-serif; padding:0 0 30px; position:relative; overflow:hidden}
+  .o5::before{content:""; position:absolute; width:560px; height:560px; border-radius:50%; top:-240px; right:-140px;
+    background:radial-gradient(closest-side, rgba(124,92,255,.32), transparent); filter:blur(10px)}
+  .o5::after{content:""; position:absolute; width:520px; height:520px; border-radius:50%; bottom:-240px; left:-140px;
+    background:radial-gradient(closest-side, rgba(45,212,191,.2), transparent); filter:blur(10px)}
+  .o5 .inner{position:relative; z-index:1}
+  .o5 .bar{display:flex; align-items:center; gap:12px; padding:16px 26px; flex-wrap:wrap}
+  .o5 .bar .b{font-weight:700; font-size:1.05rem}
+  .o5 .bar .b i{font-style:normal; background:linear-gradient(90deg,#9F7CFF,#2DD4BF); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .o5 .pillnav{margin-left:auto; display:flex; gap:4px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(12px); border-radius:24px; padding:4px}
+  .o5 .pillnav span{font-size:.72rem; font-weight:600; padding:5px 12px; border-radius:20px; color:#A9AFC7}
+  .o5 .pillnav span.on{background:rgba(159,124,255,.25); color:#fff}
+  .o5 .main{padding:12px 26px 0}
+  .o5 h2{font-size:1.65rem; font-weight:700; letter-spacing:-.02em; margin:0}
+  .o5 .dt{font-size:.8rem; color:#A9AFC7; margin:2px 0 16px}
+  .o5 .sh{font-size:.66rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#A9AFC7; margin:22px 0 8px}
+  .o5 .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .o5 .stat{background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(14px);
+    border-radius:16px; padding:14px 15px; box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  .o5 .stat .l{font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; color:#A9AFC7; margin-bottom:6px}
+  .o5 .stat .v{font-size:1.45rem; font-weight:700}
+  .o5 .stat .v.grad,.o5 .gradtx{background:linear-gradient(90deg,#9F7CFF,#2DD4BF); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  .o5 .bar2{height:6px; border-radius:4px; background:rgba(255,255,255,.09); margin-top:8px; overflow:hidden}
+  .o5 .bar2 i{display:block; height:100%; background:linear-gradient(90deg,#9F7CFF,#2DD4BF); border-radius:4px}
+  .o5 .glass{background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); backdrop-filter:blur(14px); border-radius:16px; padding:8px 16px}
+  .o5 .wrow{display:flex; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:.84rem; flex-wrap:wrap}
+  .o5 .wrow:last-child{border-bottom:none}
+  .o5 .wrow.today{margin:0 -16px; padding-left:16px; padding-right:16px; background:linear-gradient(90deg, rgba(159,124,255,.16), rgba(45,212,191,.08)); border-radius:12px; border-bottom-color:transparent}
+  .o5 .wrow .d{font-size:.72rem; color:#A9AFC7; min-width:88px; font-weight:600}
+  .o5 .chip{font-size:.68rem; font-weight:600; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.05); border-radius:14px; padding:2px 10px; color:#D9DCEC}
+  .o5 .chip.v{border-color:rgba(159,124,255,.5); color:#C9B8FF} .o5 .chip.t{border-color:rgba(45,212,191,.45); color:#8FF0E0}
+  .o5 .daybox{display:grid; grid-template-columns:1fr 210px; gap:12px}
+  .o5 .dayl,.o5 .dayr{background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); backdrop-filter:blur(14px); border-radius:16px; padding:12px 16px}
+  .o5 .seclab{font-size:.64rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#9F7CFF; margin:10px 0 4px}
+  .o5 .seclab:first-child{margin-top:0}
+  .o5 .drow{display:flex; gap:12px; align-items:baseline; font-size:.82rem; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.06)}
+  .o5 .drow:last-child{border-bottom:none}
+  .o5 .tm{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#A9AFC7; min-width:44px}
+  .o5 .du{font-size:.64rem; color:#7C84A3; margin-left:auto}
+  .o5 .dwi{flex:1; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:9px; font-family:'Space Grotesk',sans-serif; font-size:.78rem; color:#EDEFF7; padding:5px 9px}
+  .o5 .dwi::placeholder{color:#6B7292}
+  .o5 .trow{display:flex; justify-content:space-between; font-size:.76rem; padding:5px 0; color:#D9DCEC}
+  .o5 .trow b{font-weight:600; color:#8FF0E0}
+  .o5 .todos{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .o5 .tcol{padding:12px 16px}
+  .o5 .tcol h3{font-size:.86rem; font-weight:700; margin:0 0 8px}
+  .o5 .it{display:flex; gap:9px; align-items:center; font-size:.8rem; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.06)}
+  .o5 .bx{width:12px; height:12px; border:1px solid rgba(255,255,255,.35); border-radius:5px; flex:0 0 auto}
+  .o5 .bx.ck{background:linear-gradient(135deg,#9F7CFF,#2DD4BF); border-color:transparent}
+  .o5 .it.done span,.o5 .strk{text-decoration:line-through; color:#6B7292}
+  .o5 .urg{margin-left:auto; background:rgba(255,105,120,.2); border:1px solid rgba(255,105,120,.5); color:#FF9E9E; font-weight:700; font-size:.68rem; border-radius:10px; padding:0 7px}
+  .o5 .cat{font-size:.62rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin:9px 0 2px}
+  .o5 .arch{font-size:.72rem; color:#A9AFC7; margin-top:9px; border-top:1px solid rgba(255,255,255,.08); padding-top:7px}
+  .o5 .mcg{display:grid; grid-template-columns:1fr 1fr; gap:0 24px; padding:10px 16px}
+  .o5 .nwrap{display:grid; grid-template-columns:190px 1fr; gap:12px}
+  .o5 .nfol{padding:10px 12px}
+  .o5 .nfol div{font-size:.76rem; padding:7px 9px; border-radius:9px; color:#A9AFC7}
+  .o5 .nfol div.on{background:rgba(159,124,255,.18); color:#fff; font-weight:600}
+  .o5 .nlist{display:flex; flex-direction:column; gap:10px}
+  .o5 .ncard{padding:10px 14px}
+  .o5 .ncard .nt{font-size:.84rem; font-weight:600}
+  .o5 .ncard .np{font-size:.74rem; color:#A9AFC7; margin-top:2px}
+  .o5 .cal{padding:12px 14px; max-width:340px}
+  .o5 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:.68rem}
+  .o5 .cg .h{color:#9F7CFF; font-weight:600; font-size:.6rem}
+  .o5 .cd{padding:4px 0; color:#D9DCEC}
+  .o5 .cd.dim{color:#4A5170}
+  .o5 .cd.td{background:linear-gradient(135deg,#9F7CFF,#2DD4BF); color:#0B0D1A; font-weight:700; border-radius:6px}
+  .o5 .cd.ev{box-shadow:inset 0 -2px 0 #2DD4BF}
+  @media(max-width:760px){ .o5 .stats{grid-template-columns:1fr 1fr} .o5 .daybox,.o5 .todos,.o5 .nwrap{grid-template-columns:1fr} }
+
+  /* ============ OPTION 6 — LEDGER LAYOUT × ATELIER DESIGN ============ */
+  .o6{background:#FBFAF7; color:#141210; font-family:'Inter',sans-serif; padding:0 0 30px}
+  .o6 .mast{border-bottom:3px double #141210; padding:20px 28px 14px; display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px}
+  .o6 .mast .brand{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.7rem}
+  .o6 .mast .folio{font-size:.68rem; letter-spacing:.24em; text-transform:uppercase; color:#8A8578}
+  .o6 .mast .folio b{color:#7A2E1D; font-weight:600}
+  .o6 .greet{padding:20px 28px 2px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap}
+  .o6 .greet h2{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.65rem; margin:0}
+  .o6 .greet .dt{font-size:.74rem; letter-spacing:.16em; text-transform:uppercase; color:#8A8578}
+  .o6 .stats{display:grid; grid-template-columns:repeat(5,1fr); margin:16px 28px 0; border-top:1px solid #141210; border-bottom:1px solid #141210}
+  .o6 .stat{padding:13px 15px; border-right:1px solid #E4E0D3}
+  .o6 .stat:last-child{border-right:none}
+  .o6 .stat .l{font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:#8A8578; margin-bottom:5px}
+  .o6 .stat .v{font-family:'Newsreader',serif; font-size:1.4rem}
+  .o6 .stat .v em{font-style:italic; color:#7A2E1D}
+  .o6 .sh{font-size:.64rem; letter-spacing:.26em; text-transform:uppercase; color:#8A8578; margin:26px 28px 8px; display:flex; align-items:center; gap:12px}
+  .o6 .sh::after{content:""; flex:1; border-bottom:1px solid #141210}
+  .o6 .wk{margin:0 28px}
+  .o6 .wrow{display:flex; align-items:baseline; gap:14px; padding:9px 2px; border-bottom:1px solid #E4E0D3; flex-wrap:wrap}
+  .o6 .wrow.today{background:linear-gradient(90deg, rgba(122,46,29,.07), transparent 75%); border-bottom:2px solid #7A2E1D}
+  .o6 .wrow .d{font-family:'Newsreader',serif; font-size:.98rem; min-width:92px}
+  .o6 .wrow.today .d{color:#7A2E1D; font-weight:600}
+  .o6 .chip{font-size:.7rem; padding:2px 10px; border:1px solid #141210}
+  .o6 .chip.g{border-color:#7A2E1D; color:#7A2E1D} .o6 .chip.t{border-color:#8A8578; color:#57534A}
+  .o6 .day{margin:0 28px; border:1px solid #141210; display:grid; grid-template-columns:1fr 212px}
+  .o6 .daymain{padding:14px 18px; border-right:1px solid #E4E0D3}
+  .o6 .dayhead{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid #141210; padding-bottom:8px; margin-bottom:6px}
+  .o6 .dayhead .dn{font-family:'Newsreader',serif; font-size:1.3rem}
+  .o6 .dayhead .wx{font-size:.78rem; color:#8A8578}
+  .o6 .seclab{font-family:'Newsreader',serif; font-style:italic; font-size:.98rem; color:#7A2E1D; margin:12px 0 3px}
+  .o6 .drow{display:flex; gap:12px; padding:5px 0; align-items:baseline; font-size:.86rem; border-bottom:1px solid #EFEBE0}
+  .o6 .drow:last-child{border-bottom:none}
+  .o6 .tm{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#8A8578; min-width:92px}
+  .o6 .du{font-family:'Newsreader',serif; font-style:italic; font-size:.72rem; color:#7A2E1D; min-width:38px}
+  .o6 .dwi{flex:1; border:none; border-bottom:1px solid #141210; background:transparent; font-family:'Newsreader',serif; font-style:italic; font-size:.94rem; color:#141210; padding:2px 0}
+  .o6 .dwi::placeholder{color:#B9B2A0}
+  .o6 .trk{padding:14px 16px; background:rgba(122,46,29,.04)}
+  .o6 .trk .th{font-size:.6rem; letter-spacing:.24em; text-transform:uppercase; color:#8A8578; margin-bottom:8px}
+  .o6 .trow{display:flex; justify-content:space-between; font-size:.8rem; padding:4px 0; border-bottom:1px solid #EFEBE0}
+  .o6 .trow b{font-family:'Newsreader',serif; font-style:italic; font-weight:500; color:#7A2E1D}
+  .o6 .todos{display:grid; grid-template-columns:1fr 1fr; margin:0 28px; border:1px solid #141210}
+  .o6 .tcard{padding:14px 18px}
+  .o6 .tcard:first-child{border-right:1px solid #E4E0D3}
+  .o6 .tcard h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.1rem; margin:0 0 8px}
+  .o6 .it{display:flex; gap:10px; align-items:center; padding:5px 0; font-size:.85rem; border-bottom:1px solid #EFEBE0}
+  .o6 .bx{width:11px; height:11px; border:1px solid #141210; border-radius:50%; flex:0 0 auto}
+  .o6 .bx.ck{background:#7A2E1D; border-color:#7A2E1D}
+  .o6 .it.done span,.o6 .strk{text-decoration:line-through; color:#A39D8C}
+  .o6 .urg{margin-left:auto; font-family:'Newsreader',serif; font-style:italic; font-size:.78rem; color:#7A2E1D}
+  .o6 .cat{font-size:.6rem; letter-spacing:.22em; text-transform:uppercase; color:#8A8578; margin:9px 0 2px}
+  .o6 .arch{font-family:'Newsreader',serif; font-style:italic; font-size:.8rem; color:#8A8578; margin-top:9px; border-top:1px solid #E4E0D3; padding-top:7px}
+  .o6 .mc{margin:0 28px; border:1px solid #141210; padding:13px 18px; display:grid; grid-template-columns:1fr 1fr; gap:2px 26px}
+  .o6 .notes{margin:0 28px; border:1px solid #141210; display:grid; grid-template-columns:185px 1fr}
+  .o6 .nfol{border-right:1px solid #E4E0D3; padding:12px 14px}
+  .o6 .nfol div{font-size:.8rem; padding:5px 8px; color:#57534A; border-left:2px solid transparent}
+  .o6 .nfol div.on{border-left-color:#7A2E1D; background:rgba(122,46,29,.06); color:#141210; font-weight:600}
+  .o6 .nlist{padding:12px 16px}
+  .o6 .ncard{border-bottom:1px solid #E4E0D3; padding:8px 0}
+  .o6 .ncard .nt{font-family:'Newsreader',serif; font-size:1rem}
+  .o6 .ncard .np{font-size:.76rem; color:#8A8578; margin-top:2px}
+  .o6 .cal{margin:0 28px; border:1px solid #141210; padding:14px 18px; max-width:360px}
+  .o6 .cal h4{font-family:'Newsreader',serif; font-style:italic; font-weight:500; margin:0 0 8px; text-align:center}
+  .o6 .cg{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:.7rem}
+  .o6 .cg .h{color:#7A2E1D; font-size:.58rem; letter-spacing:.14em}
+  .o6 .cd{padding:4px 0; color:#141210}
+  .o6 .cd.dim{color:#C9C3B2}
+  .o6 .cd.td{background:#7A2E1D; color:#FBFAF7; font-weight:600}
+  .o6 .cd.ev{box-shadow:inset 0 -2px 0 #141210}
+  .o6 .foot{margin:24px 28px 0; padding-top:10px; border-top:3px double #141210; font-family:'Newsreader',serif; font-style:italic; font-size:.85rem; color:#8A8578; text-align:center; letter-spacing:.04em}
+  @media(max-width:760px){ .o6 .stats{grid-template-columns:1fr 1fr} .o6 .day,.o6 .todos,.o6 .notes{grid-template-columns:1fr} .o6 .tcard:first-child,.o6 .daymain,.o6 .nfol{border-right:none} }
+</style>
+</head>
+<body>
+<div class="shell">
+  <h1>Command Center — Design Directions</h1>
+  <p class="sub">Full-page mockups: header → glance → week → open day card → to-dos → constants → notes → calendar. Keys 1–5 switch tabs.</p>
+
+  <div class="tabs" id="tabs">
+    <button class="on" data-p="p1">1 · Executive Ledger</button>
+    <button data-p="p2">2 · Swiss International</button>
+    <button data-p="p3">3 · Mission Control</button>
+    <button data-p="p4">4 · Atelier Editorial</button>
+    <button data-p="p5">5 · Aurora Glass</button>
+    <button data-p="p6">6 · Ledger × Atelier</button>
+  </div>
+
+  <!-- ============ 1 · EXECUTIVE LEDGER ============ -->
+  <div class="pane on" id="p1">
+    <div class="frame"><div class="o1">
+      <div class="mast"><span class="brand">Command Center</span><span class="folio">Royal Oak, Mich. · Wednesday, July 15, 2026 · <b>✓ Synced</b></span></div>
+      <div class="greet"><h2>Good morning, Max</h2><span class="dt">Legs + Core · Gym 5:40 · Pickleball 5:00</span></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Weather</div><div class="v">☀️ 95°<em>/64°</em></div></div>
+        <div class="stat"><div class="l">Training</div><div class="v">Legs <em>+ Core</em></div></div>
+        <div class="stat"><div class="l">Constants</div><div class="v">6<em>/13</em></div></div>
+        <div class="stat"><div class="l">Water</div><div class="v">2<em>/4 qt</em></div></div>
+        <div class="stat"><div class="l">Urgent</div><div class="v"><em>2</em> open</div></div>
+      </div>
+
+      <div class="sh">This Week — July 12 · 18</div>
+      <div class="wk">
+        <div class="wrow"><span class="d">Tue 14</span><span class="chip g">Push + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Tennis</span></div>
+        <div class="wrow today"><span class="d">Wed 15</span><span class="chip g">Legs + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Pickleball 5–6:30</span></div>
+        <div class="wrow"><span class="d">Thu 16</span><span class="chip g">Pull + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Koloff</span></div>
+      </div>
+
+      <div class="sh">Daily Agenda — Today's Card</div>
+      <div class="day">
+        <div class="daymain">
+          <div class="dayhead"><span class="dn">Wednesday <span style="font-size:.8rem;color:#8C6A1D">Jul 15</span></span><span class="wx">☀️ 95°/64° · Clear</span></div>
+          <div class="seclab">Morning</div>
+          <div class="drow"><span class="tm">4:45–4:50a</span><span class="du">5m</span><span>Wake + make the bed</span></div>
+          <div class="drow"><span class="tm">4:50–5:00a</span><span class="du">10m</span><span>Meditate + today's concept</span></div>
+          <div class="seclab">Gym</div>
+          <div class="drow"><span class="tm">5:40–6:40a</span><span class="du">60m</span><span>Strength — <b>Legs</b> + Core</span></div>
+          <div class="seclab work">Work Day · 8–4</div>
+          <div class="drow"><span class="tm">8:00–9:30a</span><span class="du">90m</span><input class="dwi" value="Prominato portal build-out"></div>
+          <div class="drow"><span class="tm">9:40–11:10a</span><span class="du">90m</span><input class="dwi" placeholder="Deep work II — type your focus…"></div>
+          <div class="drow"><span class="tm">~11:10a</span><span class="du">💧</span><span>Water check-in № 2</span></div>
+          <div class="seclab eve">Evening</div>
+          <div class="drow"><span class="tm">5:00–6:30p</span><span class="du">90m</span><span>Pickleball — courts</span></div>
+          <div class="drow"><span class="tm">9:00p</span><span class="du">—</span><span>Lights out</span></div>
+        </div>
+        <aside class="trk">
+          <div class="th">On Track</div>
+          <div class="trow"><span>Water</span><b>2/4</b></div>
+          <div class="trow"><span>Push-ups</span><b>3/5</b></div>
+          <div class="trow"><span>Reading</span><b>15 min ✓</b></div>
+          <div class="th" style="margin-top:12px">Avoid</div>
+          <div class="trow"><span>Sugar</span><b>—</b></div>
+          <div class="trow"><span>Take-out</span><b>—</b></div>
+        </aside>
+      </div>
+
+      <div class="sh">To-Do Lists</div>
+      <div class="todos">
+        <div class="tcard">
+          <h3>Personal</h3>
+          <div class="it"><span class="bx"></span><span>Amazon Return</span><span class="urg">Urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Schedule Robert</span></div>
+          <div class="it done"><span class="bx ck"></span><span>Danielle Bday Gift</span></div>
+        </div>
+        <div class="tcard">
+          <h3>Professional</h3>
+          <div class="cat">Prominato</div>
+          <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">Urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
+          <div class="cat">Highmark</div>
+          <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
+          <div class="cat">AI Creation</div>
+          <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
+          <div class="arch">🗄 Archive — 4 completed · uncheck to restore</div>
+        </div>
+      </div>
+
+      <div class="sh">Monthly Constants — July · 2/7</div>
+      <div class="mc">
+        <div class="it"><span class="bx ck"></span><span style="text-decoration:line-through;color:#8A917F">Review budget & spending</span></div>
+        <div class="it"><span class="bx"></span><span>Benchmark workout / weigh-in</span></div>
+        <div class="it"><span class="bx ck"></span><span style="text-decoration:line-through;color:#8A917F">Schedule Maria</span></div>
+        <div class="it"><span class="bx"></span><span>Finish 1 book</span></div>
+      </div>
+
+      <div class="sh">Notes</div>
+      <div class="notes">
+        <div class="nfol">
+          <div class="on">General · 3</div><div>Prominato · 5</div><div>Highmark · 2</div><div>AI Creation · 4</div>
+        </div>
+        <div class="nlist">
+          <div class="ncard"><div class="nt">📌 Weekly review ritual</div><div class="np">Sunday 2p — score the week, set 3 focuses, clear inboxes…</div></div>
+          <div class="ncard"><div class="nt">Gift ideas — Dad in town</div><div class="np">Tigers game? Steakhouse on Woodward, cigar lounge…</div></div>
+        </div>
+      </div>
+
+      <div class="sh">Calendar — July</div>
+      <div class="cal">
+        <h4>July · 2026</h4>
+        <div class="cg">
+          <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+          <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+          <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+          <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+          <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+          <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+        </div>
+      </div>
+
+      <div class="foot">Command Center · Est. 2026 · Live Weather · Synced Across Devices</div>
+    </div></div>
+    <div class="spec">
+      <span><b>Fonts</b> Libre Caslon Display + Libre Franklin</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#F7F3E8"></i><i style="background:#1E2A22"></i><i style="background:#2E5641"></i><i style="background:#8C6A1D"></i><i style="background:#D8D0BC"></i></span> ivory · ink-green · forest · gold-leaf</span>
+      <span><b>Layout</b> broadsheet masthead, double rules, ledger columns — no cards, no shadows</span>
+    </div>
+  </div>
+
+  <!-- panes 2–5 injected below -->
+  <div class="pane" id="p2">
+    <div class="frame"><div class="o2">
+      <div class="bar"><span class="b">Command Center</span><span class="r">WED 15 JUL 2026 — 07:40 — SYNCED ●</span></div>
+      <div class="grid">
+        <nav class="rail">
+          <a class="on">Today</a><a>Week</a><a>Agenda</a><a>Calendar</a><a>To-Dos</a><a>Constants</a><a>Notes</a><a>Goals</a>
+        </nav>
+        <div class="main">
+          <h2>Wednesday.</h2>
+          <div class="dt">LEGS + CORE — GYM 05:40 — PICKLEBALL 17:00 — 95/64 CLEAR</div>
+          <div class="stats">
+            <div class="stat"><div class="l">Weather</div><div class="v">95/64</div></div>
+            <div class="stat"><div class="l">Water qt</div><div class="v">2/4</div></div>
+            <div class="stat"><div class="l">Constants</div><div class="v">6/13</div></div>
+            <div class="stat"><div class="l">Urgent</div><div class="v red">2</div></div>
+          </div>
+
+          <div class="sh">This week</div>
+          <div class="week">
+            <div class="wrow"><span class="d">TUE 14</span><span><span class="chip">PUSH</span><span class="chip">DEEP WORK</span><span class="chip">TENNIS</span></span></div>
+            <div class="wrow today"><span class="d">WED 15</span><span><span class="chip">LEGS</span><span class="chip">DEEP WORK</span><span class="chip red">PICKLEBALL</span></span></div>
+            <div class="wrow"><span class="d">THU 16</span><span><span class="chip">PULL</span><span class="chip">DEEP WORK</span><span class="chip">KOLOFF</span></span></div>
+          </div>
+
+          <div class="sh">Today's card</div>
+          <div class="daybox">
+            <div class="dayl">
+              <div class="seclab">MORNING</div>
+              <div class="drow"><span class="tm">04:45</span><span>Wake + make the bed</span><span class="du">5M</span></div>
+              <div class="drow"><span class="tm">04:50</span><span>Meditate + concept</span><span class="du">10M</span></div>
+              <div class="seclab">GYM</div>
+              <div class="drow"><span class="tm">05:40</span><span><b>LEGS + CORE</b> strength</span><span class="du">60M</span></div>
+              <div class="seclab">WORK 08–16</div>
+              <div class="drow"><span class="tm">08:00</span><input class="dwi" value="PROMINATO PORTAL BUILD-OUT"><span class="du">90M</span></div>
+              <div class="drow"><span class="tm">09:40</span><input class="dwi" placeholder="DEEP WORK II"><span class="du">90M</span></div>
+              <div class="drow"><span class="tm">11:10</span><span>WATER № 2</span><span class="du">—</span></div>
+              <div class="seclab">EVENING</div>
+              <div class="drow"><span class="tm">17:00</span><span>Pickleball — courts</span><span class="du">90M</span></div>
+              <div class="drow"><span class="tm">21:00</span><span>Lights out</span><span class="du">—</span></div>
+            </div>
+            <div class="dayr">
+              <div class="seclab">TRACK</div>
+              <div class="trow"><span>WATER</span><b>2/4</b></div>
+              <div class="trow"><span>PUSH-UPS</span><b>3/5</b></div>
+              <div class="trow"><span>READING</span><b>15′ ✓</b></div>
+              <div class="seclab" style="margin-top:12px">AVOID</div>
+              <div class="trow"><span>SUGAR</span><b>—</b></div>
+              <div class="trow"><span>TAKE-OUT</span><b>—</b></div>
+            </div>
+          </div>
+
+          <div class="sh">To-dos</div>
+          <div class="todos">
+            <div class="tcol">
+              <h3>PERSONAL</h3>
+              <div class="it"><span class="bx"></span><span>Amazon Return</span><span class="urg">!</span></div>
+              <div class="it"><span class="bx"></span><span>Schedule Robert</span></div>
+              <div class="it done"><span class="bx ck"></span><span>Danielle Bday Gift</span></div>
+            </div>
+            <div class="tcol">
+              <h3>PROFESSIONAL</h3>
+              <div class="cat">PROMINATO</div>
+              <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">!</span></div>
+              <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
+              <div class="cat">HIGHMARK</div>
+              <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
+              <div class="cat">AI CREATION</div>
+              <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
+              <div class="arch">ARCHIVE — 4 DONE</div>
+            </div>
+          </div>
+
+          <div class="sh">Monthly constants — 2/7</div>
+          <div class="mcg">
+            <div class="it"><span class="bx ck"></span><span class="strk">Review budget & spending</span></div>
+            <div class="it"><span class="bx"></span><span>Benchmark workout</span></div>
+            <div class="it"><span class="bx ck"></span><span class="strk">Schedule Maria</span></div>
+            <div class="it"><span class="bx"></span><span>Finish 1 book</span></div>
+          </div>
+
+          <div class="sh">Notes</div>
+          <div class="nwrap">
+            <div class="nfol"><div class="on">GENERAL 3</div><div>PROMINATO 5</div><div>HIGHMARK 2</div><div>AI 4</div></div>
+            <div class="nlist">
+              <div class="ncard"><div class="nt">📌 WEEKLY REVIEW RITUAL</div><div class="np">Sunday 2p — score the week, set 3 focuses, clear inboxes…</div></div>
+              <div class="ncard"><div class="nt">GIFT IDEAS — DAD IN TOWN</div><div class="np">Tigers game? Steakhouse on Woodward…</div></div>
+            </div>
+          </div>
+
+          <div class="sh">July</div>
+          <div class="cal">
+            <div class="cg">
+              <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+              <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+              <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+              <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+              <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+              <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="spec">
+      <span><b>Fonts</b> Inter Tight (800 display) + IBM Plex Mono</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#FFFFFF"></i><i style="background:#0A0A0A"></i><i style="background:#E33D26"></i><i style="background:#E3E3E3"></i></span> white · near-black · one signal red</span>
+      <span><b>Layout</b> fixed left rail, strict grid, hairline borders, zero radius/shadow, giant numerals</span>
+    </div>
+  </div>
+  <div class="pane" id="p3">
+    <div class="frame"><div class="o3">
+      <div class="bar"><span class="b">MAX//OPS</span>
+        <span class="st"><span><span class="dot g"></span>SYNCED</span><span><span class="dot a"></span>WX LIVE</span><span>07:40:22 EDT</span></span>
+      </div>
+      <div class="main">
+        <h2>WED 15 JUL — LEGS + CORE</h2>
+        <div class="dt">SUNRISE 06:07 · GYM T-MINUS 00:22 · PICKLEBALL 17:00 · 95°/64° CLR</div>
+        <div class="stats">
+          <div class="stat"><div class="l">Weather</div><div class="v">95° <span class="u">/64°</span></div></div>
+          <div class="stat"><div class="l">Hydration</div><div class="v">2<span class="u">/4 QT</span></div></div>
+          <div class="stat"><div class="l">Constants</div><div class="v">6<span class="u">/13</span></div></div>
+          <div class="stat warn"><div class="l">Urgent</div><div class="v">02</div></div>
+        </div>
+
+        <div class="sh">▸ WEEK GRID</div>
+        <div class="panel">
+          <div class="wrow"><span class="d">TUE 14</span><span class="chip g">PUSH+CORE</span><span class="chip">DEEP WORK ×5</span><span class="chip a">TENNIS</span></div>
+          <div class="wrow today"><span class="d">▶ WED 15</span><span class="chip g">LEGS+CORE</span><span class="chip">DEEP WORK ×5</span><span class="chip a">PICKLEBALL 1700</span></div>
+          <div class="wrow"><span class="d">THU 16</span><span class="chip g">PULL+CORE</span><span class="chip">DEEP WORK ×5</span><span class="chip a">KOLOFF</span></div>
+        </div>
+
+        <div class="sh">▸ TODAY — MISSION TIMELINE</div>
+        <div class="daybox">
+          <div class="dayl">
+            <div class="seclab">MORNING</div>
+            <div class="drow"><span class="tm">0445</span><span>WAKE + MAKE BED</span><span class="du">5M</span></div>
+            <div class="drow"><span class="tm">0450</span><span>MEDITATE + CONCEPT</span><span class="du">10M</span></div>
+            <div class="seclab">GYM</div>
+            <div class="drow"><span class="tm">0540</span><span>STRENGTH — <b style="color:#7BDF9E">LEGS+CORE</b></span><span class="du">60M</span></div>
+            <div class="seclab" style="color:#E8B14C">WORK 0800–1600</div>
+            <div class="drow"><span class="tm">0800</span><input class="dwi" value="PROMINATO PORTAL BUILD-OUT"><span class="du">90M</span></div>
+            <div class="drow"><span class="tm">0940</span><input class="dwi" placeholder="DEEP WORK II — SET FOCUS"><span class="du">90M</span></div>
+            <div class="drow"><span class="tm">1110</span><span style="color:#8FBBE0">💧 HYDRATION CHECK № 2</span><span class="du">—</span></div>
+            <div class="seclab">EVENING</div>
+            <div class="drow"><span class="tm">1700</span><span>PICKLEBALL — COURTS</span><span class="du">90M</span></div>
+            <div class="drow"><span class="tm">2100</span><span>LIGHTS OUT</span><span class="du">—</span></div>
+          </div>
+          <div class="dayr">
+            <div class="seclab">TELEMETRY</div>
+            <div class="trow"><span>WATER</span><b>2/4 ▓▓░░</b></div>
+            <div class="trow"><span>PUSH-UPS</span><b>3/5 ▓▓▓░</b></div>
+            <div class="trow"><span>READING</span><b>15′ ✓</b></div>
+            <div class="seclab" style="margin-top:12px; color:#E0726A">AVOID</div>
+            <div class="trow"><span>SUGAR</span><b>NIL</b></div>
+            <div class="trow"><span>TAKE-OUT</span><b>NIL</b></div>
+          </div>
+        </div>
+
+        <div class="sh">▸ TASK QUEUES</div>
+        <div class="todos">
+          <div class="tcol">
+            <h3><span class="dot g"></span>PERSONAL</h3>
+            <div class="it"><span class="bx"></span><span>AMAZON RETURN</span><span class="urg">URG</span></div>
+            <div class="it"><span class="bx"></span><span>SCHEDULE ROBERT</span></div>
+            <div class="it done"><span class="bx ck"></span><span>DANIELLE BDAY GIFT</span></div>
+          </div>
+          <div class="tcol">
+            <h3><span class="dot a"></span>PROFESSIONAL</h3>
+            <div class="cat" style="color:#E8B14C">PROMINATO</div>
+            <div class="it"><span class="bx"></span><span>FINISH PORTAL BUILD-OUT</span><span class="urg">URG</span></div>
+            <div class="it"><span class="bx"></span><span>PALM BEACH SHORTLIST</span></div>
+            <div class="cat" style="color:#9098D6">HIGHMARK</div>
+            <div class="it"><span class="bx"></span><span>Q3 PLANNING MEMO</span></div>
+            <div class="cat" style="color:#5FD4C4">AI CREATION</div>
+            <div class="it"><span class="bx"></span><span>COMMAND CENTER V2 SKIN</span></div>
+            <div class="arch">🗄 ARCHIVE — 04 COMPLETE</div>
+          </div>
+        </div>
+
+        <div class="sh">▸ MONTHLY CONSTANTS — 2/7</div>
+        <div class="panel mcg">
+          <div class="it"><span class="bx ck"></span><span class="strk">REVIEW BUDGET & SPENDING</span></div>
+          <div class="it"><span class="bx"></span><span>BENCHMARK WORKOUT</span></div>
+          <div class="it"><span class="bx ck"></span><span class="strk">SCHEDULE MARIA</span></div>
+          <div class="it"><span class="bx"></span><span>FINISH 1 BOOK</span></div>
+        </div>
+
+        <div class="sh">▸ NOTES — DATABANK</div>
+        <div class="nwrap">
+          <div class="nfol"><div class="on">GENERAL·3</div><div>PROMINATO·5</div><div>HIGHMARK·2</div><div>AI·4</div></div>
+          <div class="nlist">
+            <div class="ncard"><div class="nt">📌 WEEKLY REVIEW RITUAL</div><div class="np">SUN 1400 — score the week · set 3 focuses · clear inboxes</div></div>
+            <div class="ncard"><div class="nt">GIFT IDEAS — DAD IN TOWN</div><div class="np">Tigers game · steakhouse on Woodward · cigar lounge</div></div>
+          </div>
+        </div>
+
+        <div class="sh">▸ JUL 2026</div>
+        <div class="cal">
+          <div class="cg">
+            <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+            <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+            <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+            <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+            <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+            <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="spec">
+      <span><b>Fonts</b> JetBrains Mono (display) + Inter</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#080C12"></i><i style="background:#5FD4C4"></i><i style="background:#E8B14C"></i><i style="background:#57C97B"></i><i style="background:#8FBBE0"></i></span> void-navy · phosphor cyan · amber · status green</span>
+      <span><b>Layout</b> telemetry tiles with signal edges, status lights, grid overlay, dense ops rows</span>
+    </div>
+  </div>
+  <div class="pane" id="p4">
+    <div class="frame"><div class="o4">
+      <div class="bar"><span class="b">Command Center</span><span class="r">The Daily Edition · № 197</span></div>
+      <div class="hero">
+        <div class="num"><small>Wednesday · July</small>15</div>
+        <div class="side">
+          <h2>Good morning, Max</h2>
+          <p>Legs and core at dawn · 95°/64° and clear · pickleball at five ·
+          <b>two urgent items</b> before noon. The gallon is at two quarts; the portal awaits.</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="l">Weather</div><div class="v">95° <i>/ 64°</i></div></div>
+        <div class="stat"><div class="l">Training</div><div class="v">Legs <i>+ core</i></div></div>
+        <div class="stat"><div class="l">Water</div><div class="v">2 <i>of 4</i></div></div>
+        <div class="stat"><div class="l">Urgent</div><div class="v"><i>2 open</i></div></div>
+      </div>
+
+      <div class="sh">This Week</div>
+      <div class="wk">
+        <div class="wrow"><span class="d">Tue 14</span><span class="it2">Push + core · deep work · <em>tennis outside</em></span></div>
+        <div class="wrow today"><span class="d">Wed 15</span><span class="it2">Legs + core · deep work · <em>pickleball 5–6:30</em></span></div>
+        <div class="wrow"><span class="d">Thu 16</span><span class="it2">Pull + core · deep work · <em>Koloff session</em></span></div>
+      </div>
+
+      <div class="sh">Today, Composed</div>
+      <div class="day">
+        <div class="daymain">
+          <div class="seclab">Morning</div>
+          <div class="drow"><span class="tm">4:45</span><span>Wake + make the bed</span><span class="du">5′</span></div>
+          <div class="drow"><span class="tm">4:50</span><span>Meditate + today's concept</span><span class="du">10′</span></div>
+          <div class="seclab">Gym</div>
+          <div class="drow"><span class="tm">5:40</span><span>Strength — <em>legs + core</em></span><span class="du">60′</span></div>
+          <div class="seclab">The Work Day, 8–4</div>
+          <div class="drow"><span class="tm">8:00</span><input class="dwi" value="Prominato portal build-out"><span class="du">90′</span></div>
+          <div class="drow"><span class="tm">9:40</span><input class="dwi" placeholder="Deep work II — a single focus…"><span class="du">90′</span></div>
+          <div class="drow"><span class="tm">11:10</span><span>Water, the second quart</span><span class="du">—</span></div>
+          <div class="seclab">Evening</div>
+          <div class="drow"><span class="tm">5:00</span><span>Pickleball at the courts</span><span class="du">90′</span></div>
+          <div class="drow"><span class="tm">9:00</span><span>Lights out</span><span class="du">—</span></div>
+        </div>
+        <aside class="trk">
+          <div class="th">On Track</div>
+          <div class="trow"><span>Water</span><b>2 of 4</b></div>
+          <div class="trow"><span>Push-ups</span><b>3 of 5</b></div>
+          <div class="trow"><span>Reading</span><b>15′ ✓</b></div>
+          <div class="th" style="margin-top:14px">To Refuse</div>
+          <div class="trow"><span>Sugar</span><b>—</b></div>
+          <div class="trow"><span>Take-out</span><b>—</b></div>
+        </aside>
+      </div>
+
+      <div class="sh">The Lists</div>
+      <div class="todos">
+        <div class="tcard">
+          <h3>Personal</h3>
+          <div class="it"><span class="bx"></span><span>Amazon Return</span><span class="urg">urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Schedule Robert</span></div>
+          <div class="it done"><span class="bx ck"></span><span>Danielle Bday Gift</span></div>
+        </div>
+        <div class="tcard">
+          <h3>Professional</h3>
+          <div class="cat">Prominato</div>
+          <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
+          <div class="cat">Highmark</div>
+          <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
+          <div class="cat">AI Creation</div>
+          <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
+          <div class="arch">Archive — four completed, resting quietly</div>
+        </div>
+      </div>
+
+      <div class="sh">Monthly Constants — two of seven</div>
+      <div class="mc">
+        <div class="it"><span class="bx ck"></span><span class="strk">Review budget & spending</span></div>
+        <div class="it"><span class="bx"></span><span>Benchmark workout / weigh-in</span></div>
+        <div class="it"><span class="bx ck"></span><span class="strk">Schedule Maria</span></div>
+        <div class="it"><span class="bx"></span><span>Finish one book</span></div>
+      </div>
+
+      <div class="sh">Notebook</div>
+      <div class="notes">
+        <div class="nfol">
+          <div class="on">General — 3</div><div>Prominato — 5</div><div>Highmark — 2</div><div>AI Creation — 4</div>
+        </div>
+        <div class="nlist">
+          <div class="ncard"><div class="nt">📌 Weekly review ritual</div><div class="np">Sunday 2p — score the week, set three focuses, clear the inboxes…</div></div>
+          <div class="ncard"><div class="nt">Gift ideas — Dad in town</div><div class="np">Tigers game? The steakhouse on Woodward, the cigar lounge…</div></div>
+        </div>
+      </div>
+
+      <div class="sh">July</div>
+      <div class="cal">
+        <div class="cg">
+          <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+          <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+          <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+          <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+          <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+          <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+        </div>
+      </div>
+      <div class="foot">— fin —</div>
+    </div></div>
+    <div class="spec">
+      <span><b>Fonts</b> Newsreader italic (display) + Inter</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#FBFAF7"></i><i style="background:#141210"></i><i style="background:#7A2E1D"></i><i style="background:#E4E0D3"></i></span> gallery white · ink · oxblood</span>
+      <span><b>Layout</b> oversized day numeral, editorial sentence-summary, hairline columns, huge whitespace</span>
+    </div>
+  </div>
+  <div class="pane" id="p5">
+    <div class="frame"><div class="o5"><div class="inner">
+      <div class="bar"><span class="b">Command <i>Center</i></span>
+        <span class="pillnav"><span class="on">Today</span><span>Week</span><span>Agenda</span><span>To-Dos</span><span>Notes</span></span>
+      </div>
+      <div class="main">
+        <h2>Good morning, Max</h2>
+        <div class="dt">Wednesday, July 15 · ☀️ 95°/64° · Legs + Core day · ✓ synced</div>
+        <div class="stats">
+          <div class="stat"><div class="l">Weather</div><div class="v">95°/64°</div></div>
+          <div class="stat"><div class="l">Training</div><div class="v grad">Legs+Core</div></div>
+          <div class="stat"><div class="l">Water</div><div class="v">2/4</div><div class="bar2"><i style="width:50%"></i></div></div>
+          <div class="stat"><div class="l">Constants</div><div class="v">6/13</div><div class="bar2"><i style="width:46%"></i></div></div>
+        </div>
+
+        <div class="sh">This Week</div>
+        <div class="glass">
+          <div class="wrow"><span class="d">Tue 14</span><span class="chip v">Push + Core</span><span class="chip">Deep work</span><span class="chip t">Tennis</span></div>
+          <div class="wrow today"><span class="d">Wed 15</span><span class="chip v">Legs + Core</span><span class="chip">Deep work</span><span class="chip t">Pickleball 5p</span></div>
+          <div class="wrow"><span class="d">Thu 16</span><span class="chip v">Pull + Core</span><span class="chip">Deep work</span><span class="chip t">Koloff</span></div>
+        </div>
+
+        <div class="sh">Today</div>
+        <div class="daybox">
+          <div class="dayl">
+            <div class="seclab">Morning</div>
+            <div class="drow"><span class="tm">4:45</span><span>Wake + make the bed</span><span class="du">5m</span></div>
+            <div class="drow"><span class="tm">4:50</span><span>Meditate + today's concept</span><span class="du">10m</span></div>
+            <div class="seclab" style="color:#C9B8FF">Gym</div>
+            <div class="drow"><span class="tm">5:40</span><span>Strength — <b class="gradtx">Legs + Core</b></span><span class="du">60m</span></div>
+            <div class="seclab" style="color:#8FF0E0">Work · 8–4</div>
+            <div class="drow"><span class="tm">8:00</span><input class="dwi" value="Prominato portal build-out"><span class="du">90m</span></div>
+            <div class="drow"><span class="tm">9:40</span><input class="dwi" placeholder="Deep work 2 — type your focus…"><span class="du">90m</span></div>
+            <div class="drow"><span class="tm">11:10</span><span style="color:#8FF0E0">💧 Water check-in 2</span><span class="du">—</span></div>
+            <div class="seclab">Evening</div>
+            <div class="drow"><span class="tm">5:00</span><span>Pickleball — courts</span><span class="du">90m</span></div>
+            <div class="drow"><span class="tm">9:00</span><span>Lights out 🌙</span><span class="du">—</span></div>
+          </div>
+          <div class="dayr">
+            <div class="seclab">On track</div>
+            <div class="trow"><span>Water</span><b>2/4</b></div>
+            <div class="bar2"><i style="width:50%"></i></div>
+            <div class="trow"><span>Push-ups</span><b>3/5</b></div>
+            <div class="bar2"><i style="width:60%"></i></div>
+            <div class="trow"><span>Reading</span><b>15m ✓</b></div>
+            <div class="seclab" style="margin-top:12px; color:#FF9E9E">Avoid</div>
+            <div class="trow"><span>Sugar</span><b>—</b></div>
+            <div class="trow"><span>Take-out</span><b>—</b></div>
+          </div>
+        </div>
+
+        <div class="sh">To-Dos</div>
+        <div class="todos">
+          <div class="glass tcol">
+            <h3>✅ Personal</h3>
+            <div class="it"><span class="bx"></span><span>Amazon Return</span><span class="urg">!</span></div>
+            <div class="it"><span class="bx"></span><span>Schedule Robert</span></div>
+            <div class="it done"><span class="bx ck"></span><span>Danielle Bday Gift</span></div>
+          </div>
+          <div class="glass tcol">
+            <h3>💼 Professional</h3>
+            <div class="cat" style="color:#C9B8FF">● Prominato</div>
+            <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">!</span></div>
+            <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
+            <div class="cat" style="color:#9FB4FF">● Highmark</div>
+            <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
+            <div class="cat" style="color:#8FF0E0">● AI Creation</div>
+            <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
+            <div class="arch">🗄 Archive · 4 completed</div>
+          </div>
+        </div>
+
+        <div class="sh">Monthly Constants — 2/7</div>
+        <div class="glass mcg">
+          <div class="it"><span class="bx ck"></span><span class="strk">Review budget & spending</span></div>
+          <div class="it"><span class="bx"></span><span>Benchmark workout</span></div>
+          <div class="it"><span class="bx ck"></span><span class="strk">Schedule Maria</span></div>
+          <div class="it"><span class="bx"></span><span>Finish 1 book</span></div>
+        </div>
+
+        <div class="sh">Notes</div>
+        <div class="nwrap">
+          <div class="glass nfol"><div class="on">📁 General · 3</div><div>Prominato · 5</div><div>Highmark · 2</div><div>AI Creation · 4</div></div>
+          <div class="nlist">
+            <div class="glass ncard"><div class="nt">📌 Weekly review ritual</div><div class="np">Sunday 2p — score the week, set 3 focuses, clear inboxes…</div></div>
+            <div class="glass ncard"><div class="nt">Gift ideas — Dad in town</div><div class="np">Tigers game? Steakhouse on Woodward, cigar lounge…</div></div>
+          </div>
+        </div>
+
+        <div class="sh">July 2026</div>
+        <div class="glass cal">
+          <div class="cg">
+            <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+            <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+            <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+            <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+            <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+            <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+          </div>
+        </div>
+      </div>
+    </div></div></div>
+    <div class="spec">
+      <span><b>Fonts</b> Space Grotesk + Inter</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#0B0D1A"></i><i style="background:#9F7CFF"></i><i style="background:#2DD4BF"></i><i style="background:#EDEFF7"></i></span> deep space · violet aurora · teal glow</span>
+      <span><b>Layout</b> frosted-glass panels over aurora gradients, pill nav, gradient progress + accents</span>
+    </div>
+  </div>
+
+  <!-- ============ 6 · LEDGER LAYOUT × ATELIER DESIGN ============ -->
+  <div class="pane" id="p6">
+    <div class="frame"><div class="o6">
+      <div class="mast"><span class="brand">Command Center</span><span class="folio">Royal Oak, Mich. · Wednesday, July 15, 2026 · <b>✓ Synced</b></span></div>
+      <div class="greet"><h2>Good morning, Max</h2><span class="dt">Legs + Core · Gym 5:40 · Pickleball 5:00</span></div>
+      <div class="stats">
+        <div class="stat"><div class="l">Weather</div><div class="v">☀️ 95°<em>/64°</em></div></div>
+        <div class="stat"><div class="l">Training</div><div class="v">Legs <em>+ Core</em></div></div>
+        <div class="stat"><div class="l">Constants</div><div class="v">6<em>/13</em></div></div>
+        <div class="stat"><div class="l">Water</div><div class="v">2<em>/4 qt</em></div></div>
+        <div class="stat"><div class="l">Urgent</div><div class="v"><em>2</em> open</div></div>
+      </div>
+
+      <div class="sh">This Week — July 12 · 18</div>
+      <div class="wk">
+        <div class="wrow"><span class="d">Tue 14</span><span class="chip g">Push + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Tennis</span></div>
+        <div class="wrow today"><span class="d">Wed 15</span><span class="chip g">Legs + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Pickleball 5–6:30</span></div>
+        <div class="wrow"><span class="d">Thu 16</span><span class="chip g">Pull + Core</span><span class="chip">Deep work 8–4</span><span class="chip t">Koloff</span></div>
+      </div>
+
+      <div class="sh">Daily Agenda — Today's Card</div>
+      <div class="day">
+        <div class="daymain">
+          <div class="dayhead"><span class="dn">Wednesday <span style="font-size:.8rem;color:#7A2E1D">Jul 15</span></span><span class="wx">☀️ 95°/64° · Clear</span></div>
+          <div class="seclab">Morning</div>
+          <div class="drow"><span class="tm">4:45–4:50a</span><span class="du">5′</span><span>Wake + make the bed</span></div>
+          <div class="drow"><span class="tm">4:50–5:00a</span><span class="du">10′</span><span>Meditate + today's concept</span></div>
+          <div class="seclab">Gym</div>
+          <div class="drow"><span class="tm">5:40–6:40a</span><span class="du">60′</span><span>Strength — <em style="color:#7A2E1D">legs + core</em></span></div>
+          <div class="seclab">The Work Day · 8–4</div>
+          <div class="drow"><span class="tm">8:00–9:30a</span><span class="du">90′</span><input class="dwi" value="Prominato portal build-out"></div>
+          <div class="drow"><span class="tm">9:40–11:10a</span><span class="du">90′</span><input class="dwi" placeholder="Deep work II — a single focus…"></div>
+          <div class="drow"><span class="tm">~11:10a</span><span class="du">💧</span><span>Water, the second quart</span></div>
+          <div class="seclab">Evening</div>
+          <div class="drow"><span class="tm">5:00–6:30p</span><span class="du">90′</span><span>Pickleball at the courts</span></div>
+          <div class="drow"><span class="tm">9:00p</span><span class="du">—</span><span>Lights out</span></div>
+        </div>
+        <aside class="trk">
+          <div class="th">On Track</div>
+          <div class="trow"><span>Water</span><b>2 of 4</b></div>
+          <div class="trow"><span>Push-ups</span><b>3 of 5</b></div>
+          <div class="trow"><span>Reading</span><b>15′ ✓</b></div>
+          <div class="th" style="margin-top:12px">To Refuse</div>
+          <div class="trow"><span>Sugar</span><b>—</b></div>
+          <div class="trow"><span>Take-out</span><b>—</b></div>
+        </aside>
+      </div>
+
+      <div class="sh">The Lists</div>
+      <div class="todos">
+        <div class="tcard">
+          <h3>Personal</h3>
+          <div class="it"><span class="bx"></span><span>Amazon Return</span><span class="urg">urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Schedule Robert</span></div>
+          <div class="it done"><span class="bx ck"></span><span>Danielle Bday Gift</span></div>
+        </div>
+        <div class="tcard">
+          <h3>Professional</h3>
+          <div class="cat">Prominato</div>
+          <div class="it"><span class="bx"></span><span>Finish portal build-out</span><span class="urg">urgent</span></div>
+          <div class="it"><span class="bx"></span><span>Palm Beach shortlist</span></div>
+          <div class="cat">Highmark</div>
+          <div class="it"><span class="bx"></span><span>Q3 planning memo</span></div>
+          <div class="cat">AI Creation</div>
+          <div class="it"><span class="bx"></span><span>Command Center v2 skin</span></div>
+          <div class="arch">Archive — four completed, resting quietly</div>
+        </div>
+      </div>
+
+      <div class="sh">Monthly Constants — two of seven</div>
+      <div class="mc">
+        <div class="it"><span class="bx ck"></span><span class="strk">Review budget & spending</span></div>
+        <div class="it"><span class="bx"></span><span>Benchmark workout / weigh-in</span></div>
+        <div class="it"><span class="bx ck"></span><span class="strk">Schedule Maria</span></div>
+        <div class="it"><span class="bx"></span><span>Finish one book</span></div>
+      </div>
+
+      <div class="sh">Notebook</div>
+      <div class="notes">
+        <div class="nfol">
+          <div class="on">General — 3</div><div>Prominato — 5</div><div>Highmark — 2</div><div>AI Creation — 4</div>
+        </div>
+        <div class="nlist">
+          <div class="ncard"><div class="nt">📌 Weekly review ritual</div><div class="np">Sunday 2p — score the week, set three focuses, clear the inboxes…</div></div>
+          <div class="ncard"><div class="nt">Gift ideas — Dad in town</div><div class="np">Tigers game? The steakhouse on Woodward, the cigar lounge…</div></div>
+        </div>
+      </div>
+
+      <div class="sh">Calendar — July</div>
+      <div class="cal">
+        <h4>July · 2026</h4>
+        <div class="cg">
+          <span class="h">S</span><span class="h">M</span><span class="h">T</span><span class="h">W</span><span class="h">T</span><span class="h">F</span><span class="h">S</span>
+          <span class="cd dim">28</span><span class="cd dim">29</span><span class="cd dim">30</span><span class="cd ev">1</span><span class="cd ev">2</span><span class="cd ev">3</span><span class="cd ev">4</span>
+          <span class="cd ev">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd ev">11</span>
+          <span class="cd">12</span><span class="cd">13</span><span class="cd">14</span><span class="cd td">15</span><span class="cd">16</span><span class="cd ev">17</span><span class="cd ev">18</span>
+          <span class="cd">19</span><span class="cd ev">20</span><span class="cd ev">21</span><span class="cd ev">22</span><span class="cd ev">23</span><span class="cd">24</span><span class="cd">25</span>
+          <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span><span class="cd dim">1</span>
+        </div>
+      </div>
+
+      <div class="foot">Command Center · The Daily Edition · Synced Across Devices</div>
+    </div></div>
+    <div class="spec">
+      <span><b>Hybrid</b> Ledger layout (masthead, rules, framed columns) × Atelier design (palette, Newsreader italics)</span>
+      <span><b>Fonts</b> Newsreader (display + italic) + Inter</span>
+      <span><b>Palette</b> <span class="sw"><i style="background:#FBFAF7"></i><i style="background:#141210"></i><i style="background:#7A2E1D"></i><i style="background:#E4E0D3"></i></span> gallery white · ink · oxblood</span>
+    </div>
+  </div>
+
+  <p class="hintline">To pick: tell Claude <code>build option 1</code> … <code>build option 6</code> — or keep mixing, e.g. <code>option 6 but with the gold accents</code>.</p>
+</div>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('#tabs button'), panes=document.querySelectorAll('.pane');
+  function go(p){ tabs.forEach(function(b){b.classList.toggle('on', b.dataset.p===p);});
+    panes.forEach(function(x){x.classList.toggle('on', x.id===p);}); }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ go(b.dataset.p); }); });
+  document.addEventListener('keydown', function(e){ if(e.key>='1'&&e.key<='6') go('p'+e.key); });
+  var h=(location.hash||'').replace('#','');
+  if(/^p[1-6]$/.test(h)) go(h);
+})();
+</script>
+</body>
+</html>
