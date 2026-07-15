@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Max's Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{ color-scheme:light;
     --bg:#EEF2F7; --bg2:#E3EAF1; --card:#FFFFFF; --card-hover:#ECF1F7;
@@ -275,6 +275,124 @@
   .nmeta{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-muted); margin-top:6px;}
 
   footer{margin-top:30px; font-size:.78rem; color:var(--ink-muted); text-align:center;}
+
+  /* ================== SKIN · LEDGER (option 7) ================== */
+  body.skin-ledger{
+    --bg:#FBFAF7; --bg2:#F3EFE4; --card:#FBFAF7; --card-hover:#F3EFE4;
+    --ink:#1E2A22; --ink-muted:#5C6A5E;
+    --amber:#8C6A1D; --gold:#8C6A1D; --teal:#2E5641; --dusk:#566288;
+    --rain:#2E5641; --rose:#9C3D22; --gym:#8C6A1D; --urgent:#9C3D22;
+    --divider:#D8D0BC; --wknd:#F3EFE4; --wknd-bd:#D8D0BC; --wknd-hover:#EDE7D8;
+    --accent:#8C6A1D; --shadow:none;
+    background:#FBFAF7; background-image:none; color:#1E2A22;
+  }
+  body.skin-ledger .appbar{box-shadow:none; border-bottom:3px double var(--ink); background:var(--bg)}
+  body.skin-ledger .appbar .brand h1{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.3rem}
+  body.skin-ledger .datepill,body.skin-ledger .appbar select,body.skin-ledger .appbar .databtn>button,body.skin-ledger .syncpill{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
+  body.skin-ledger .menu{border-radius:0; border:1px solid var(--ink); box-shadow:none; background:var(--bg)}
+  body.skin-ledger .menu button{border-radius:0}
+  body.skin-ledger .quicknav{background:var(--bg)}
+  body.skin-ledger .quicknav button{border-radius:0; background:var(--bg); border:1px solid var(--divider); text-transform:uppercase; font-size:.68rem; letter-spacing:.12em}
+  body.skin-ledger .quicknav button:hover{border-color:var(--ink); color:var(--ink)}
+  body.skin-ledger #glance{background:var(--bg); border:1px solid var(--ink); border-radius:0; box-shadow:none}
+  body.skin-ledger #glance .gh .greet{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
+  body.skin-ledger .stat{background:var(--bg); border:1px solid var(--divider); border-radius:0; box-shadow:none}
+  body.skin-ledger .stat .val{font-family:'Newsreader',serif; font-weight:400}
+  body.skin-ledger .stat .lbl{letter-spacing:.18em}
+  body.skin-ledger .progress{border-radius:0; background:var(--bg2)}
+  body.skin-ledger details.drop{border:1px solid var(--ink); border-left:1px solid var(--ink); border-radius:0; box-shadow:none; background:var(--bg)}
+  body.skin-ledger details.drop>summary{font-family:'Newsreader',serif; font-style:italic; font-weight:500; background:var(--bg)}
+  body.skin-ledger .count{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
+  body.skin-ledger .secmove button,body.skin-ledger .phead button,body.skin-ledger .iconbtn{border-radius:0}
+  body.skin-ledger .phead .which{font-family:'Newsreader',serif; font-style:italic}
+  body.skin-ledger .dayline{border-radius:0}
+  body.skin-ledger .dayline.today{border:none; border-bottom:2px solid var(--gold); background:none}
+  body.skin-ledger .chip{border-radius:0}
+  body.skin-ledger details.evmgr{border-radius:0; background:var(--bg2)}
+  body.skin-ledger .month{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
+  body.skin-ledger .month.active{border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink)}
+  body.skin-ledger .month h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
+  body.skin-ledger .cell{border-radius:0}
+  body.skin-ledger .cell.today .dnum{background:var(--ink); color:var(--bg); border-radius:0}
+  body.skin-ledger .evbar{border-radius:0}
+  body.skin-ledger details.day{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
+  body.skin-ledger details.day.today{border:1px solid var(--gold)}
+  body.skin-ledger details.day[open]{border-color:var(--ink)}
+  body.skin-ledger .day-date{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
+  body.skin-ledger .sec-head{font-family:'Newsreader',serif; font-style:italic; font-weight:500; text-transform:none; letter-spacing:.02em; font-size:.98rem}
+  body.skin-ledger .section{border-left:none; padding-left:2px}
+  body.skin-ledger .day-track{background:var(--bg); border:1px solid var(--divider); border-radius:0}
+  body.skin-ledger input.dw{border:none; border-bottom:1px solid var(--ink); border-radius:0; background:transparent; font-family:'Newsreader',serif; font-style:italic; font-size:.95rem}
+  body.skin-ledger input.dw:focus{box-shadow:none; border-bottom-color:var(--gold)}
+  body.skin-ledger .plan-wrap,body.skin-ledger textarea.plan,body.skin-ledger .carried,body.skin-ledger .dt-num{border-radius:0}
+  body.skin-ledger .listcard{background:var(--bg); border:1px solid var(--ink); border-radius:0}
+  body.skin-ledger .listcard h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
+  body.skin-ledger .addrow input,body.skin-ledger .addrow select,body.skin-ledger .addrow button{border-radius:0}
+  body.skin-ledger .addrow button{background:var(--ink); color:var(--bg)}
+  body.skin-ledger .items li{border-radius:0; background:var(--bg)}
+  body.skin-ledger .wcat-h{letter-spacing:.16em}
+  body.skin-ledger details.warch{border-top:1px solid var(--divider)}
+  body.skin-ledger .nfolders,body.skin-ledger .nfolder,body.skin-ledger .ncard,body.skin-ledger #nEditor input.ntitle,body.skin-ledger #nEditor textarea,body.skin-ledger #nEditor select{border-radius:0}
+  body.skin-ledger .ncard{background:var(--bg); border:1px solid var(--divider)}
+  body.skin-ledger .ncard .nt,body.skin-ledger #nEditor input.ntitle{font-family:'Newsreader',serif; font-weight:500}
+  body.skin-ledger footer{font-family:'Newsreader',serif; font-style:italic; font-size:.85rem}
+
+  /* ================== SKIN · AURORA (option 5) ================== */
+  body.skin-aurora{
+    --bg:#0B0D1A; --bg2:#151830; --card:rgba(255,255,255,.055); --card-hover:rgba(255,255,255,.1);
+    --ink:#EDEFF7; --ink-muted:#A9AFC7;
+    --amber:#9F7CFF; --gold:#2DD4BF; --teal:#8FF0E0; --dusk:#9FB4FF;
+    --rain:#8FF0E0; --rose:#FF9E9E; --gym:#C9B8FF; --urgent:#FF7A88;
+    --divider:rgba(255,255,255,.13); --wknd:rgba(159,124,255,.07); --wknd-bd:rgba(159,124,255,.28); --wknd-hover:rgba(159,124,255,.12);
+    --accent:#9F7CFF; --shadow:0 10px 40px rgba(0,0,0,.5);
+    background:#0B0D1A; background-image:none; color:#EDEFF7;
+  }
+  body.skin-aurora::before{content:""; position:fixed; width:640px; height:640px; border-radius:50%; top:-260px; right:-160px; z-index:0;
+    background:radial-gradient(closest-side, rgba(124,92,255,.30), transparent); pointer-events:none}
+  body.skin-aurora::after{content:""; position:fixed; width:560px; height:560px; border-radius:50%; bottom:-260px; left:-160px; z-index:0;
+    background:radial-gradient(closest-side, rgba(45,212,191,.18), transparent); pointer-events:none}
+  body.skin-aurora .wrap,body.skin-aurora .quicknav{position:relative; z-index:1}
+  body.skin-aurora .appbar{background:rgba(15,17,34,.72); backdrop-filter:blur(14px); border-bottom:1px solid var(--divider); box-shadow:none}
+  body.skin-aurora .appbar .brand h1{font-family:'Space Grotesk',sans-serif; font-weight:700;
+    background:linear-gradient(90deg,#9F7CFF,#2DD4BF); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  body.skin-aurora .datepill,body.skin-aurora .appbar select,body.skin-aurora .appbar .databtn>button{background:rgba(255,255,255,.07); border:1px solid var(--divider); color:var(--ink)}
+  body.skin-aurora .menu{background:#151830; border:1px solid var(--divider)}
+  body.skin-aurora .quicknav{background:transparent}
+  body.skin-aurora .quicknav button{background:rgba(255,255,255,.06); border:1px solid var(--divider); backdrop-filter:blur(10px)}
+  body.skin-aurora .quicknav button:hover{border-color:#9F7CFF}
+  body.skin-aurora #glance{background:rgba(255,255,255,.05); border:1px solid var(--divider); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  body.skin-aurora #glance .gh .greet{font-family:'Space Grotesk',sans-serif; font-weight:700}
+  body.skin-aurora .stat{background:rgba(255,255,255,.055); border:1px solid var(--divider); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.08); border-radius:16px}
+  body.skin-aurora .stat .val{font-family:'Space Grotesk',sans-serif; font-weight:700}
+  body.skin-aurora .progress span{background:linear-gradient(90deg,#9F7CFF,#2DD4BF)}
+  body.skin-aurora details.drop{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-left:1px solid var(--divider); backdrop-filter:blur(14px); border-radius:16px; box-shadow:none}
+  body.skin-aurora details.drop>summary{font-family:'Space Grotesk',sans-serif; font-weight:600; background:transparent}
+  body.skin-aurora details.drop[open]>summary{border-bottom:1px solid var(--divider)}
+  body.skin-aurora .count{background:rgba(255,255,255,.08)}
+  body.skin-aurora .phead .which{font-family:'Space Grotesk',sans-serif; font-weight:600}
+  body.skin-aurora .dayline.today{background:linear-gradient(90deg, rgba(159,124,255,.18), rgba(45,212,191,.08)); border:none; border-radius:12px}
+  body.skin-aurora .chip{background:rgba(255,255,255,.05)}
+  body.skin-aurora details.evmgr{background:rgba(255,255,255,.04)}
+  body.skin-aurora .month{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-radius:14px}
+  body.skin-aurora .month.active{border-color:#9F7CFF; box-shadow:inset 0 0 0 1px #9F7CFF}
+  body.skin-aurora .month h3{font-family:'Space Grotesk',sans-serif; font-weight:600}
+  body.skin-aurora .cell.today .dnum{background:linear-gradient(135deg,#9F7CFF,#2DD4BF); color:#0B0D1A; border-radius:6px; font-weight:700}
+  body.skin-aurora details.day{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-radius:14px}
+  body.skin-aurora details.day.today{border-color:#9F7CFF}
+  body.skin-aurora details.day[open]{border-color:#9F7CFF}
+  body.skin-aurora .day-date{font-family:'Space Grotesk',sans-serif; font-weight:600}
+  body.skin-aurora .day-track{background:rgba(255,255,255,.05); border:1px solid var(--divider); border-radius:14px}
+  body.skin-aurora input.dw,body.skin-aurora textarea.plan,body.skin-aurora .dt-num{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:var(--ink)}
+  body.skin-aurora .listcard{background:rgba(255,255,255,.05); border:1px solid var(--divider); border-radius:16px}
+  body.skin-aurora .listcard h3{font-family:'Space Grotesk',sans-serif; font-weight:600}
+  body.skin-aurora .addrow input,body.skin-aurora .addrow select{background:rgba(255,255,255,.07); border:1px solid var(--divider); color:var(--ink)}
+  body.skin-aurora .addrow button{background:linear-gradient(90deg,#9F7CFF,#2DD4BF); color:#0B0D1A; font-weight:700}
+  body.skin-aurora .items li{background:rgba(255,255,255,.05)}
+  body.skin-aurora .txt.editing{background:rgba(255,255,255,.1)}
+  body.skin-aurora .ncard{background:rgba(255,255,255,.05); border:1px solid var(--divider)}
+  body.skin-aurora .ncard .nt,body.skin-aurora #nEditor input.ntitle{font-family:'Space Grotesk',sans-serif; font-weight:600}
+  body.skin-aurora #nEditor input.ntitle,body.skin-aurora #nEditor textarea,body.skin-aurora #nEditor select{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:var(--ink)}
+  body.skin-aurora .nfolder.active{background:rgba(159,124,255,.18); border-color:#9F7CFF}
 </style>
 </head>
 <body>
@@ -430,14 +548,17 @@ const TODAY_ISO=TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).padStart(2,"0
 function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"T00:00:00";}
 
 /* ===== themes ===== */
-const THEMES={
-  sky:{name:"Sky", vars:{'--bg':'#EEF2F7','--bg2':'#E3EAF1','--card':'#FFFFFF','--card-hover':'#ECF1F7','--ink':'#1F2A37','--ink-muted':'#64748B','--amber':'#4F7CAC','--gold':'#3E6E8E','--teal':'#3F8487','--dusk':'#5C6BA0','--rain':'#4F7CAC','--rose':'#9C6B5E','--gym':'#6B7C99','--urgent':'#C0504D','--divider':'#D6DFE8','--wknd':'#E5ECF5','--wknd-bd':'#CBD8E6','--wknd-hover':'#DCE6F1','--accent':'#3E6E8E'}},
-  slate:{name:"Slate", vars:{'--bg':'#F1F3F5','--bg2':'#E6E9ED','--card':'#FFFFFF','--card-hover':'#EDF0F3','--ink':'#222831','--ink-muted':'#677283','--amber':'#5E7186','--gold':'#4A5A6B','--teal':'#4C7A72','--dusk':'#5A6580','--rain':'#4F6A86','--rose':'#9C6B5E','--gym':'#6B7585','--urgent':'#BB4A45','--divider':'#D8DDE3','--wknd':'#E9ECF0','--wknd-bd':'#D0D6DD','--wknd-hover':'#E0E4E9','--accent':'#3F5A70'}},
-  paper:{name:"Warm Paper", vars:{'--bg':'#F6F1E7','--bg2':'#EDE5D6','--card':'#FFFDF8','--card-hover':'#F2EBDD','--ink':'#2B2519','--ink-muted':'#6E6353','--amber':'#9C7A3C','--gold':'#8A7330','--teal':'#5E7E5C','--dusk':'#6E6C8E','--rain':'#5A7494','--rose':'#A56450','--gym':'#7E7560','--urgent':'#B0563F','--divider':'#E0D6C2','--wknd':'#F1E9D6','--wknd-bd':'#DDCBA8','--wknd-hover':'#EBE2CC','--accent':'#8A6D3B'}},
-  midnight:{name:"Midnight", vars:{'--bg':'#121821','--bg2':'#0B1016','--card':'#212D3A','--card-hover':'#2B3947','--ink':'#F4EFE6','--ink-muted':'#9FB0BE','--amber':'#7FA9D4','--gold':'#6E9BC0','--teal':'#74BBA0','--dusk':'#9098D6','--rain':'#8FB7E0','--rose':'#C98F7E','--gym':'#8794AC','--urgent':'#E0726A','--divider':'#3C4A59','--wknd':'#293650','--wknd-bd':'#3F5170','--wknd-hover':'#31415F','--accent':'#6E9BC0'}}
-};
-function applyTheme(key,fromUser){const th=THEMES[key]||THEMES.sky; Object.entries(th.vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v)); localStorage.setItem('cc_theme',key); if(fromUser&&typeof SYNC!=='undefined')SYNC.queue('cc_theme',key); const s=document.getElementById('themeSelect'); if(s)s.value=key;}
-function renderThemeSelect(){const s=document.getElementById('themeSelect'); s.innerHTML=Object.entries(THEMES).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
+const SKINS={ledger:{name:"📒 Ledger"},aurora:{name:"✨ Aurora"}};
+function normSkin(v){return SKINS[v]?v:"ledger";}
+function applyTheme(key,fromUser){key=normSkin(key);
+  document.body.classList.remove("skin-ledger","skin-aurora");
+  document.body.classList.add("skin-"+key);
+  if(fromUser){localStorage.setItem("cc_theme",key); if(typeof SYNC!=="undefined")SYNC.queue("cc_theme",key);}
+  const s=document.getElementById("themeSelect"); if(s)s.value=key;
+  ["--bg","--bg2","--card","--card-hover","--ink","--ink-muted","--amber","--gold","--teal","--dusk","--rain","--rose","--gym","--urgent","--divider","--wknd","--wknd-bd","--wknd-hover","--accent"]
+    .forEach(p=>document.documentElement.style.removeProperty(p));   // clear inline vars from the old theme system
+}
+function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.innerHTML=Object.entries(SKINS).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
 
 /* ===== cloud sync — Phase 2 (Apps Script data API) =====
    localStorage stays the instant cache; the backend Google Sheet is the
@@ -973,7 +1094,7 @@ wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
 renderGlance();
-applyTheme(localStorage.getItem('cc_theme')||'sky');
+applyTheme(normSkin(localStorage.getItem('cc_theme')));
 SYNC.start();
 </script>
 </body>
