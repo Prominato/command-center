@@ -77,7 +77,7 @@
   #days{overflow-y:auto;}
   #evList{max-height:200px; overflow-y:auto; margin-top:6px;}
   #weekBody{overflow-y:auto;}
-  ul.items{max-height:380px; overflow-y:auto;}
+  .items{max-height:380px; overflow-y:auto;}
   .hint{color:var(--ink-muted); font-size:.82rem; margin:0 0 12px;}
 
   /* events box */
@@ -217,16 +217,16 @@
   .addrow button#evPickBtn.active{background:var(--teal); color:#fff; border-color:var(--teal);}
   .addrow .fld{display:flex; align-items:center; gap:5px; font-size:.74rem; color:var(--ink-muted); flex:0 0 auto;}
   .addrow .fld input{flex:0 0 auto;}
-  ul.items{list-style:none; margin:0; padding:0;}
-  ul.items li{display:flex; align-items:center; gap:9px; padding:8px 6px; border-bottom:1px solid var(--divider); border-radius:8px; background:var(--card);}
-  ul.items li{margin-bottom:5px;}
-  ul.items li.dragover{background:rgba(63,132,135,.15); box-shadow:inset 0 2px 0 var(--teal);}
-  ul.items li.urgent{box-shadow:inset 3px 0 0 var(--urgent);}
+  .items{list-style:none; margin:0; padding:0;}
+  .items li{display:flex; align-items:center; gap:9px; padding:8px 6px; border-bottom:1px solid var(--divider); border-radius:8px; background:var(--card);}
+  .items li{margin-bottom:5px;}
+  .items li.dragover{background:rgba(63,132,135,.15); box-shadow:inset 0 2px 0 var(--teal);}
+  .items li.urgent{box-shadow:inset 3px 0 0 var(--urgent);}
   .grip{cursor:grab; color:var(--ink-muted); font-size:.95rem; flex:0 0 auto; user-select:none;}
   .grip:active{cursor:grabbing;}
-  ul.items li input[type=checkbox]{width:16px; height:16px; accent-color:var(--teal); cursor:pointer; flex:0 0 auto;}
-  ul.items .txt{flex:1 1 auto; font-size:.88rem; padding:2px 3px; border-radius:5px;}
-  ul.items .txt.editing{background:var(--card); outline:1px solid var(--teal);}
+  .items li input[type=checkbox]{width:16px; height:16px; accent-color:var(--teal); cursor:pointer; flex:0 0 auto;}
+  .items .txt{flex:1 1 auto; font-size:.88rem; padding:2px 3px; border-radius:5px;}
+  .items .txt.editing{background:var(--card); outline:1px solid var(--teal);}
   li.done .txt{color:var(--ink-muted); text-decoration:line-through;}
   .iconbtn{background:none; border:1px solid var(--divider); color:var(--ink-muted); cursor:pointer; border-radius:7px; padding:2px 7px; font-size:.82rem; flex:0 0 auto;}
   .iconbtn:hover{color:var(--ink); border-color:var(--ink-muted);}
@@ -237,6 +237,41 @@
   .evrow:last-child{border-bottom:none;}
   .evdot{width:11px; height:11px; border-radius:3px; flex:0 0 auto;}
   .evrow .evname{flex:1 1 auto;} .evrow .evdate{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace; font-size:.74rem; color:var(--ink-muted);}
+  /* professional to-do: categories + archive */
+  .wcat{margin-bottom:10px;}
+  .wcat-h{display:flex; align-items:center; gap:7px; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin:2px 0 6px; border-radius:6px; padding:2px 4px;}
+  .wcat-h.dragover{background:rgba(63,132,135,.15);}
+  .wdot{width:9px; height:9px; border-radius:3px; display:inline-block; flex:0 0 auto;}
+  .wcount{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-muted); font-weight:500;}
+  details.warch{margin-top:8px; border-top:1px dashed var(--divider); padding-top:8px;}
+  details.warch>summary{list-style:none; cursor:pointer; font-size:.78rem; font-weight:600; color:var(--ink-muted);}
+  details.warch>summary::-webkit-details-marker{display:none;}
+  details.warch li{opacity:.75; margin-top:5px;}
+  .wwhen{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-muted); flex:0 0 auto;}
+  .addrow select{background:var(--card); border:1px solid var(--divider); color:var(--ink); border-radius:8px; font-size:.82rem; padding:8px 9px; cursor:pointer; font-family:inherit;}
+
+  /* notes */
+  .notes-wrap{display:grid; grid-template-columns:230px 1fr; gap:16px; align-items:start;}
+  @media(max-width:820px){.notes-wrap{grid-template-columns:1fr;}}
+  .nfolders{background:var(--bg2); border:1px solid var(--divider); border-radius:11px; padding:12px;}
+  .nfolder{display:flex; align-items:center; gap:6px; width:100%; text-align:left; background:none; border:1px solid transparent; color:var(--ink); font-size:.86rem; padding:7px 9px; border-radius:8px; cursor:pointer; font-family:inherit; margin-bottom:2px;}
+  .nfolder:hover{background:var(--card-hover);}
+  .nfolder.active{background:var(--card); border-color:var(--accent); font-weight:600;}
+  .nfolder .fname{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ncard{background:var(--card); border:1px solid var(--divider); border-radius:10px; padding:10px 12px; margin-bottom:8px; cursor:pointer;}
+  .ncard:hover{border-color:var(--accent);}
+  .ncard .nt{font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .ncard .np{font-size:.78rem; color:var(--ink-muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ncard .nm{font-family:'IBM Plex Mono',monospace; font-size:.66rem; color:var(--ink-muted); margin-top:4px;}
+  .nfoldertag{font-size:.64rem; border:1px solid var(--divider); border-radius:10px; padding:0 6px; color:var(--ink-muted); font-weight:500;}
+  #nEditor input.ntitle{width:100%; background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; padding:8px 11px; border-radius:9px; margin-bottom:8px;}
+  #nEditor textarea{width:100%; min-height:220px; resize:vertical; background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-family:'Inter',sans-serif; font-size:.9rem; line-height:1.55; padding:11px 12px; border-radius:9px;}
+  #nEditor input.ntitle:focus,#nEditor textarea:focus{outline:none; border-color:var(--accent);}
+  #nEditor select{background:var(--bg2); border:1px solid var(--divider); color:var(--ink); border-radius:8px; font-size:.8rem; padding:5px 8px; font-family:inherit;}
+  .nbar{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .nbar .spacer{flex:1;}
+  .nmeta{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-muted); margin-top:6px;}
+
   footer{margin-top:30px; font-size:.78rem; color:var(--ink-muted); text-align:center;}
 </style>
 </head>
@@ -321,9 +356,9 @@
           <ul class="items" id="todoList"></ul>
         </div>
         <div class="listcard">
-          <h3>💼 Professional To-Do</h3><div class="lh">Work &amp; business tasks</div>
-          <div class="addrow"><input id="workInput" placeholder="Add a work to-do…" onkeydown="if(event.key==='Enter')addItem('work')"><button onclick="addItem('work')">Add</button></div>
-          <ul class="items" id="workList"></ul>
+          <h3>💼 Professional To-Do</h3><div class="lh">Work &amp; business — completed tasks move to the archive below</div>
+          <div class="addrow"><input id="workInput" placeholder="Add a work to-do…" onkeydown="if(event.key==='Enter')addItem('work')"><select id="workCat"><option value="prominato">Prominato</option><option value="highmark">Highmark</option><option value="ai">AI Creation</option></select><button onclick="addItem('work')">Add</button></div>
+          <div class="items" id="workList"></div>
         </div>
       </div>
     </div>
@@ -336,6 +371,23 @@
         <h3>🔁 Monthly Constants</h3><div class="lh">Recurring each month — checkmarks reset monthly · drag ⠿, edit ✎, ! for urgent</div>
         <div class="addrow"><input id="mcInput" placeholder="Add a monthly constant…" onkeydown="if(event.key==='Enter')mcAdd()"><button onclick="mcAdd()">Add</button></div>
         <ul class="items" id="mcList"></ul>
+      </div>
+    </div>
+  </details>
+
+  <details class="drop" data-sec="notes" open>
+    <summary><span class="arrow">▸</span> 📝 Notes<span class="secmove"><button onclick="moveSection(event,'notes',-1)" title="Move up">▲</button><button onclick="moveSection(event,'notes',1)" title="Move down">▼</button></span></summary>
+    <div class="drop-body">
+      <div class="notes-wrap">
+        <aside class="nfolders">
+          <div class="addrow" style="margin-bottom:8px"><input id="nfName" placeholder="New folder…" onkeydown="if(event.key==='Enter')nfAdd()"><button onclick="nfAdd()">Add</button></div>
+          <div id="nfList"></div>
+        </aside>
+        <div class="nmain">
+          <div class="addrow"><input id="nSearch" placeholder="🔎 Search all notes…" oninput="nRender()"><button onclick="nNew()">＋ New note</button></div>
+          <div id="nList"></div>
+          <div id="nEditor" style="display:none"></div>
+        </div>
       </div>
     </div>
   </details>
@@ -648,9 +700,11 @@ function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{
   localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
 function lsave(){const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
-  LISTS[w].push({id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false}); inp.value=""; lsave(); renderList(w);}
+  const item={id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false};
+  if(w==='work'){const s=document.getElementById('workCat'); item.cat=(s&&s.value)||'prominato';}
+  LISTS[w].push(item); inp.value=""; lsave(); renderList(w);}
 function toggleUrgent(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.urgent=!it.urgent; lsave(); renderList(w);}}
-function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done; lsave(); renderList(w);}}
+function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done; if(w==='work'){it.archivedAt=it.done?Date.now():null;} lsave(); renderList(w);}}
 function delItem(w,id){LISTS[w]=LISTS[w].filter(x=>x.id!==id); lsave(); renderList(w);}
 function startEdit(w,id){const sp=document.querySelector(`span[data-edit="${w}::${id}"]`); if(!sp)return; sp.contentEditable="true"; sp.classList.add('editing'); sp.focus();
   const r=document.createRange(); r.selectNodeContents(sp); const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
@@ -661,8 +715,33 @@ function onDragStart(w,id,e){dragCtx={w,id}; e.dataTransfer.effectAllowed='move'
 function onDragOver(li,e){e.preventDefault(); li.classList.add('dragover');}
 function onDragLeave(li){li.classList.remove('dragover');}
 function onDrop(w,id,e){e.preventDefault(); document.querySelectorAll('li.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!==w){dragCtx=null;return;}
-  const arr=LISTS[w], from=arr.findIndex(x=>x.id===dragCtx.id), to=arr.findIndex(x=>x.id===id); dragCtx=null; if(from<0||to<0||from===to)return; const[m]=arr.splice(from,1); arr.splice(to,0,m); lsave(); renderList(w);}
-function renderList(w){const ul=document.getElementById(w+'List'); const arr=LISTS[w];
+  const arr=LISTS[w], from=arr.findIndex(x=>x.id===dragCtx.id), to=arr.findIndex(x=>x.id===id); dragCtx=null; if(from<0||to<0||from===to)return; const tgt=arr[to]; const[m]=arr.splice(from,1); arr.splice(to,0,m); if(w==='work'&&tgt)m.cat=tgt.cat; lsave(); renderList(w);}
+/* ===== professional to-do: categories + archive ===== */
+const WORKCATS=[['prominato','Prominato','var(--gold)'],['highmark','Highmark','var(--dusk)'],['ai','AI Creation','var(--teal)']];
+function workRow(it){return `<li class="${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('work','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('work','${it.id}',event)">
+    <span class="grip" title="Drag to reorder or between categories">⠿</span>
+    <input type="checkbox" onchange="toggleDone('work','${it.id}')">
+    <span class="txt" data-edit="work::${it.id}">${escHtml(it.text)}</span>
+    <button class="iconbtn" title="Edit" onclick="startEdit('work','${it.id}')">✎</button>
+    <button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('work','${it.id}')">!</button>
+    <button class="iconbtn del" title="Delete" onclick="delItem('work','${it.id}')">✕</button>
+  </li>`;}
+function onDropCat(cat,e){e.preventDefault(); document.querySelectorAll('.wcat-h.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!=='work')return; const it=LISTS.work.find(x=>x.id===dragCtx.id); dragCtx=null; if(it){it.cat=cat; lsave(); renderWork();}}
+function renderWork(){const host=document.getElementById('workList'); const arr=LISTS.work;
+  const active=arr.filter(x=>!x.done), archived=arr.filter(x=>x.done).sort((a,b)=>(b.archivedAt||0)-(a.archivedAt||0));
+  const known=WORKCATS.map(c=>c[0]); let html='';
+  WORKCATS.forEach(c=>{const items=active.filter(x=>x.cat===c[0]);
+    html+=`<div class="wcat"><div class="wcat-h" style="color:${c[2]}" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="onDropCat('${c[0]}',event)"><span class="wdot" style="background:${c[2]}"></span>${c[1]} <span class="wcount">${items.length}</span></div>`;
+    html+=items.length? items.map(workRow).join('') : '<div class="empty" style="padding:1px 0 6px">—</div>';
+    html+='</div>';});
+  const stray=active.filter(x=>known.indexOf(x.cat)<0);
+  if(stray.length){html+=`<div class="wcat"><div class="wcat-h"><span class="wdot" style="background:var(--ink-muted)"></span>General <span class="wcount">${stray.length}</span></div>`+stray.map(workRow).join('')+'</div>';}
+  if(archived.length){html+=`<details class="warch"><summary>🗄️ Archive <span class="wcount">${archived.length}</span> — uncheck to restore</summary>`+
+    archived.map(it=>`<li class="done"><input type="checkbox" checked onchange="toggleDone('work','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${it.archivedAt?new Date(it.archivedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete forever" onclick="delItem('work','${it.id}')">✕</button></li>`).join('')+'</details>';}
+  host.innerHTML=html;
+  updateCounts(); renderGlance();}
+
+function renderList(w){ if(w==='work'){renderWork(); return;} const ul=document.getElementById(w+'List'); const arr=LISTS[w];
   if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>'; updateCounts(); renderGlance(); return;}
   const showBang=(w!=='dconst');
   ul.innerHTML=arr.map(it=>`<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
@@ -710,6 +789,61 @@ function renderMC(){const ul=document.getElementById('mcList'),mk=mcMonthKey(),s
   </li>`).join("");
   updateCounts();}
 
+/* ===== notes (folders · search · pin · autosave · synced) ===== */
+const NF_DEFAULT=[{id:'nf1',name:'📁 General'},{id:'nf2',name:'Prominato'},{id:'nf3',name:'Highmark'},{id:'nf4',name:'AI Creation'}];
+let NFOLDERS=[], NACTIVE=null, NOPEN=null;
+function nfLoad(){try{NFOLDERS=JSON.parse(localStorage.getItem('cc_notefolders'))||null;}catch(e){NFOLDERS=null;}
+  if(!NFOLDERS||!NFOLDERS.length){NFOLDERS=NF_DEFAULT.slice(); localStorage.setItem('cc_notefolders',JSON.stringify(NFOLDERS));} // local persist only at boot — cloud wins on pull
+  if(!NACTIVE||!NFOLDERS.some(f=>f.id===NACTIVE))NACTIVE=NFOLDERS[0].id;}
+function nfSave(){const v=JSON.stringify(NFOLDERS); localStorage.setItem('cc_notefolders',v); SYNC.queue('cc_notefolders',v);}
+function nAll(){const out=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(k.indexOf('note::')!==0)continue; try{const n=JSON.parse(localStorage.getItem(k)); if(n&&n.id&&!n.del)out.push(n);}catch(e){}} return out;}
+function nSaveNote(n){n.updated=Date.now(); const v=JSON.stringify(n); localStorage.setItem('note::'+n.id,v); SYNC.queue('note::'+n.id,v);}
+function nfAdd(){const inp=document.getElementById('nfName'),v=inp.value.trim(); if(!v)return; const f={id:'nf'+Date.now(),name:v}; NFOLDERS.push(f); inp.value=''; nfSave(); NACTIVE=f.id; NOPEN=null; nRender();}
+function nfDel(id){if(nAll().some(n=>n.folder===id)){alert('This folder still has notes — move or delete them first.');return;} if(NFOLDERS.length<=1){alert('Keep at least one folder.');return;} if(!confirm('Delete this folder?'))return; NFOLDERS=NFOLDERS.filter(f=>f.id!==id); if(NACTIVE===id)NACTIVE=NFOLDERS[0].id; nfSave(); nRender();}
+function nfRename(id){const f=NFOLDERS.find(x=>x.id===id); if(!f)return; const v=prompt('Folder name:',f.name); if(v&&v.trim()){f.name=v.trim(); nfSave(); nRender();}}
+function nfPick(id){NACTIVE=id; NOPEN=null; const s=document.getElementById('nSearch'); if(s)s.value=''; nRender();}
+function nNew(){const n={id:String(Date.now())+Math.floor(Math.random()*1000), folder:NACTIVE, title:'', body:'', pinned:false, created:Date.now(), updated:Date.now()};
+  nSaveNote(n); NOPEN=n.id; nRender(); setTimeout(function(){const t=document.querySelector('#nEditor .ntitle'); if(t)t.focus();},60);}
+function nDel(id){if(!confirm('Delete this note?'))return; const v=JSON.stringify({id:id,del:1,updated:Date.now()}); localStorage.setItem('note::'+id,v); SYNC.queue('note::'+id,v); NOPEN=null; nRender();}
+function nPin(id){const n=nAll().find(x=>x.id===id); if(!n)return; n.pinned=!n.pinned; nSaveNote(n); nRender();}
+function nOpen(id){NOPEN=id; nRender();}
+function nBack(){NOPEN=null; nRender();}
+function nMeta(n){const w=(n.body.trim().match(/\S+/g)||[]).length; return w+' words · edited '+new Date(n.updated).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
+function nEdit(id,field,val){const n=nAll().find(x=>x.id===id); if(!n)return; n[field]=val; nSaveNote(n);
+  if(field==='folder'){nRender(); return;}
+  const m=document.querySelector('#nEditor .nmeta'); if(m)m.textContent=nMeta(n);
+  const all=nAll(); document.querySelectorAll('[data-nfcount]').forEach(el=>{const fid=el.getAttribute('data-nfcount'); el.textContent=all.filter(x=>x.folder===fid).length;});}
+function nRender(){
+  const all=nAll();
+  document.getElementById('nfList').innerHTML=NFOLDERS.map(f=>
+    `<button class="nfolder ${f.id===NACTIVE?'active':''}" onclick="nfPick('${f.id}')"><span class="fname">${escHtml(f.name)}</span>`+
+    (f.id===NACTIVE?`<span class="iconbtn" title="Rename" onclick="event.stopPropagation();nfRename('${f.id}')">✎</span><span class="iconbtn del" title="Delete folder" onclick="event.stopPropagation();nfDel('${f.id}')">✕</span>`:``)+
+    `<span class="wcount" data-nfcount="${f.id}">${all.filter(n=>n.folder===f.id).length}</span></button>`).join('');
+  const main=document.getElementById('nList'), ed=document.getElementById('nEditor');
+  if(NOPEN){const n=all.find(x=>x.id===NOPEN);
+    if(n){ main.style.display='none'; ed.style.display='';
+      ed.innerHTML=`<div class="nbar"><button class="iconbtn" onclick="nBack()">← Back</button>`+
+        `<select onchange="nEdit('${n.id}','folder',this.value)" title="Move to folder">${NFOLDERS.map(f=>`<option value="${f.id}" ${f.id===n.folder?'selected':''}>${escHtml(f.name)}</option>`).join('')}</select>`+
+        `<span class="spacer"></span>`+
+        `<button class="iconbtn ${n.pinned?'bang on':''}" title="Pin to top" onclick="nPin('${n.id}')">📌</button>`+
+        `<button class="iconbtn del" onclick="nDel('${n.id}')">✕ Delete</button></div>`+
+        `<input class="ntitle" placeholder="Note title…" value="${escAttr(n.title)}" oninput="nEdit('${n.id}','title',this.value)">`+
+        `<textarea placeholder="Write…" oninput="nEdit('${n.id}','body',this.value)">${escHtml(n.body)}</textarea>`+
+        `<div class="nmeta">${nMeta(n)}</div>`;
+      return; }
+    NOPEN=null; }
+  ed.style.display='none'; main.style.display='';
+  const q=((document.getElementById('nSearch')||{}).value||'').trim().toLowerCase();
+  let list=q? all.filter(n=>((n.title||'')+' '+(n.body||'')).toLowerCase().indexOf(q)>=0) : all.filter(n=>n.folder===NACTIVE);
+  list.sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0)) || (b.updated-a.updated));
+  main.innerHTML=list.length? list.map(n=>{const f=NFOLDERS.find(x=>x.id===n.folder);
+    return `<div class="ncard" onclick="nOpen('${n.id}')"><div class="nt">${n.pinned?'📌 ':''}${escHtml(n.title||'Untitled')}${(q&&f)?` <span class="nfoldertag">${escHtml(f.name)}</span>`:''}</div>`+
+      (n.body&&n.body.trim()?`<div class="np">${escHtml(n.body.trim().slice(0,110))}</div>`:'')+
+      `<div class="nm">${new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div>`;}).join('')
+    : '<div class="empty">'+(q?'No matches.':'No notes here yet — hit “＋ New note”.')+'</div>';
+  updateCounts();}
+function nInit(){nfLoad(); nRender();}
+
 /* ===== persistence + carry-forward ===== */
 function refreshDisplays(key,val){document.querySelectorAll('[data-display="'+CSS.escape(key)+'"]').forEach(el=>{el.innerHTML = val && val.trim() ? escHtml(val) : '<span class="empty">— nothing carried over —</span>';});}
 function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{const key=el.dataset.key, isCheck=el.type==='checkbox'; const saved=localStorage.getItem(key);
@@ -718,10 +852,11 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
-const SEC_DEFAULT=['week','agenda','calendar','constants','mc','goals','house'];
-const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Dos',mc:'Monthly Constants',goals:'Goals',house:'House'};
+const SEC_DEFAULT=['week','agenda','calendar','constants','mc','notes','goals','house'];
+const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Dos',mc:'Monthly Constants',notes:'Notes',goals:'Goals',house:'House'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
-  SEC_DEFAULT.forEach(id=>{if(o.indexOf(id)<0){ if(id==='mc'&&o.indexOf('constants')>=0){o.splice(o.indexOf('constants')+1,0,'mc');} else {o.push(id);} }});
+  SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){ const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // new sections slot in after their default neighbor
+    if(at>=0)o.splice(at+1,0,id); else o.push(id); }});
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
@@ -737,6 +872,7 @@ function updateCounts(){
   setCount('constants', (LISTS.todo.filter(x=>!x.done).length+LISTS.work.filter(x=>!x.done).length)+" open");
   const mcMk=mcMonthKey(), mcSt=MC_STATE[mcMk]||{};
   setCount('mc', MC_LABELS.filter(l=>mcSt[l]).length+"/"+MC_LABELS.length+" this month");
+  setCount('notes', nAll().length+" notes");
   setCount('calendar', EVENTS.length+" events");
   setCount('agenda', null);
 }
@@ -830,7 +966,7 @@ if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
-renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderMC();
+renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderMC(); nInit();
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
