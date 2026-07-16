@@ -41,10 +41,14 @@ button{font-family:inherit;}
 .card h2{margin:0 0 10px; font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-mut); font-weight:500; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--ink); padding-bottom:7px;}
 .card h2 .sub{font-family:'Inter',sans-serif; font-size:.72rem; letter-spacing:0; text-transform:none; color:var(--ink-faint); font-weight:400; margin-left:auto;}
 
-.towncard{padding:6px 10px 14px;}
-.townwrap{position:relative; width:100%; overflow:hidden;}
-.townwrap svg{width:100%; display:block;}
-.cloud{position:absolute; background:#ffffff; border-radius:50%; opacity:.5; pointer-events:none; animation:drift linear infinite;}
+.towncard{padding:11px 12px 14px;}
+.mapcap{display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-mut); padding:0 3px 7px; border-bottom:1px solid var(--line); margin-bottom:7px;}
+.mapcap .compass{color:var(--rust); letter-spacing:.1em;}
+.townwrap{position:relative; width:100%; overflow:hidden;
+  background:radial-gradient(125% 95% at 50% 12%, #F8F2E3 0%, #EFE7D2 68%, #E6DCC4 100%);
+  border:1px solid var(--line2); box-shadow:inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--line);}
+.townwrap svg{width:100%; display:block; position:relative; z-index:1;}
+.cloud{position:absolute; z-index:2; background:#fffdf7; border-radius:50%; opacity:.45; pointer-events:none; animation:drift linear infinite; box-shadow:8px 0 0 -1px #fffdf7, -9px 1px 0 -2px #fffdf7;}
 @keyframes drift{0%{transform:translateX(-8px);}50%{transform:translateX(10px);}100%{transform:translateX(-8px);}}
 .org{cursor:pointer; transition:opacity .2s;}
 .org:hover{opacity:.72;}
@@ -169,7 +173,8 @@ button{font-family:inherit;}
 
   <div>
     <div class="card towncard">
-      <div class="townwrap" id="townwrap"><svg id="townsvg" viewBox="0 28 400 224"></svg></div>
+      <div class="mapcap"><span>Survey of the Settlement</span><span class="compass">✦ north</span></div>
+      <div class="townwrap" id="townwrap"><svg id="townsvg" viewBox="0 6 400 250"></svg></div>
       <div class="stageband">
         <div class="stagename" id="stageName">—</div>
         <div class="stagesub" id="stageSub">—</div>
@@ -460,150 +465,236 @@ const ACH=[
   {id:'stage5',  ic:'🌇', nm:'Metropolis',       ds:'Reach the final stage',                t:s=>s.stage>=5},
 ];
 
-/* ===== the settlement — procedural isometric SVG ===== */
-const TW=40, TH=20, ZH=18, OX=200, OY=60;
+/* ===== the settlement — illustrated isometric survey ===== */
+const TW=42, TH=21, ZH=17, OX=200, OY=72;
 function iso(gx,gy,gz){return [OX+(gx-gy)*TW/2, OY+(gx+gy)*TH/2 - (gz||0)*ZH];}
 function P(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}
 function shade(hex,amt){let n=parseInt(hex.slice(1),16);
   let r=Math.max(0,Math.min(255,(n>>16)+amt)),g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),b=Math.max(0,Math.min(255,(n&255)+amt));
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
-const WALL_R='#EFE8D7', WALL_F='#DCD1B7', INK='#1E2A22';
-function poly(pts,fill,sw,op){return `<polygon points="${pts.map(P).join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="${sw||0.8}" stroke-linejoin="round"${op?` opacity="${op}"`:''}/>`;}
-/* a building: footprint w×d (tile units) at (gx,gy), height h; flat roof or hip roof (peak) */
-function bldg(gx,gy,w,d,h,roof,peak){
-  const hw=w/2, hd=d/2;
-  const A=iso(gx-hw,gy-hd,0),B=iso(gx+hw,gy-hd,0),C=iso(gx+hw,gy+hd,0),Dn=iso(gx-hw,gy+hd,0);
+const INK='#3B342A', INK2='#5C513F';
+const W_TOP='#F5EFDE', W_MID='#E7DCC0', W_DARK='#D3C4A1';
+const ROAD='#DBCAA4';
+const WATER='#84B4D2', WATER_D='#4E86A6', WATER_H='#EAF3F8';
+const GRASS='#96A86D', GRASS_D='#7E9457';
+const WOOD='#8F6C40', STONE='#C1B084';
+const SH='rgba(59,52,42,0.13)';
+function q(pts,fill,sw){return `<polygon points="${pts.map(P).join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="${sw==null?0.7:sw}" stroke-linejoin="round"/>`;}
+function ln(a,b,c,w){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c||INK}" stroke-width="${w||0.6}" stroke-linecap="round"/>`;}
+function bilerp(bl,br,tr,tl,u,v){const bx=bl[0]+(br[0]-bl[0])*u,by=bl[1]+(br[1]-bl[1])*u,tx=tl[0]+(tr[0]-tl[0])*u,ty=tl[1]+(tr[1]-tl[1])*u;return [bx+(tx-bx)*v,by+(ty-by)*v];}
+function winR(bl,br,tr,tl,u,v,wu,wv,fill){return q([bilerp(bl,br,tr,tl,u-wu,v-wv),bilerp(bl,br,tr,tl,u+wu,v-wv),bilerp(bl,br,tr,tl,u+wu,v+wv),bilerp(bl,br,tr,tl,u-wu,v+wv)],fill,0.4);}
+function csh(gx,gy,rx,ry){const c=iso(gx+0.2,gy+0.22,0);return `<ellipse cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="${SH}"/>`;}
+/* generic building: shadow + 2 shaded walls + windows/door + gabled or flat roof */
+function struct(gx,gy,w,d,h,roof,opt){
+  opt=opt||{}; const hw=w/2, hd=d/2, peak=opt.peak||0;
+  let s=csh(gx,gy, w*TW*0.42+3, d*TH*0.42+3);
+  const B=iso(gx+hw,gy-hd,0),C=iso(gx+hw,gy+hd,0),Dn=iso(gx-hw,gy+hd,0);
   const At=iso(gx-hw,gy-hd,h),Bt=iso(gx+hw,gy-hd,h),Ct=iso(gx+hw,gy+hd,h),Dt=iso(gx-hw,gy+hd,h);
-  let s=poly([B,C,Ct,Bt],WALL_R)+poly([Dn,C,Ct,Dt],WALL_F);
-  if(peak){const ap=iso(gx,gy,h+peak);
-    s+=poly([At,Bt,ap],shade(roof,14))+poly([Bt,Ct,ap],roof)+poly([Dt,Ct,ap],shade(roof,-14));
-  }else{ s+=poly([At,Bt,Ct,Dt],roof); }
+  s+=q([B,C,Ct,Bt],W_MID);          // east wall (+gx)
+  s+=q([Dn,C,Ct,Dt],W_DARK);        // south wall (+gy)
+  if(opt.win!==false){
+    const lit=opt.warm?'#F0C24E':'#8A8069', dk='#6E6552';
+    const cols=Math.max(2,Math.round(w*3.2));
+    for(let i=0;i<cols;i++){const u=(i+0.5)/cols; if(opt.door&&Math.abs(u-0.5)<0.13)continue; s+=winR(Dn,C,Ct,Dt,u,0.55,0.06,0.12,i%2?lit:dk);}
+    const c2=Math.max(1,Math.round(d*3.2));
+    for(let i=0;i<c2;i++){const u=(i+0.5)/c2; s+=winR(B,C,Ct,Bt,u,0.55,0.05,0.12,i%2?dk:lit);}
+    if(h>1.5)for(let i=0;i<cols;i++){const u=(i+0.5)/cols; s+=winR(Dn,C,Ct,Dt,u,0.85,0.06,0.1,dk);}
+  }
+  if(opt.door) s+=q([bilerp(Dn,C,Ct,Dt,0.41,0),bilerp(Dn,C,Ct,Dt,0.59,0),bilerp(Dn,C,Ct,Dt,0.59,0.42),bilerp(Dn,C,Ct,Dt,0.41,0.42)],WOOD,0.6);
+  if(peak){
+    const R1=iso(gx-hw,gy,h+peak), R2=iso(gx+hw,gy,h+peak);
+    s+=q([At,Dt,R1],W_DARK,0.6);            // west gable end
+    s+=q([At,Bt,R2,R1],shade(roof,14));     // back slope
+    s+=q([Bt,Ct,R2],W_MID,0.6);            // east gable end
+    s+=q([Dt,Ct,R2,R1],roof);              // front slope
+    s+=ln(R1,R2,shade(roof,30),0.9)+ln(Dt,Ct,shade(roof,-24),0.6);
+  }else{ s+=q([At,Bt,Ct,Dt],roof)+ln(At,Ct,shade(roof,22),0.5); }
   return s;
 }
-function foundation(gx,gy,w,d){const hw=w/2,hd=d/2;
-  return `<polygon points="${[iso(gx-hw,gy-hd),iso(gx+hw,gy-hd),iso(gx+hw,gy+hd),iso(gx-hw,gy+hd)].map(P).join(' ')}" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4"/>`;}
+function pennant(gx,gy,z,color){const b=iso(gx,gy,z),t=[b[0],b[1]-15];
+  const f0=`${t[0].toFixed(1)},${t[1].toFixed(1)} ${(t[0]+13).toFixed(1)},${(t[1]+3).toFixed(1)} ${t[0].toFixed(1)},${(t[1]+6).toFixed(1)}`;
+  const f1=`${t[0].toFixed(1)},${t[1].toFixed(1)} ${(t[0]+10).toFixed(1)},${(t[1]+5).toFixed(1)} ${t[0].toFixed(1)},${(t[1]+6).toFixed(1)}`;
+  return ln(b,t,INK,1)+`<polygon points="${f0}" fill="${color}" stroke="${INK}" stroke-width="0.5"><animate attributeName="points" dur="2.8s" repeatCount="indefinite" values="${f0};${f1};${f0}"/></polygon>`;}
+function smoke(gx,gy,z){const b=iso(gx,gy,z); let s='';
+  for(let i=0;i<3;i++){const d=(i*1.1).toFixed(1);
+    s+=`<circle cx="${b[0].toFixed(1)}" cy="${(b[1]-3).toFixed(1)}" r="2" fill="#C9C0AE"><animate attributeName="cy" dur="3.4s" begin="${d}s" repeatCount="indefinite" values="${(b[1]-3).toFixed(1)};${(b[1]-27).toFixed(1)}"/><animate attributeName="opacity" dur="3.4s" begin="${d}s" repeatCount="indefinite" values="0;0.55;0"/><animate attributeName="r" dur="3.4s" begin="${d}s" repeatCount="indefinite" values="2;7.5"/></circle>`;}
+  return s;}
+function tree(gx,gy,sz){const b=iso(gx,gy,0); let s=`<ellipse cx="${(b[0]+3).toFixed(1)}" cy="${(b[1]+3).toFixed(1)}" rx="${(sz*1.15).toFixed(1)}" ry="${(sz*0.5).toFixed(1)}" fill="${SH}"/>`;
+  s+=ln(b,[b[0],b[1]-sz*1.3],WOOD,2.2);
+  s+=`<circle cx="${b[0].toFixed(1)}" cy="${(b[1]-sz*1.5).toFixed(1)}" r="${sz.toFixed(1)}" fill="${GRASS_D}" stroke="${INK}" stroke-width="0.6"/>`;
+  s+=`<circle cx="${(b[0]-sz*0.42).toFixed(1)}" cy="${(b[1]-sz*1.75).toFixed(1)}" r="${(sz*0.6).toFixed(1)}" fill="${GRASS}"/>`;
+  return s;}
+function lamp(gx,gy){const b=iso(gx,gy,0);
+  return `<ellipse cx="${(b[0]+2).toFixed(1)}" cy="${(b[1]+2).toFixed(1)}" rx="4" ry="2" fill="${SH}"/>`+ln(b,[b[0],b[1]-13],INK2,1.4)+`<circle cx="${b[0].toFixed(1)}" cy="${(b[1]-14).toFixed(1)}" r="2.4" fill="#F0C24E" stroke="${INK}" stroke-width="0.5"/>`;}
+function plot(gx,gy,w,d){const hw=w/2,hd=d/2; const pts=[iso(gx-hw,gy-hd),iso(gx+hw,gy-hd),iso(gx+hw,gy+hd),iso(gx-hw,gy+hd)];
+  let s=q(pts,'#E3D8BE',0.5)+`<polygon points="${pts.map(P).join(' ')}" fill="none" stroke="${INK2}" stroke-width="0.7" stroke-dasharray="3 3"/>`;
+  const st=iso(gx+hw-0.12,gy-hd+0.12,0); s+=ln(st,[st[0],st[1]-8],INK2,1)+`<circle cx="${st[0].toFixed(1)}" cy="${(st[1]-8).toFixed(1)}" r="1.6" fill="#9C3D22"/>`;
+  return s;}
 function renderTown(){
-  const s=D, L=s.levels, stage=s.stage, svg=document.getElementById('townsvg');
+  const L=D.levels, stage=D.stage, svg=document.getElementById('townsvg');
   const draws=[];
   const put=(gx,gy,str,area)=>draws.push({d:gx+gy, s:`<g class="org" data-area="${area}"><title>${AREAS[area].org} — ${AREAS[area].nm} (Lv ${L[area]})</title>${str}</g>`});
-  const H=a=>0.5+Math.min(L[a],9)*0.14;   // height by level
+  const putD=(d,str)=>draws.push({d, s:str});
+  const H=a=>0.5+Math.min(L[a],9)*0.15;
   const cnt=(base,per,lvl,max)=>Math.max(base,Math.min(max,base+Math.floor(lvl*per)));
 
-  /* ---- ground ---- */
-  let bg='';
-  bg+=poly([iso(-.4,-.4),iso(8.4,-.4),iso(8.4,8.4),iso(-.4,8.4)],'#F3EFE4',1.2);
-  for(let i=1;i<8;i++){const a=iso(i,-.4),b=iso(i,8.4),c=iso(-.4,i),e=iso(8.4,i);
-    bg+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#E7DFCB" stroke-width="0.5"/>`;
-    bg+=`<line x1="${c[0].toFixed(1)}" y1="${c[1].toFixed(1)}" x2="${e[0].toFixed(1)}" y2="${e[1].toFixed(1)}" stroke="#E7DFCB" stroke-width="0.5"/>`;}
-  /* main road (cross through plaza) */
-  bg+=poly([iso(3.7,-.4),iso(4.3,-.4),iso(4.3,8.4),iso(3.7,8.4)],'#E6DCC4',0.6);
-  bg+=poly([iso(-.4,3.7),iso(8.4,3.7),iso(8.4,4.3),iso(-.4,4.3)],'#E6DCC4',0.6);
+  /* ---- ground: two-tone tiles, roads, cobbled plaza, grass parks ---- */
+  let bg=q([iso(-.5,-.5),iso(8.5,-.5),iso(8.5,8.5),iso(-.5,8.5)],'#EAE1CD',1.1);
+  for(let x=0;x<8;x++)for(let y=0;y<8;y++){if((x+y)%2)continue;
+    bg+=q([iso(x-.5,y-.5),iso(x+.5,y-.5),iso(x+.5,y+.5),iso(x-.5,y+.5)],'#E4DAC1',0);}
+  const parks=[[.6,7.2],[7.3,.7],[7.2,7.2]];
+  parks.forEach(p=>{bg+=q([iso(p[0]-.55,p[1]-.55),iso(p[0]+.55,p[1]-.55),iso(p[0]+.55,p[1]+.55),iso(p[0]-.55,p[1]+.55)],GRASS,0.5);});
+  bg+=q([iso(3.72,-.5),iso(4.28,-.5),iso(4.28,8.5),iso(3.72,8.5)],ROAD,0.5);      // N–S road
+  bg+=q([iso(-.5,3.72),iso(8.5,3.72),iso(8.5,4.28),iso(-.5,4.28)],ROAD,0.5);      // E–W road
+  const pc=iso(4,4,0);                                                            // cobbled plaza
+  bg+=`<ellipse cx="${pc[0].toFixed(1)}" cy="${pc[1].toFixed(1)}" rx="${(TW*0.95).toFixed(1)}" ry="${(TH*0.95).toFixed(1)}" fill="#E0D2B2" stroke="${INK2}" stroke-width="0.6"/>`;
+  for(let r=0;r<3;r++)bg+=`<ellipse cx="${pc[0].toFixed(1)}" cy="${pc[1].toFixed(1)}" rx="${(TW*0.95*(0.66-r*0.2)).toFixed(1)}" ry="${(TH*0.95*(0.66-r*0.2)).toFixed(1)}" fill="none" stroke="#CDBB93" stroke-width="0.5"/>`;
 
-  /* ---- DISCIPLINE · ramparts & gates (perimeter) ---- */
-  const wh=0.28+Math.min(L.discipline,9)*0.13;
+  /* ---- DISCIPLINE · ramparts, corner towers, gatehouse ---- */
+  const wh=0.34+Math.min(L.discipline,9)*0.12;
   function wallRun(x0,y0,x1,y1){
     const b0=iso(x0,y0,0),b1=iso(x1,y1,0),t1=iso(x1,y1,wh),t0=iso(x0,y0,wh);
-    return poly([b0,b1,t1,t0],shade('#8C6A1D',52))+poly([t0,t1,iso(x1,y1,wh),iso(x0,y0,wh)],WALL_R,0.5);
+    let s=q([b0,b1,t1,t0],STONE)+ln(t0,t1,shade(STONE,22),0.6);
+    const n=Math.max(3,Math.round(Math.hypot(x1-x0,y1-y0)*2.2));               // battlements
+    for(let i=0;i<=n;i+=2){const u=i/n, p=[t0[0]+(t1[0]-t0[0])*u,t0[1]+(t1[1]-t0[1])*u];
+      s+=q([[p[0]-2,p[1]],[p[0]+2,p[1]],[p[0]+2,p[1]-4],[p[0]-2,p[1]-4]],shade(STONE,8),0.5);}
+    return s;
   }
-  if(L.discipline>=0) put(0,4, wallRun(-.15,-.15,-.15,8.15),'discipline');       // W wall (always)
-  if(L.discipline>=1) put(4,-.2, wallRun(-.15,-.15,8.15,-.15),'discipline');     // N wall
-  if(L.discipline>=2) put(8.2,4, wallRun(8.15,-.15,8.15,8.15),'discipline');     // E wall
-  const towerAt=(x,y)=>bldg(x,y,.5,.5,wh+0.5,shade('#8C6A1D',-10));
-  if(L.discipline>=3){ put(-.15,-.15, towerAt(-.15,-.15),'discipline'); put(8.15,-.15, towerAt(8.15,-.15),'discipline'); }
-  if(L.discipline>=5){ put(-.15,8.15, towerAt(-.15,8.15),'discipline'); put(8.15,8.15, towerAt(8.15,8.15),'discipline'); }
+  putD(-0.3, `<g class="org" data-area="discipline"><title>Ramparts &amp; Gates — Discipline (Lv ${L.discipline})</title>${wallRun(-.15,-.15,8.15,-.15)}</g>`);            // N wall (always)
+  putD(0.2,  `<g class="org" data-area="discipline">${wallRun(-.15,-.15,-.15,8.15)}</g>`);   // W wall
+  if(L.discipline>=2) putD(16, `<g class="org" data-area="discipline">${wallRun(8.15,-.15,8.15,8.15)}</g>`); // E wall
+  function cornerTower(x,y){let s=struct(x,y,.6,.6,wh+0.7,STONE,{win:true,warm:false});
+    const th=wh+0.7, a=iso(x,y,th+0.9), c1=iso(x-.3,y-.3,th),c2=iso(x+.3,y-.3,th),c3=iso(x+.3,y+.3,th),c4=iso(x-.3,y+.3,th);
+    s+=q([c3,c4,a],'#9C3D22')+q([c2,c3,a],shade('#9C3D22',-18))+pennant(x,y,th+0.9,'#2E5641'); return s;}
+  putD(-0.25, `<g class="org" data-area="discipline">${cornerTower(-.15,-.15)}</g>`);
+  putD(16.1,  `<g class="org" data-area="discipline">${cornerTower(8.15,-.15)}</g>`);
+  putD(8.0,   `<g class="org" data-area="discipline">${cornerTower(-.15,8.15)}</g>`);
+  if(L.discipline>=4) putD(16.4, `<g class="org" data-area="discipline">${cornerTower(8.15,8.15)}</g>`);
+  putD(3.6, `<g class="org" data-area="discipline">${struct(3.5,-.15,.55,.5,wh+0.4,STONE,{win:false})+struct(4.5,-.15,.55,.5,wh+0.4,STONE,{win:false})}</g>`); // gatehouse
 
   /* ---- MIND · grand library (NW) ---- */
-  if(L.mind===0) put(2,2, foundation(2,2,.9,.9),'mind');
+  if(L.mind===0) put(2,2, plot(2,2,1.1,1.1),'mind');
   else{
-    put(2,2, bldg(2,2,.75,.75,H('mind')*1.7,'#566288'),'mind');            // tower
-    put(2,2, bldg(2,2,.4,.4,H('mind')*1.7+0.35,shade('#566288',-12)),'mind'); // spire cap
-    if(L.mind>=2) put(3,1.7, bldg(3,1.7,.8,.6,H('mind')*.8,shade('#566288',18)),'mind');
-    if(L.mind>=4) put(1.7,3, bldg(1.7,3,.6,.8,H('mind')*.8,shade('#566288',18)),'mind');
+    let s=struct(2,2,1,.82,0.7+H('mind')*0.35,'#5E6A92',{peak:0.5,door:true,warm:true});
+    const th=1.5+H('mind')*0.9;
+    s+=struct(2,2,.52,.52,th,'#5E6A92',{warm:true});
+    const a=iso(2,2,th+1.1),c1=iso(2-.26,2-.26,th),c2=iso(2+.26,2-.26,th),c3=iso(2+.26,2+.26,th),c4=iso(2-.26,2+.26,th);
+    s+=q([c3,c4,a],'#9C3D22')+q([c2,c3,a],shade('#9C3D22',-18))+pennant(2,2,th+1.1,'#B07B2B');
+    if(L.mind>=4) s+=struct(3.15,1.75,.7,.6,0.5+H('mind')*0.3,shade('#5E6A92',14),{peak:0.4,warm:true});
+    put(2,2,s,'mind');
   }
 
   /* ---- WORK · forge guild (NE) ---- */
-  if(L.work===0) put(6,2, foundation(6,2,.9,.9),'work');
+  if(L.work===0) put(6,2, plot(6,2,1.1,1.1),'work');
   else{
-    put(6,2, bldg(6,2,.9,.7,H('work'),'#2E5641'),'work');
-    put(6.35,1.75, bldg(6.35,1.75,.18,.18,H('work')+0.6,shade('#2E5641',-18)),'work'); // chimney
-    if(L.work>=2) put(5.1,1.8, bldg(5.1,1.8,.6,.55,H('work')*.75,shade('#2E5641',16)),'work');
-    if(L.work>=4) put(6.4,3.1, bldg(6.4,3.1,.55,.6,H('work')*.75,shade('#2E5641',16)),'work');
+    let s=struct(6,2,1.05,.82,0.7+H('work')*0.4,'#2E5641',{peak:0.45,door:true,warm:true});
+    const ch=1.2+H('work')*0.5; s+=struct(6.4,1.68,.24,.24,ch,'#7A4A34',{win:false})+smoke(6.4,1.68,ch);
+    const fp=iso(6,2.42,0.18); s+=`<ellipse cx="${fp[0].toFixed(1)}" cy="${fp[1].toFixed(1)}" rx="4" ry="5" fill="#E8973A" stroke="${INK}" stroke-width="0.5"/>`; // furnace glow
+    if(L.work>=2) s+=struct(5.05,1.8,.62,.55,0.5+H('work')*0.3,shade('#2E5641',14),{peak:0.35,warm:true});
+    if(L.work>=4) s+=struct(6.45,3.1,.55,.62,0.5+H('work')*0.3,shade('#2E5641',14),{peak:0.35,warm:true});
+    put(6,2,s,'work');
   }
 
-  /* ---- BODY · the arena (SW) ---- */
-  (function(){const cx=2,cy=6; const rr=0.7+Math.min(L.body,9)*0.06;
-    const c=iso(cx,cy,0); const rx=rr*TW*0.62, ry=rr*TH*0.62;
-    let a=`<ellipse cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" rx="${(rx+7).toFixed(1)}" ry="${(ry+7).toFixed(1)}" fill="${WALL_R}" stroke="${INK}" stroke-width="0.9"/>`;
-    a+=`<ellipse cx="${c[0].toFixed(1)}" cy="${(c[1]-3).toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="#C9765A" stroke="${INK}" stroke-width="0.8" opacity="0.9"/>`;
-    if(L.body>0){const bp=iso(cx-rr*.7,cy-rr*.7,0); a+=`<line x1="${bp[0].toFixed(1)}" y1="${bp[1].toFixed(1)}" x2="${bp[0].toFixed(1)}" y2="${(bp[1]-16).toFixed(1)}" stroke="${INK}" stroke-width="1.2"/><polygon points="${bp[0].toFixed(1)},${(bp[1]-16).toFixed(1)} ${(bp[0]+11).toFixed(1)},${(bp[1]-13).toFixed(1)} ${bp[0].toFixed(1)},${(bp[1]-10).toFixed(1)}" fill="#9C3D22"/>`;}
-    put(cx,cy,a,'body');
+  /* ---- BODY · the arena / colosseum (SW) ---- */
+  (function(){const cx=2,cy=6; if(L.body===0){put(cx,cy,plot(cx,cy,1.4,1.4),'body');return;}
+    const c=iso(cx,cy,0); const rr=0.62+Math.min(L.body,9)*0.05; const rx=rr*TW*0.62, ry=rr*TH*0.62; const wallH=9+Math.min(L.body,9)*1.3; const rimY=c[1]-wallH;
+    let s=`<ellipse cx="${(c[0]+2).toFixed(1)}" cy="${(c[1]+4).toFixed(1)}" rx="${(rx+11).toFixed(1)}" ry="${(ry+11).toFixed(1)}" fill="${SH}"/>`;
+    s+=`<ellipse cx="${c[0].toFixed(1)}" cy="${(c[1]+2).toFixed(1)}" rx="${(rx+9).toFixed(1)}" ry="${(ry+9).toFixed(1)}" fill="${W_DARK}" stroke="${INK}" stroke-width="0.8"/>`;   // wall base (bottom crescent shows)
+    s+=`<ellipse cx="${c[0].toFixed(1)}" cy="${rimY.toFixed(1)}" rx="${(rx+9).toFixed(1)}" ry="${(ry+9).toFixed(1)}" fill="${W_TOP}" stroke="${INK}" stroke-width="0.8"/>`;              // top rim
+    s+=`<ellipse cx="${c[0].toFixed(1)}" cy="${rimY.toFixed(1)}" rx="${(rx+4.5).toFixed(1)}" ry="${(ry+4.5).toFixed(1)}" fill="none" stroke="#CBB88F" stroke-width="0.6"/>`;             // seat ring
+    s+=`<ellipse cx="${c[0].toFixed(1)}" cy="${rimY.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="#CDA06F" stroke="${INK}" stroke-width="0.7"/>`;                       // sand field
+    for(let a=210;a<=330;a+=24){const rad=a*Math.PI/180; const ax=c[0]+Math.cos(rad)*(rx+7), ay=(c[1]+2)+Math.sin(rad)*(ry+7); s+=`<rect x="${(ax-1.6).toFixed(1)}" y="${(ay-6).toFixed(1)}" width="3.2" height="6" rx="1.4" fill="#6E6552"/>`;} // arch openings
+    s+=pennant(cx-rr*.6,cy-rr*.6,wallH/ZH+0.1,'#9C3D22')+pennant(cx+rr*.55,cy-rr*.55,wallH/ZH+0.1,'#B07B2B');
+    put(cx,cy,s,'body');
   })();
 
-  /* ---- RECOVERY · tavern & gardens (SE) ---- */
-  if(L.recovery===0) put(6,6, foundation(6,6,.8,.8),'recovery');
+  /* ---- RECOVERY · tavern, gardens, trees (SE) ---- */
+  if(L.recovery===0) put(6,6, plot(6,6,1,1),'recovery');
   else{
-    put(6,5.9, bldg(6,5.9,.8,.7,H('recovery')*1.05,'#7A5C86',0.5),'recovery');   // tavern (hip roof)
-    const gN=cnt(0,0.5,L.recovery,3);
-    const gs=[[6.7,6.7],[5.6,6.7],[6.9,5.8]];
+    let s=struct(6,5.95,.88,.72,0.55+H('recovery')*0.3,'#7A5C86',{peak:0.45,door:true,warm:true});
+    const sp=iso(6.5,5.7,0.5); s+=ln([sp[0],sp[1]],[sp[0]+9,sp[1]],INK,1.2)+`<rect x="${(sp[0]+5).toFixed(1)}" y="${sp[1].toFixed(1)}" width="9" height="7" fill="#B07B2B" stroke="${INK}" stroke-width="0.5"><animateTransform attributeName="transform" type="rotate" dur="3.5s" repeatCount="indefinite" values="-4 ${(sp[0]+9).toFixed(1)} ${sp[1].toFixed(1)};4 ${(sp[0]+9).toFixed(1)} ${sp[1].toFixed(1)};-4 ${(sp[0]+9).toFixed(1)} ${sp[1].toFixed(1)}"/></rect>`; // hanging sign
+    put(6,5.95,s,'recovery');
+    const gN=cnt(1,0.5,L.recovery,3), gs=[[6.9,6.8],[5.8,6.9],[7,5.7]];
     for(let i=0;i<gN;i++){const gp=iso(gs[i][0],gs[i][1],0);
-      put(gs[i][0],gs[i][1], `<ellipse cx="${gp[0].toFixed(1)}" cy="${gp[1].toFixed(1)}" rx="12" ry="6" fill="#6E7B4E" stroke="${INK}" stroke-width="0.7" opacity="0.85"/><ellipse cx="${(gp[0]-3).toFixed(1)}" cy="${(gp[1]-2).toFixed(1)}" rx="3" ry="1.6" fill="#9C3D22"/>`,'recovery');}
+      put(gs[i][0],gs[i][1], csh(gs[i][0],gs[i][1],12,6)+`<ellipse cx="${gp[0].toFixed(1)}" cy="${gp[1].toFixed(1)}" rx="12" ry="6" fill="${GRASS_D}" stroke="${INK}" stroke-width="0.6"/><ellipse cx="${(gp[0]-3).toFixed(1)}" cy="${(gp[1]-1).toFixed(1)}" rx="2.4" ry="1.4" fill="#9C3D22"/><ellipse cx="${(gp[0]+3).toFixed(1)}" cy="${(gp[1]+1).toFixed(1)}" rx="2.4" ry="1.4" fill="#B07B2B"/>`,'recovery');}
+    if(L.recovery>=3) putD(13.2, tree(7.1,6.2,7));
   }
 
-  /* ---- LANGUAGE · market bazaar (center-south) ---- */
-  (function(){const stalls=[[3.4,4.7],[4.2,4.7],[3.6,5.3],[4.4,5.2],[3.9,4.95],[4.7,4.9],[3.15,5.1]];
+  /* ---- LANGUAGE · market bazaar with striped awnings (center-south) ---- */
+  (function(){const stalls=[[3.35,4.75],[4.25,4.7],[3.65,5.35],[4.5,5.25],[3.95,5.0],[4.85,4.85],[3.1,5.15]];
+    if(L.language===0){put(4,5,plot(4,5,1.6,1.4),'language');return;}
     const n=cnt(2,0.7,L.language,7);
-    for(let i=0;i<n;i++){const[x,y]=stalls[i];
-      put(x,y, bldg(x,y,.34,.34,0.32,'#B07B2B')+ (function(){const tp=iso(x,y,0.32); return `<rect x="${(tp[0]-9).toFixed(1)}" y="${(tp[1]-4).toFixed(1)}" width="18" height="4" fill="${i%2?'#9C3D22':'#B07B2B'}" stroke="${INK}" stroke-width="0.5"/>`;})(),'language');}
-    if(n<3){const[x,y]=stalls[0]; put(x,y,foundation(x,y,1.4,1.2),'language');}
+    function stall(gx,gy,c1,c2){let s=csh(gx,gy,11,5.5)+struct(gx,gy,.42,.42,0.3,WOOD,{win:false});
+      const h=0.3, A2=iso(gx-.36,gy-.36,h+.5),B2=iso(gx+.36,gy-.36,h+.5),C2=iso(gx+.36,gy+.36,h+.5),D2=iso(gx-.36,gy+.36,h+.5);
+      s+=q([A2,B2,C2,D2],c1);
+      for(let i=0;i<2;i++){const u0=i/2+0.04,u1=(i+0.5)/2; s+=q([bilerp(D2,C2,B2,A2,u0,0),bilerp(D2,C2,B2,A2,u1,0),bilerp(D2,C2,B2,A2,u1,1),bilerp(D2,C2,B2,A2,u0,1)],c2,0);}
+      const Cf=iso(gx+.36,gy+.36,h+.16),Df=iso(gx-.36,gy+.36,h+.16); s+=q([D2,C2,Cf,Df],shade(c2,-8),0.5);
+      return s;}
+    for(let i=0;i<n;i++){const[x,y]=stalls[i]; put(x,y, stall(x,y, i%2?'#C46A3A':'#C9972E', i%2?'#F0E4CE':'#9C3D22'),'language');}
   })();
 
-  /* ---- LIFE · homesteads (mid-edges) ---- */
-  (function(){const homes=[[4,2.4],[2.4,4],[5.8,4.3],[3.3,6.1],[4.9,3.3]];
+  /* ---- LIFE · homesteads with chimneys & smoke (mid-edges) ---- */
+  (function(){const homes=[[4,2.4],[2.4,4],[5.75,4.35],[3.3,6.15],[4.9,3.3]];
     const n=cnt(1,0.6,L.life,5);
-    for(let i=0;i<n;i++){const[x,y]=homes[i]; put(x,y, bldg(x,y,.5,.45,0.5,'#6E7B4E',0.42),'life');}
+    for(let i=0;i<n;i++){const[x,y]=homes[i];
+      let s=struct(x,y,.56,.5,0.5,'#B5613C',{peak:0.4,door:true,warm:true});
+      s+=struct(x+.16,y-.16,.13,.13,0.95,'#7A4A34',{win:false}); if(i%2)s+=smoke(x+.16,y-.16,0.95);
+      put(x,y,s,'life');}
   })();
+
+  /* ---- trees & lampposts (ambient) ---- */
+  [[1.15,3.25,7],[3.25,1.15,6],[6.85,3.45,6],[1.35,7,7],[7.1,7.1,7],[2.7,5.05,6],[5.05,6.65,6],[.7,7.2,6],[7.3,.7,6]].forEach(t=>putD(t[0]+t[1], tree(t[0],t[1],t[2])));
+  [[4,1.25],[4,6.75],[1.25,4],[6.75,4]].forEach(l=>putD(l[0]+l[1]+0.05, lamp(l[0],l[1])));
 
   /* ---- central plaza landmark (stage) ---- */
   (function(){const cx=4,cy=4;
-    if(stage===0){const p=iso(cx,cy,0);
-      draws.push({d:8.05,s:`<polygon points="${(p[0]-6).toFixed(1)},${p[1].toFixed(1)} ${(p[0]+6).toFixed(1)},${p[1].toFixed(1)} ${p[0].toFixed(1)},${(p[1]-9).toFixed(1)}" fill="#9C3D22" stroke="${INK}" stroke-width="0.7"/>`});
+    if(stage===0){const p=iso(cx,cy,0.05); const f0=`${(p[0]-5).toFixed(1)},${(p[1]-2).toFixed(1)} ${(p[0]+5).toFixed(1)},${(p[1]-2).toFixed(1)} ${p[0].toFixed(1)},${(p[1]-16).toFixed(1)}`, f1=`${(p[0]-4).toFixed(1)},${(p[1]-2).toFixed(1)} ${(p[0]+6).toFixed(1)},${(p[1]-2).toFixed(1)} ${(p[0]+1).toFixed(1)},${(p[1]-13).toFixed(1)}`;
+      let str=csh(cx,cy,9,4.5)+ln([p[0]-6,p[1]],[p[0]+6,p[1]-2],WOOD,2.5)+ln([p[0]-5,p[1]-1],[p[0]+5,p[1]+1],WOOD,2.5);
+      str+=`<polygon points="${f0}" fill="#E8973A" stroke="${INK}" stroke-width="0.5"><animate attributeName="points" dur="0.9s" repeatCount="indefinite" values="${f0};${f1};${f0}"/></polygon>`;
+      putD(8.05,str);
     }else{
-      const th=0.5+stage*0.42;
-      let str=bldg(cx,cy,.62,.62,th,shade('#8C6A1D',-4))+bldg(cx,cy,.34,.34,th+0.4,'#8C6A1D');
-      const fp=iso(cx,cy,th+0.4); str+=`<line x1="${fp[0].toFixed(1)}" y1="${fp[1].toFixed(1)}" x2="${fp[0].toFixed(1)}" y2="${(fp[1]-13).toFixed(1)}" stroke="${INK}" stroke-width="1"/><polygon points="${fp[0].toFixed(1)},${(fp[1]-13).toFixed(1)} ${(fp[0]+12).toFixed(1)},${(fp[1]-10.5).toFixed(1)} ${fp[0].toFixed(1)},${(fp[1]-8).toFixed(1)}" fill="#2E5641"/>`;
-      draws.push({d:8.06,s:str});
+      const th=0.6+stage*0.45;
+      let str=struct(cx,cy,.72,.72,th,shade('#B9A57E',-6),{win:true,warm:true})+struct(cx,cy,.42,.42,th+0.5,'#B9A57E',{win:true,warm:true});
+      const dm=iso(cx,cy,th+0.5); str+=`<ellipse cx="${dm[0].toFixed(1)}" cy="${dm[1].toFixed(1)}" rx="9" ry="5" fill="#9C3D22" stroke="${INK}" stroke-width="0.6"/>`+pennant(cx,cy,th+0.8,'#2E5641');
+      putD(8.06,str);
     }
   })();
 
-  /* depth-sort structures */
   draws.sort((a,b)=>a.d-b.d);
-  let mid=draws.map(x=>x.s).join('');
+  const mid=draws.map(x=>x.s).join('');
 
-  /* ---- HYDRATION · river (front, drawn last) + well + bridge ---- */
+  /* ---- HYDRATION · river, banks, reeds, bridge, aqueduct, well (front) ---- */
   let riv='';
-  const rLen=cnt(3,0.6,L.hydration,9);   // how far the river reaches across the front
-  const rx0=-0.4, rx1=-0.4+rLen;
-  riv+=poly([iso(rx0,7.5),iso(rx1,7.5),iso(rx1,8.4),iso(rx0,8.4)],'#3E6E8E',0.8,0.55);
-  riv+=poly([iso(rx0,7.7),iso(rx1,7.7),iso(rx1,7.85),iso(rx0,7.85)],'#EAF1F6',0,0.5);
-  if(L.hydration>0){ // well near center
-    const wp=iso(3.3,3.4,0);
-    riv+=`<ellipse cx="${wp[0].toFixed(1)}" cy="${wp[1].toFixed(1)}" rx="7" ry="4" fill="#3E6E8E" stroke="${INK}" stroke-width="0.8"/><ellipse cx="${wp[0].toFixed(1)}" cy="${(wp[1]-1).toFixed(1)}" rx="4" ry="2" fill="#EAF1F6"/>`;
-  }
-  if(L.hydration>=3){ // bridge where the road meets the river
-    const bp=iso(4,7.6,0);
-    riv+=`<polygon points="${(bp[0]-10).toFixed(1)},${bp[1].toFixed(1)} ${(bp[0]+10).toFixed(1)},${bp[1].toFixed(1)} ${(bp[0]+10).toFixed(1)},${(bp[1]-5).toFixed(1)} ${(bp[0]-10).toFixed(1)},${(bp[1]-5).toFixed(1)}" fill="${WALL_R}" stroke="${INK}" stroke-width="0.8"/>`;
+  const rLen=cnt(3,0.6,L.hydration,9); const rx0=-0.5, rx1=-0.5+rLen;
+  riv+=q([iso(rx0,7.35),iso(rx1,7.35),iso(rx1,8.5),iso(rx0,8.5)],WATER_D,0.6);   // far bank / depth
+  riv+=q([iso(rx0,7.55),iso(rx1,7.55),iso(rx1,8.4),iso(rx0,8.4)],WATER,0.5);      // water
+  for(let i=0;i<Math.floor(rLen);i++){const p=iso(rx0+0.7+i,7.98,0); riv+=`<path d="M ${(p[0]-6).toFixed(1)} ${p[1].toFixed(1)} q 3 -2 6 0" fill="none" stroke="${WATER_H}" stroke-width="0.9"/>`;}
+  for(let i=0;i<Math.floor(rLen*1.3);i++){const p=iso(rx0+0.45+i*0.72,7.5,0); riv+=ln(p,[p[0],p[1]-5],GRASS_D,0.9);}   // reeds
+  if(L.hydration>=2){const ap=iso(1.6,7.55,0);   // aqueduct arches along the near bank
+    let a=q([[ap[0]-26,ap[1]-16],[ap[0]+26,ap[1]-16],[ap[0]+26,ap[1]-9],[ap[0]-26,ap[1]-9]],STONE,0.6);
+    for(let k=-2;k<=2;k++)a+=`<path d="M ${(ap[0]+k*11-4).toFixed(1)} ${(ap[1]-9).toFixed(1)} q 4 -6 8 0" fill="${WATER_D}" stroke="${INK}" stroke-width="0.5"/>`;
+    riv+=a;}
+  if(4>rx0&&4<rx1){const bp=iso(4,7.98,0);   // plank bridge on the road
+    riv+=q([[bp[0]-11,bp[1]],[bp[0]+11,bp[1]],[bp[0]+11,bp[1]-5],[bp[0]-11,bp[1]-5]],WOOD,0.7);
+    for(let k=-9;k<=9;k+=3)riv+=ln([bp[0]+k,bp[1]],[bp[0]+k,bp[1]-5],shade(WOOD,-18),0.5);}
+
+  let well='';
+  if(L.hydration>0){const wp=iso(4.9,4.7,0);   // stone well with a little roof, off the plaza
+    well+=csh(4.9,4.7,8,4)+`<ellipse cx="${wp[0].toFixed(1)}" cy="${wp[1].toFixed(1)}" rx="7" ry="4" fill="${STONE}" stroke="${INK}" stroke-width="0.7"/><ellipse cx="${wp[0].toFixed(1)}" cy="${(wp[1]-1).toFixed(1)}" rx="4" ry="2.2" fill="${WATER}" stroke="${INK}" stroke-width="0.5"/>`;
+    well+=ln([wp[0]-6,wp[1]-1],[wp[0]-6,wp[1]-15],WOOD,1.4)+ln([wp[0]+6,wp[1]-1],[wp[0]+6,wp[1]-15],WOOD,1.4);
+    well+=q([[wp[0]-8,wp[1]-15],[wp[0]+8,wp[1]-15],[wp[0],wp[1]-22]],'#9C3D22',0.6);
   }
 
-  svg.innerHTML=`<g>${bg}</g>${mid}<g class="org" data-area="hydration"><title>Aqueduct & Well — Hydration (Lv ${L.hydration})</title>${riv}</g>`;
+  svg.innerHTML=`<g>${bg}</g>${mid}<g class="org" data-area="hydration"><title>Aqueduct &amp; Well — Hydration (Lv ${L.hydration})</title>${well}${riv}</g>`;
   svg.querySelectorAll('.org').forEach(el=>{el.addEventListener('click',()=>flashArea(el.dataset.area));});
   spawnClouds();
 }
 let cloudsDone=false;
 function spawnClouds(){
   if(cloudsDone)return; cloudsDone=true;
-  const w=document.getElementById('townwrap'); const seeds=[[14,10,26,10],[62,16,34,13],[40,7,20,8]];
+  const w=document.getElementById('townwrap'); const seeds=[[12,9,22,9],[60,13,30,11],[38,6,16,7],[80,20,20,8]];
   seeds.forEach((c,i)=>{const el=document.createElement('div'); el.className='cloud';
-    el.style.cssText=`left:${c[0]}%;top:${c[1]}%;width:${c[2]}px;height:${c[3]}px;animation-duration:${18+i*7}s;animation-delay:-${i*4}s;`;
+    el.style.cssText=`left:${c[0]}%;top:${c[1]}%;width:${c[2]}px;height:${c[3]}px;animation-duration:${20+i*6}s;animation-delay:-${i*4}s;`;
     w.appendChild(el);});
 }
 function flashArea(a){const el=document.querySelector(`.area[data-area="${a}"]`); if(!el)return;
