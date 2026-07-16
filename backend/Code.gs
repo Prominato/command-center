@@ -120,29 +120,47 @@ function saveBatch_(items) {
   }
 }
 
-/** Next 90 days of the default Google Calendar — read-only, declined dropped. */
+/** Next 90 days of calendar events — read-only, declined dropped.
+ *  Reads the default (personal) calendar, plus any calendar on this account
+ *  whose name or id mentions "prominato" — those events get cal:'prominato'
+ *  so the app renders them in the work-calendar color. To connect it later:
+ *  subscribe to the Prominato calendar in Google Calendar, then re-paste and
+ *  re-deploy this file (Deploy ▸ Manage deployments ▸ ✏️ ▸ New version). */
 function calEvents_() {
   var now = new Date();
   var end = new Date(now.getTime() + 90 * 24 * 3600 * 1000);
   var out = [];
-  CalendarApp.getDefaultCalendar().getEvents(now, end).forEach(function (ev) {
-    var status = '';
-    try { status = String(ev.getMyStatus() || ''); } catch (e) {}
-    if (status === 'NO') return;                       // declined → never shown
-    var allDay = ev.isAllDayEvent();
-    var st = ev.getStartTime(), en = ev.getEndTime();
-    var endAdj = allDay ? new Date(en.getTime() - 24 * 3600 * 1000) : en;
-    if (endAdj < st) endAdj = st;
-    out.push({
-      id: 'cal-' + ev.getId(),
-      label: ev.getTitle() || '(busy)',
-      start: Utilities.formatDate(st, TZ, 'yyyy-MM-dd'),
-      end: Utilities.formatDate(endAdj, TZ, 'yyyy-MM-dd'),
-      startTime: allDay ? '' : Utilities.formatDate(st, TZ, 'HH:mm'),
-      endTime: allDay ? '' : Utilities.formatDate(en, TZ, 'HH:mm'),
-      loc: ev.getLocation() || '',
-      status: status,                                  // OWNER/YES · INVITED/MAYBE → shown as tentative ⏳
-      allDay: allDay
+  var sources = [{ cal: CalendarApp.getDefaultCalendar(), tag: 'personal' }];
+  try {
+    var primaryId = sources[0].cal.getId();
+    CalendarApp.getAllCalendars().forEach(function (c) {
+      var nm = (c.getName() || '') + ' ' + (c.getId() || '');
+      if (/prominato/i.test(nm) && c.getId() !== primaryId) {
+        sources.push({ cal: c, tag: 'prominato' });
+      }
+    });
+  } catch (e) {}
+  sources.forEach(function (src) {
+    src.cal.getEvents(now, end).forEach(function (ev) {
+      var status = '';
+      try { status = String(ev.getMyStatus() || ''); } catch (e) {}
+      if (status === 'NO') return;                     // declined → never shown
+      var allDay = ev.isAllDayEvent();
+      var st = ev.getStartTime(), en = ev.getEndTime();
+      var endAdj = allDay ? new Date(en.getTime() - 24 * 3600 * 1000) : en;
+      if (endAdj < st) endAdj = st;
+      out.push({
+        id: 'cal-' + ev.getId(),
+        label: ev.getTitle() || '(busy)',
+        start: Utilities.formatDate(st, TZ, 'yyyy-MM-dd'),
+        end: Utilities.formatDate(endAdj, TZ, 'yyyy-MM-dd'),
+        startTime: allDay ? '' : Utilities.formatDate(st, TZ, 'HH:mm'),
+        endTime: allDay ? '' : Utilities.formatDate(en, TZ, 'HH:mm'),
+        loc: ev.getLocation() || '',
+        status: status,                                // OWNER/YES · INVITED/MAYBE → shown as tentative ⏳
+        allDay: allDay,
+        cal: src.tag                                   // 'personal' | 'prominato' → drives the color family
+      });
     });
   });
   return out;

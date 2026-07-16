@@ -466,10 +466,10 @@
           <button id="evCancelBtn" class="ghost" style="display:none" onclick="cancelEdit()">Cancel</button>
         </div>
         <div class="hint" id="pickHint" style="display:none; color:var(--teal);">Pick mode on — click a <b>start day</b>, then an <b>end day</b> on any month below.</div>
-        <div class="hint" style="color:var(--accent);">✈️ Add trips &amp; events here — they show as colored bars on the calendar and agenda. (Live Google Calendar sync is coming in the next step.)</div>
+        <div class="hint" style="color:var(--accent);">📅 Your Google Calendar events flow in automatically — add manual trips &amp; events here too.</div>
         <div id="evList"></div>
       </details>
-      <div class="hint">Click a <b>month</b> to focus it, or any <b>week</b> to load it into This Week. Trips show as colored bars on the days they cover.</div>
+      <div class="hint">Click a <b>month</b> to focus it, or any <b>week</b> to load it into This Week. <b>Solid bars</b> = trips &amp; all-day events · <b>outlined bars</b> = appointments &amp; meetings · your <b>Prominato calendar</b> gets its own color once connected.</div>
       <div class="months" id="months"></div>
     </div>
   </details>
@@ -566,6 +566,7 @@ function applyTheme(key,fromUser){key=normSkin(key);
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
   ["--bg","--bg2","--card","--card-hover","--ink","--ink-muted","--amber","--gold","--teal","--dusk","--rain","--rose","--gym","--urgent","--divider","--wknd","--wknd-bd","--wknd-hover","--accent"]
     .forEach(p=>document.documentElement.style.removeProperty(p));   // clear inline vars from the old theme system
+  try{ renderEvents(); renderMonths(); renderWeek(); }catch(e){}     // event colors are skin-derived — repaint on toggle (no-op at boot)
 }
 function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.innerHTML=Object.entries(SKINS).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
 
@@ -613,7 +614,7 @@ function applyCal(list){ try{
   const cal=(list||[]).map((ev,i)=>({id:ev.id||('cal-'+i),
     label:((ev.status==='INVITED'||ev.status==='MAYBE')?'⏳ ':'')+(ev.label||'(busy)'),
     start:ev.start, end:ev.end||ev.start, startTime:ev.startTime||'', endTime:ev.endTime||'',
-    loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal'}));
+    loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal', cal:ev.cal||'personal'}));
   EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
   renderEvents(); renderMonths(); renderWeek(); renderGlance();
 }catch(e){} }
@@ -720,6 +721,14 @@ function renderDay(day){const date=day.date;
 
 /* ===== events ===== */
 const EVCOLORS=['#5C6BA0','#3F8487','#4F7CAC','#9C6B5E','#6B7C99','#3E6E8E'];
+/* Event colors: ONE deep color for trips/all-day/multi-day (solid), a LIGHTER
+   color for timed appointments (outlined, no fill). Second family = Prominato. */
+function evKind(e){ return (e.start===e.end && e.startTime) ? 'appt' : 'block'; }
+function evPalette(){ return document.body.classList.contains('skin-aurora')
+  ? {block:'#9F7CFF', appt:'#C9B8FF', blockP:'#2DD4BF', apptP:'#8FF0E0'}    // aurora: violet · teal = Prominato
+  : {block:'#8C6A1D', appt:'#C2A253', blockP:'#2E5641', apptP:'#6E9B85'}; } // ledger: gold · forest = Prominato
+function evColor(e){ const p=evPalette(), pro=(e.cal==='prominato');
+  return evKind(e)==='appt' ? (pro?p.apptP:p.appt) : (pro?p.blockP:p.block); }
 const DEFAULT_EVENTS=[{id:'seed-dallas',label:'Dallas ✈️',start:'2026-06-26',end:'2026-06-28',color:'#5C6BA0',loc:'Dallas, Texas, US',lat:32.7767,lon:-96.797}];
 const WX_CACHE={}; let GEO_MAP={};
 function wmo(code){const m={0:['☀️','Clear'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Showers'],81:['🌧️','Showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};return m[code]||['🌡️',''];}
@@ -761,19 +770,19 @@ function renderEvents(){const host=document.getElementById('evList');
   const fmt=iso=>{const d=new Date(iso+"T12:00:00"); return MON[d.getMonth()].slice(0,3)+" "+d.getDate();};
   host.innerHTML=[...EVENTS].sort((a,b)=>a.start<b.start?-1:1).map(e=>{const single=e.start===e.end; let when=single?fmt(e.start):(fmt(e.start)+" – "+fmt(e.end)); let tm=(e.startTime||e.endTime)?(" · "+to12(e.startTime)+(e.endTime?("–"+to12(e.endTime)):"")):""; const loc=e.loc?` · 📍 ${escHtml(e.loc)}`:"";
     const ctrls = e.src==='cal' ? `<span class="iconbtn" style="border-color:var(--accent);color:var(--accent)" title="From Google Calendar">📅 cal</span>` : `<button class="iconbtn" title="Edit" onclick="editEvent('${e.id}')">✎</button><button class="iconbtn del" title="Delete" onclick="delEvent('${e.id}')">✕</button>`;
-    return `<div class="evrow"><span class="evdot" style="background:${e.color}"></span><span class="evname">${escHtml(e.label)}${loc}</span><span class="evdate">${when}${tm}</span>${ctrls}</div>`;}).join("");
+    return `<div class="evrow"><span class="evdot" style="${evKind(e)==='appt'?`background:none;border:1.5px solid ${evColor(e)}`:`background:${evColor(e)}`}"></span><span class="evname">${escHtml(e.label)}${loc}</span><span class="evdate">${when}${tm}</span>${ctrls}</div>`;}).join("");
   refreshDayEvents();}
 function hexToRgba(h,a){h=h.replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join(''); const n=parseInt(h,16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function homeWx(date){const day=DAYS.find(d=>d.date===date); if(!day)return ''; return `${day.wx.i} ${day.wx.t}${day.wx.r?(" · "+day.wx.r):""}${day.wx.est?'<span class="est">Est.</span>':''}`;}
 function shortLoc(s){return s.split(',').slice(0,2).map(x=>x.trim()).filter(Boolean).join(', ');}
 function refreshDayEvents(){document.querySelectorAll('details.day').forEach(card=>{const ds=card.dataset.date; const evs=eventsOnISO(ds);
   const mid=card.querySelector('[data-ev-name]'); const wxEl=card.querySelector('[data-wxday]');
-  if(mid) mid.innerHTML=evs.map(e=>`<span style="color:${e.color}">${escHtml(e.label)}</span>`).join(", ");
+  if(mid) mid.innerHTML=evs.map(e=>`<span style="color:${evColor(e)}">${escHtml(e.label)}</span>`).join(", ");
   if(wxEl){ if(evs.length){const e=evs[0]; const loc=e.loc?shortLoc(e.loc):''; const w=(e.lat!=null)?WX_CACHE[e.lat+','+e.lon+','+ds]:null;
       if(w){const ic=wmo(w.code); wxEl.innerHTML=`${ic[0]} ${Math.round(w.tmax)}°F ${ic[1]}${loc?` <span class="wxloc">· ${escHtml(loc)}</span>`:''}`;}
       else{wxEl.innerHTML=homeWx(ds)+(loc?` <span class="wxloc">· ${escHtml(loc)}</span>`:'');}
     } else { wxEl.innerHTML=homeWx(ds); } }
-  if(evs.length){const c=evs[0].color; const multi=evs[0].start!==evs[0].end; card.classList.add('has-ev'); card.classList.toggle('multi-ev',multi); card.style.setProperty('--evc',c); card.style.background=hexToRgba(c,0.12);}
+  if(evs.length){const c=evColor(evs[0]); const multi=evs[0].start!==evs[0].end; card.classList.add('has-ev'); card.classList.toggle('multi-ev',multi); card.style.setProperty('--evc',c); card.style.background=hexToRgba(c,evKind(evs[0])==='appt'?0.06:0.12);}
   else{card.classList.remove('has-ev','multi-ev'); card.style.removeProperty('--evc'); card.style.background='';}
 });}
 
@@ -783,7 +792,9 @@ function renderMonths(){const host=document.getElementById('months'); host.inner
   for(let k=0;k<3;k++){const base=new Date(TODAY.getFullYear(),TODAY.getMonth()+k,1), monthIdx=base.getMonth(), year=base.getFullYear(), first=base, gridStart=startOfWeek(first); let rows="";
     for(let w=0;w<6;w++){const wkStart=addDays(gridStart,w*7); if(w>0 && wkStart.getMonth()!==monthIdx && addDays(wkStart,6).getMonth()!==monthIdx) continue; let cells="";
       for(let i=0;i<7;i++){const d=addDays(wkStart,i); const ds=ymd(d); const evs=eventsOnISO(ds);
-        let bars=evs.map(e=>{const show=(ds===e.start)||i===0; return `<span class="evbar" style="background:${e.color}" title="${escAttr(e.label)}">${show?escHtml(e.label):'&nbsp;'}</span>`;}).join("");
+        let bars=evs.map(e=>{const show=(ds===e.start)||i===0; const ec=evColor(e);
+          const sty=evKind(e)==='appt' ? `background:none;border:1px solid ${hexToRgba(ec,.55)};color:${ec}` : `background:${ec};border:1px solid ${ec};color:#fff`;
+          return `<span class="evbar" style="${sty}" title="${escAttr(e.label)}">${show?escHtml(e.label):'&nbsp;'}</span>`;}).join("");
         let pmin=PICK_START, pmax=PICK_END||PICK_START; if(pmin&&pmax&&pmin>pmax){const t=pmin;pmin=pmax;pmax=t;}
         const picking=(PICK&&pmin&&ds>=pmin&&ds<=pmax)?' picking':'';
         cells+=`<td><div class="cell${d.getMonth()!==monthIdx?' out':''}${(i===0||i===6)?' wknd':''}${sameDay(d,TODAY)?' today':''}${picking}" onclick="cellClick('${ds}',event)"><span class="dnum">${d.getDate()}</span>${bars}</div></td>`;}
@@ -802,9 +813,12 @@ function renderWeek(){const end=addDays(currentWeekStart,6), isThis=sameDay(curr
   document.getElementById('weekWhich').textContent=(isThis?"This week · ":"")+`${MON[currentWeekStart.getMonth()].slice(0,3)} ${currentWeekStart.getDate()} – ${MON[end.getMonth()].slice(0,3)} ${end.getDate()}, ${end.getFullYear()}`;
   let html="";
   for(let i=0;i<7;i++){const d=addDays(currentWeekStart,i),p=PATTERN[d.getDay()]; const evs=eventsOnISO(ymd(d));
-    const evchips=evs.map(e=>`<span class="chip ev" style="background:${e.color};border-color:${e.color};color:#fff">📍 ${escHtml(e.label)}</span>`).join("");
+    const evchips=evs.map(e=>{const ec=evColor(e);
+      return evKind(e)==='appt'
+        ? `<span class="chip ev" style="background:none;border-color:${hexToRgba(ec,.6)};color:${ec}">${escHtml(e.label)}</span>`
+        : `<span class="chip ev" style="background:${ec};border-color:${ec};color:#fff">📍 ${escHtml(e.label)}</span>`;}).join("");
     const wknd=(d.getDay()===0||d.getDay()===6)?' wknd':'';
-    const evStyle=evs.length?` style="background:${hexToRgba(evs[0].color,0.12)};box-shadow:inset 4px 0 0 ${evs[0].color}"`:'';
+    const evStyle=evs.length?` style="background:${hexToRgba(evColor(evs[0]),evKind(evs[0])==='appt'?0.05:0.10)};box-shadow:inset 4px 0 0 ${evColor(evs[0])}"`:'';
     html+=`<div class="dayline${wknd}${evs.length?' evday':''}${sameDay(d,TODAY)?' today':''}"${evStyle}><span class="dn"><b>${DOW[d.getDay()]}</b> ${MON[d.getMonth()].slice(0,3)} ${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="chip ${c[0]}">${c[1]}</span>`).join("")}</span></div>`;}
   document.getElementById('weekBody').innerHTML=html; highlightSelectedWeek();}
 function highlightSelectedWeek(){document.querySelectorAll('tr.wk').forEach(tr=>tr.classList.toggle('selected',tr.dataset.wkstart===ymd(currentWeekStart)));}
