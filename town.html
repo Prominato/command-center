@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FBFAF7">
+<title>🏙️ The Settlement — Max's Living Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFAF7; --paper2:#F3EFE4; --paper3:#EDE7D8;
+  --ink:#1E2A22; --ink-dim:#3B4A3E; --ink-mut:#5C6A5E; --ink-faint:#8C8677;
+  --line:#D8D0BC; --line2:#C6BCA2; --rule:#D8D0BC;
+  --gold:#8C6A1D; --rust:#9C3D22; --teal:#2E5641; --dusk:#566288; --olive:#6E7B4E; --steel:#3E6E8E; --plum:#7A5C86; --ochre:#B07B2B;
+  --glow:#2E5641; --danger:#9C3D22;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.45; min-height:100vh;}
+a{color:var(--dusk); text-decoration:none;}
+button{font-family:inherit;}
+.mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;}
+.serif{font-family:'Newsreader',Georgia,serif;}
+
+.appbar{position:sticky; top:0; z-index:60; display:flex; align-items:center; gap:10px; padding:11px 16px;
+  background:var(--bg); border-bottom:3px double var(--ink);}
+.appbar h1{font-family:'Newsreader',Georgia,serif; font-style:italic; font-weight:500; font-size:1.35rem; margin:0; white-space:nowrap;}
+.backlink{font-size:.72rem; text-transform:uppercase; letter-spacing:.14em; color:var(--ink-mut); border:1px solid var(--line); padding:6px 11px; white-space:nowrap;}
+.backlink:hover{border-color:var(--ink); color:var(--ink);}
+.spacer{flex:1 1 auto;}
+.pill{font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; padding:5px 10px; background:var(--bg); border:1px solid var(--line); white-space:nowrap;}
+.pill b{font-weight:600;}
+.streakpill{color:var(--gold);} .stagepill{color:var(--teal);} #syncPill{color:var(--ink-mut);}
+.iconbtn{background:var(--bg); border:1px solid var(--line); color:var(--ink-mut); padding:6px 10px; font-size:.75rem; cursor:pointer;}
+.iconbtn:hover{border-color:var(--ink); color:var(--ink);}
+
+.wrap{max-width:1220px; margin:0 auto; padding:18px 16px 90px;}
+.grid{display:grid; grid-template-columns:minmax(340px,5fr) minmax(360px,6fr); gap:18px; align-items:start;}
+@media(max-width:900px){.grid{grid-template-columns:1fr;}}
+.card{background:var(--bg); border:1px solid var(--line); padding:15px 16px; margin-bottom:18px; position:relative;}
+.card h2{margin:0 0 10px; font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-mut); font-weight:500; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--ink); padding-bottom:7px;}
+.card h2 .sub{font-family:'Inter',sans-serif; font-size:.72rem; letter-spacing:0; text-transform:none; color:var(--ink-faint); font-weight:400; margin-left:auto;}
+
+.towncard{padding:6px 10px 14px;}
+.townwrap{position:relative; width:100%; overflow:hidden;}
+.townwrap svg{width:100%; display:block;}
+.cloud{position:absolute; background:#ffffff; border-radius:50%; opacity:.5; pointer-events:none; animation:drift linear infinite;}
+@keyframes drift{0%{transform:translateX(-8px);}50%{transform:translateX(10px);}100%{transform:translateX(-8px);}}
+.org{cursor:pointer; transition:opacity .2s;}
+.org:hover{opacity:.72;}
+.stageband{text-align:center; margin-top:6px; border-top:1px solid var(--line); padding-top:10px;}
+.stagename{font-family:'Newsreader',serif; font-style:italic; font-size:1.5rem; font-weight:500; color:var(--ink);}
+.stagesub{font-size:.74rem; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+.evobar{height:7px; background:var(--paper2); border:1px solid var(--line); margin:10px auto 2px; max-width:420px; overflow:hidden;}
+.evobar>i{display:block; height:100%; background:var(--teal); transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.evolabels{display:flex; justify-content:space-between; max-width:420px; margin:4px auto 0; font-size:.66rem; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.06em;}
+
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid var(--line);}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{padding:9px 8px; text-align:center; border-right:1px solid var(--line); border-bottom:1px solid var(--line);}
+.stat:nth-child(4n){border-right:none;}
+.stat .v{font-family:'Newsreader',serif; font-size:1.35rem; font-weight:500; color:var(--ink);}
+.stat .l{font-size:.62rem; color:var(--ink-mut); letter-spacing:.06em; text-transform:uppercase; margin-top:1px; font-family:'IBM Plex Mono',monospace;}
+
+.areas{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+@media(max-width:440px){.areas{grid-template-columns:1fr;}}
+.area{background:var(--bg); border:1px solid var(--line); padding:9px 11px; transition:box-shadow .3s,border-color .3s;}
+.area.flash{border-color:var(--ac); box-shadow:inset 0 0 0 2px var(--ac);}
+.area .top{display:flex; align-items:center; gap:7px;}
+.area .nm{font-weight:600; font-size:.85rem;}
+.area .lvl{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--ac); font-weight:600;}
+.area .orgn{font-size:.64rem; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.05em; margin:2px 0 6px;}
+.area .bar{height:6px; background:var(--paper2); overflow:hidden; border:1px solid var(--line);}
+.area .bar>i{display:block; height:100%; background:var(--ac); transition:width .5s;}
+.area .xps{display:flex; justify-content:space-between; font-size:.6rem; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; margin-top:3px;}
+.area .today{color:var(--teal);}
+
+.daynav{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.daynav .dlabel{font-family:'Newsreader',serif; font-weight:500; font-size:1.05rem;}
+.daynav .dtype{font-size:.64rem; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-mut); border:1px solid var(--line); padding:2px 8px;}
+.daynav button{background:var(--bg); border:1px solid var(--line); color:var(--ink-mut); width:30px; height:30px; cursor:pointer; font-size:.9rem;}
+.daynav button:disabled{opacity:.3; cursor:default;}
+.ring{margin-left:auto; position:relative; width:52px; height:52px;}
+.ring svg{transform:rotate(-90deg);}
+.ring .pct{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:.68rem; font-weight:600; color:var(--teal);}
+.qsec{margin:12px 0 3px; font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-mut); font-family:'IBM Plex Mono',monospace; display:flex; align-items:center; gap:8px;}
+.qsec::after{content:""; flex:1; height:1px; background:var(--line);}
+.quest{display:flex; align-items:center; gap:10px; padding:6px 7px; border:1px solid transparent; position:relative;}
+.quest:hover{background:var(--paper2);}
+.quest input[type=checkbox]{appearance:none; width:19px; height:19px; min-width:19px; border:1.5px solid var(--line2); background:var(--bg); cursor:pointer; position:relative; transition:all .15s;}
+.quest input[type=checkbox]:checked{background:var(--ac,#2E5641); border-color:var(--ac,#2E5641);}
+.quest input[type=checkbox]:checked::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#FBFAF7; font-size:.78rem; font-weight:700;}
+.quest .qtxt{flex:1; font-size:.88rem;}
+.quest.done .qtxt{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--line2);}
+.quest .qxp{font-family:'IBM Plex Mono',monospace; font-size:.64rem; color:var(--ink-faint); white-space:nowrap;}
+.quest.done .qxp{color:var(--ac,#2E5641);}
+.quest .adot{width:7px; height:7px; min-width:7px; background:var(--ac);}
+.quest .opt{font-size:.58rem; color:var(--ink-faint); border:1px solid var(--line); padding:1px 6px; text-transform:uppercase; letter-spacing:.05em;}
+.quest input.dwtxt, .quest textarea.plantxt{flex:1; background:var(--bg); border:1px dashed var(--line2); color:var(--ink); padding:6px 9px; font-family:inherit; font-size:.84rem;}
+.quest input.dwtxt:focus, .quest textarea.plantxt:focus{outline:none; border-color:var(--dusk); border-style:solid;}
+.quest textarea.plantxt{resize:vertical; min-height:36px;}
+.xpfloat{position:absolute; right:8px; top:-6px; font-family:'IBM Plex Mono',monospace; font-size:.76rem; font-weight:700; color:var(--teal); pointer-events:none; animation:rise 1.1s ease-out forwards; z-index:5;}
+@keyframes rise{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(-24px);opacity:0;}}
+
+.boss{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+.boss .face{font-size:1.9rem;}
+.boss .bwrap{flex:1;}
+.boss .bname{font-size:.8rem; font-weight:600; display:flex; justify-content:space-between;}
+.boss .bname .hp{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--ink-mut);}
+.hpbar{height:11px; background:var(--paper2); border:1px solid var(--line2); overflow:hidden; margin-top:4px;}
+.hpbar>i{display:block; height:100%; background:var(--rust); transition:width .6s;}
+.boss.slain .face{filter:grayscale(1) opacity(.5);}
+.slainflag{color:var(--teal); font-size:.7rem; font-family:'IBM Plex Mono',monospace;}
+
+.bcat{font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; margin:11px 0 3px; font-family:'IBM Plex Mono',monospace; display:flex; align-items:center; gap:7px;}
+.bcat .wdot{width:8px;height:8px;}
+.bounty{display:flex; align-items:center; gap:10px; padding:6px 7px;}
+.bounty:hover{background:var(--paper2);}
+.bounty .btxt{flex:1; font-size:.86rem;}
+.bounty .brew{font-family:'IBM Plex Mono',monospace; font-size:.64rem; color:var(--gold); white-space:nowrap;}
+.bounty.urgent .btxt::after{content:" ⚠"; color:var(--danger);}
+.emptymsg{color:var(--ink-faint); font-size:.8rem; padding:6px 2px; font-style:italic; font-family:'Newsreader',serif;}
+
+.heatwrap{overflow-x:auto; padding-bottom:4px;}
+.heat{display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,13px); gap:3px; width:max-content;}
+.hcell{width:13px; height:13px; background:var(--paper2); border:1px solid var(--line);}
+.hcell.h1{background:#D8CFB0;} .hcell.h2{background:#A9B58A;} .hcell.h3{background:#6E8A5A;} .hcell.h4{background:#2E5641;}
+.hcell.today{outline:1.5px solid var(--gold); outline-offset:0;}
+.heatlegend{display:flex; gap:6px; align-items:center; font-size:.62rem; color:var(--ink-mut); margin-top:7px; font-family:'IBM Plex Mono',monospace;}
+.heatlegend .hcell{display:inline-block;}
+
+.achgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px;}
+.ach{background:var(--bg); border:1px solid var(--line); padding:10px; text-align:center;}
+.ach .ic{font-size:1.5rem; filter:grayscale(1) opacity(.3);}
+.ach .nm{font-size:.72rem; font-weight:600; margin-top:4px; color:var(--ink-faint);}
+.ach .ds{font-size:.6rem; color:var(--ink-faint); margin-top:2px;}
+.ach.won{border-color:var(--gold); background:var(--paper2);}
+.ach.won .ic{filter:none;}
+.ach.won .nm{color:var(--gold);}
+
+#toasts{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast{background:var(--ink); border:1px solid var(--ink); color:#F5EFE0; padding:10px 18px; font-size:.86rem; box-shadow:3px 3px 0 rgba(30,42,34,.18); animation:toastin .3s ease-out, toastout .4s ease-in 3.2s forwards;}
+.toast b{color:#EBD8A6;}
+.toast.gold{background:var(--gold); border-color:var(--gold);}
+.toast.gold b{color:#fff;}
+@keyframes toastin{from{transform:translateY(16px);opacity:0;}}
+@keyframes toastout{to{transform:translateY(10px);opacity:0;}}
+.confetti{position:fixed; width:8px; height:8px; z-index:190; pointer-events:none; animation:cfall 1.5s ease-in forwards;}
+@keyframes cfall{0%{transform:translate(0,0) rotate(0);opacity:1;}100%{transform:translate(var(--cx),var(--cy)) rotate(540deg);opacity:0;}}
+
+.footer{color:var(--ink-faint); font-size:.72rem; text-align:center; margin-top:6px; font-family:'Newsreader',serif; font-style:italic;}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <a class="backlink" href="index.html">← Command Center</a>
+  <a class="backlink" href="cell.html" title="Same data, cell skin">🧬 Cell</a>
+  <h1>The Settlement</h1>
+  <div class="spacer"></div>
+  <span class="pill streakpill" id="streakPill">🔥 —</span>
+  <span class="pill stagepill" id="stagePillTop">—</span>
+  <span class="pill" id="syncPill">●</span>
+  <button class="iconbtn" onclick="exportData()" title="Download a JSON backup of everything">⬇︎</button>
+</div>
+
+<div class="wrap">
+<div class="grid">
+
+  <div>
+    <div class="card towncard">
+      <div class="townwrap" id="townwrap"><svg id="townsvg" viewBox="0 28 400 224"></svg></div>
+      <div class="stageband">
+        <div class="stagename" id="stageName">—</div>
+        <div class="stagesub" id="stageSub">—</div>
+        <div class="evobar"><i id="evoFill" style="width:0%"></i></div>
+        <div class="evolabels"><span id="evoNow">—</span><span id="evoNext">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Vitals <span class="sub">lifetime, from real data</span></h2>
+      <div class="stats" id="statsRow"></div>
+    </div>
+
+    <div class="card">
+      <h2>Districts <span class="sub">milestone areas — tap the map</span></h2>
+      <div class="areas" id="areaCards"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Daily Charter</h2>
+      <div class="daynav">
+        <button id="dPrev" onclick="navDay(-1)">‹</button>
+        <div><div class="dlabel" id="dLabel">—</div></div>
+        <span class="dtype" id="dType">—</span>
+        <button id="dNext" onclick="navDay(1)">›</button>
+        <div class="ring">
+          <svg width="52" height="52"><circle cx="26" cy="26" r="21" fill="none" stroke="var(--line)" stroke-width="5"/>
+          <circle id="ringFg" cx="26" cy="26" r="21" fill="none" stroke="var(--glow)" stroke-width="5" stroke-linecap="round" stroke-dasharray="131.9" stroke-dashoffset="131.9" style="transition:stroke-dashoffset .5s"/></svg>
+          <span class="pct" id="ringPct">0%</span>
+        </div>
+      </div>
+      <div id="questList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Monthly Siege <span class="sub" id="bossMonth">—</span></h2>
+      <div class="boss" id="bossBar"></div>
+      <div id="mcList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Commissions <span class="sub">from your to-do lists</span></h2>
+      <div id="bountyList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Chronicle <span class="sub">daily charter completion — last 16 weeks</span></h2>
+  <div class="heatwrap"><div class="heat" id="heat"></div></div>
+  <div class="heatlegend">less <span class="hcell"></span><span class="hcell h1"></span><span class="hcell h2"></span><span class="hcell h3"></span><span class="hcell h4"></span> more</div>
+</div>
+
+<div class="card">
+  <h2>Honors <span class="sub" id="achCount">—</span></h2>
+  <div class="achgrid" id="achGrid"></div>
+</div>
+
+<div class="footer">The Settlement grows from the same data as your <a href="index.html">Command Center</a> — check things off in either place. Everything you build here is derived, never double-counted.</div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* =========================================================
+   THE SETTLEMENT — ledger-themed city builder over the same
+   data as index.html and cell.html. Shares localStorage keys
+   (water:: pushup:: dw:: plan:: cq:: cc_lists cc_mc_*) and the
+   same Apps Script sync backend. XP/levels/stages are PURE
+   DERIVATIONS — idempotent, retroactive, never double-counted.
+   Only the skin differs from The Cell.
+   ========================================================= */
+
+function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function fromISO(iso){return new Date(iso+"T12:00:00");}
+function addISO(iso,n){const d=fromISO(iso); d.setDate(d.getDate()+n); return ymd(d);}
+function todayISO(){return ymd(new Date());}
+const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const escAttr=s=>escHtml(s).replace(/"/g,"&quot;");
+
+/* ===== sync (same backend + protocol as cell.html/index.html) ===== */
+const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
+const SYNC=(function(){
+  const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen'];
+  let q={}, timer=null, meta={};
+  try{meta=JSON.parse(localStorage.getItem('cc_sync_meta')||'{}');}catch(e){meta={};}
+  function saveMeta(){try{localStorage.setItem('cc_sync_meta',JSON.stringify(meta));}catch(e){}}
+  function pill(s){const el=document.getElementById('syncPill'); if(!el)return;
+    const m={local:['● this device','var(--ink-mut)'],saving:['⟳ saving…','var(--dusk)'],syncing:['⟳ syncing…','var(--dusk)'],synced:['✓ synced','var(--teal)'],offline:['⚠ offline','var(--danger)']};
+    const x=m[s]||m.local; el.textContent=x[0]; el.style.color=x[1];}
+  function queue(k,v){if(!SYNC_URL||SKIP.indexOf(k)>=0)return; const t=Date.now(); meta[k]=t; saveMeta(); q[k]={k:k,v:v,t:t}; pill('saving'); clearTimeout(timer); timer=setTimeout(flush,800);}
+  async function flush(){const items=Object.values(q); if(!items.length)return; q={};
+    try{
+      const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({items:items})});
+      const j=await r.json(); if(!j.ok)throw new Error('save failed');
+      pill('synced');
+    }catch(e){ items.forEach(it=>{ if(!q[it.k]) q[it.k]=it; }); pill('offline'); setTimeout(flush,8000); }}
+  async function pull(){if(!SYNC_URL){pill('local');return;} pill('syncing');
+    try{
+      const r=await fetch(SYNC_URL+'?action=state'); const j=await r.json(); if(!j.ok)throw new Error('bad response');
+      let changed=false;
+      Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
+        if(o.t>=lt){ if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
+      saveMeta(); pill('synced');
+      const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'&&ae.type==='text'||ae.tagName==='TEXTAREA');
+      if(changed && !typing) renderAll();
+    }catch(e){ pill('offline'); }}
+  function start(){ pull(); setInterval(pull,5*60*1000);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush();} else {pull();} });
+    window.addEventListener('pagehide',flush); }
+  return {queue:queue,flush:flush,pull:pull,start:start};
+})();
+function setKey(k,v){localStorage.setItem(k,v); SYNC.queue(k,v);}
+
+/* ===== milestone areas → districts ===== */
+const AREAS={
+  discipline:{nm:'Discipline', ic:'🛡️', org:'Ramparts & Gates', hex:'#8C6A1D'},
+  body:      {nm:'Body',       ic:'💪', org:'The Arena',        hex:'#9C3D22'},
+  hydration: {nm:'Hydration',  ic:'💧', org:'Aqueduct & Well',  hex:'#3E6E8E'},
+  mind:      {nm:'Mind',       ic:'🧠', org:'Grand Library',    hex:'#566288'},
+  language:  {nm:'Español',    ic:'🇪🇸', org:'Market Bazaar',    hex:'#B07B2B'},
+  work:      {nm:'Work',       ic:'💼', org:'Forge Guild',      hex:'#2E5641'},
+  life:      {nm:'Life Ops',   ic:'🏡', org:'Homesteads',       hex:'#6E7B4E'},
+  recovery:  {nm:'Recovery',   ic:'🌙', org:'Tavern & Gardens', hex:'#7A5C86'},
+};
+const AREA_KEYS=Object.keys(AREAS);
+
+/* ===== stages of expansion (by sum of district levels) ===== */
+const STAGES=[
+  {at:0,  nm:'Campfire',   sub:'a spark in the wilderness'},
+  {at:8,  nm:'Hamlet',     sub:'a few roofs against the dark'},
+  {at:20, nm:'Village',    sub:'paths, a well, a bell'},
+  {at:36, nm:'Town',       sub:'walls rise; trade begins'},
+  {at:58, nm:'City',       sub:'districts, guilds, a skyline'},
+  {at:86, nm:'Metropolis', sub:'the routine became a capital'},
+];
+
+/* ===== daily quest generator — mirrors the agenda book routine ===== */
+const GYM_BY={1:'Pull',2:'Push',3:'Legs',4:'Pull',5:'Push',6:'Legs'};
+const ACT_BY={1:'Run 🏃',2:'Tennis 🎾',4:'Ruck 🥾',5:'Bike ride 🚴'};
+function dayType(iso){const dow=fromISO(iso).getDay(); return dow===0?'rest':(dow===6?'golf':'work');}
+function questsFor(iso){
+  const dow=fromISO(iso).getDay(), type=dayType(iso), Q=[];
+  const cq=(slug,label,area,xp,sec,opt)=>Q.push({key:`cq::${iso}::${slug}`,label,area,xp,sec,type:'check',opt:!!opt});
+  const sk=(key,label,area,xp,sec)=>Q.push({key,label,area,xp,sec,type:'check',opt:false});
+  cq('bed','🛏️ Make the bed','discipline',10,'Morning');
+  cq('meditate','🌬️ Meditate + today’s concept','discipline',10,'Morning');
+  cq('stretch','🧘 Morning stretch','discipline',10,'Morning');
+  cq('tao','📖 Tao of Joy passage','discipline',10,'Morning');
+  cq('vitamins','💊 Vitamins','discipline',10,'Morning');
+  sk(`water::${iso}::0`,'💧 Water #1 — 1 qt','hydration',10,'Morning');
+  sk(`pushup::${iso}::0`,'💪 Push-ups set 1/5 (20 reps)','body',10,'Morning');
+  if(type==='rest'){ cq('walk','🚶 Morning walk outside','body',15,'Training'); }
+  else{ cq('gym',`🏋️ Gym — ${GYM_BY[dow]} + core + cardio`,'body',25,'Training'); }
+  if(type==='golf'){ cq('golf','⛳ Golf round','body',25,'Training'); }
+  if(type==='work'&&ACT_BY[dow]){ cq('activity',`${ACT_BY[dow]} — afternoon outside`,'body',15,'Training'); }
+  if(type==='work'&&dow===3){ cq('pickleball','🏓 Pickleball night','body',20,'Training'); }
+  if(type==='work'&&(dow===1||dow===2||dow===4)){ cq('class','🥊 Evening workout class','body',20,'Training'); }
+  if(type==='work'){ for(let i=1;i<=5;i++)Q.push({key:`dw::${iso}::${i}`,label:`Deep work block ${i}`,area:'mind',xp:15,sec:'Deep Work',type:'text',opt:false}); }
+  if(type==='golf'){ Q.push({key:`dw::${iso}::1`,label:'Optional work block',area:'mind',xp:15,sec:'Deep Work',type:'text',opt:true}); }
+  sk(`water::${iso}::1`,'💧 Water #2 — 1 qt','hydration',10,'Habits');
+  sk(`water::${iso}::2`,'💧 Water #3 — 1 qt','hydration',10,'Habits');
+  sk(`water::${iso}::3`,'💧 Water #4 — gallon done 🏆','hydration',10,'Habits');
+  for(let n=1;n<=4;n++) sk(`pushup::${iso}::${n}`,`💪 Push-ups set ${n+1}/5 (20 reps)`,'body',10,'Habits');
+  cq('babbel','🇪🇸 Babbel — 10 min Spanish','language',15,'Habits');
+  if(type==='rest'){
+    cq('market','🧺 Farmers market','life',10,'Life Ops');
+    cq('mealprep','🍱 Meal prep the week','life',15,'Life Ops');
+    cq('laundry','👕 Laundry','life',10,'Life Ops');
+    cq('clean','🧹 Clean the house','life',10,'Life Ops');
+    cq('planweek','🗒️ Plan the week ahead','mind',15,'Life Ops');
+  }
+  if(type==='work'&&dow===5){ cq('friend','📞 Call a friend','life',10,'Evening'); }
+  cq('dinner','🍽️ Last meal by 6pm','discipline',10,'Evening');
+  cq('skincare','🧴 Nightly skincare','recovery',10,'Evening');
+  if(type==='rest'||(type==='work'&&dow!==5)){
+    cq('reading','📖 In bed reading by 8:40','recovery',10,'Evening');
+    cq('lights','🌙 Lights out by 9pm','recovery',15,'Evening');
+  }
+  Q.push({key:`plan::${addISO(iso,1)}`,label:'✍️ Tomorrow’s plan (one headline)',area:'mind',xp:10,sec:'Evening',type:'plan',opt:false});
+  return Q;
+}
+function questDone(q){const v=localStorage.getItem(q.key); return q.type==='check' ? v==='1' : !!(v&&v.trim());}
+
+/* ===== derivation engine — the single source of truth ===== */
+const PERFECT_BONUS=40;
+const XP_WORK_BOUNTY=25, XP_TODO_BOUNTY=15, XP_MONTHLY=40, XP_GOAL=60;
+function lvlFromXP(xp){let l=0,need=0,cost=80; while(xp>=need+cost&&l<99){need+=cost; l++; cost=80+l*45;} return {lvl:l,into:xp-need,next:cost};}
+function earliestDataISO(){
+  let min=null;
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+    const m=k.match(/^(water|pushup|dw|cq)::(\d{4}-\d{2}-\d{2})::/)||k.match(/^(plan)::(\d{4}-\d{2}-\d{2})$/);
+    if(!m)continue; const v=localStorage.getItem(k); if(!v||v==='0')continue;
+    if(!min||m[2]<min)min=m[2];}
+  return min;
+}
+function loadLists(){try{return JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){return{};}}
+function loadMC(){let L=[],S={},U={};
+  try{L=JSON.parse(localStorage.getItem('cc_mc_labels'))||[];}catch(e){}
+  try{S=JSON.parse(localStorage.getItem('cc_mc_state'))||{};}catch(e){}
+  try{U=JSON.parse(localStorage.getItem('cc_mc_urgent'))||{};}catch(e){}
+  return {L,S,U};}
+function loadBountyLog(){try{return JSON.parse(localStorage.getItem('cell_bounty_log'))||{};}catch(e){return{};}}
+function harvestBounties(){
+  const log=loadBountyLog(), lists=loadLists(); let changed=false;
+  (lists.work||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'work',t:it.archivedAt||Date.now(),text:it.text}; changed=true;} });
+  (lists.todo||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'todo',t:Date.now(),text:it.text}; changed=true;} });
+  (lists.goals||[]).forEach(it=>{ if(it.done&&!log[it.id]){log[it.id]={w:'goal',t:Date.now(),text:it.text}; changed=true;} });
+  if(changed)setKey('cell_bounty_log',JSON.stringify(log));
+  return log;
+}
+let D=null;
+function derive(){
+  const T=todayISO();
+  const start=earliestDataISO()||T;
+  const areaXP={}; AREA_KEYS.forEach(a=>areaXP[a]=0);
+  const days=[];
+  const tally={gallons:0,pushSets:0,dwBlocks:0,es:0,gymish:0,plans:0,perfect:0,questsDone:0};
+  for(let iso=start; iso<=T; iso=addISO(iso,1)){
+    const qs=questsFor(iso); let done=0,total=0; let waters=0;
+    qs.forEach(q=>{const d=questDone(q);
+      if(!q.opt)total++;
+      if(d){ areaXP[q.area]+=q.xp; tally.questsDone++; if(!q.opt)done++;
+        if(q.key.indexOf('water::')===0)waters++;
+        if(q.key.indexOf('pushup::')===0)tally.pushSets++;
+        if(q.key.indexOf('dw::')===0)tally.dwBlocks++;
+        if(q.key.indexOf('::babbel')>0)tally.es++;
+        if(/::(gym|class|pickleball|golf|activity|walk)$/.test(q.key))tally.gymish++;
+        if(q.key.indexOf('plan::')===0)tally.plans++;
+      }});
+    if(waters>=4)tally.gallons++;
+    const pct=total?done/total:0;
+    if(pct>=1){areaXP.discipline+=PERFECT_BONUS; tally.perfect++;}
+    days.push({iso,done,total,pct});
+  }
+  let streak=0;
+  for(let i=days.length-1;i>=0;i--){const d=days[i];
+    if(i===days.length-1&&d.pct<0.7)continue;
+    if(d.pct>=0.7)streak++; else break;}
+  const log=harvestBounties(); let nWork=0,nTodo=0,nGoal=0;
+  Object.values(log).forEach(b=>{ if(b.w==='work'){areaXP.work+=XP_WORK_BOUNTY;nWork++;}
+    else if(b.w==='goal'){areaXP.life+=XP_GOAL;nGoal++;} else {areaXP.life+=XP_TODO_BOUNTY;nTodo++;} });
+  const mc=loadMC(); let mcDoneAll=0, monthsCleared=0;
+  Object.keys(mc.S).forEach(mk=>{const st=mc.S[mk]||{}; const doneL=Object.keys(st).filter(l=>st[l]);
+    mcDoneAll+=doneL.length; areaXP.life+=doneL.length*XP_MONTHLY;
+    const labels=mk===mcMonthKey()?mc.L:Object.keys(st);
+    if(labels.length&&labels.every(l=>st[l]))monthsCleared++;});
+  const levels={}, prog={}; let totalLvl=0,totalXP=0;
+  AREA_KEYS.forEach(a=>{const r=lvlFromXP(areaXP[a]); levels[a]=r.lvl; prog[a]=r; totalLvl+=r.lvl; totalXP+=areaXP[a];});
+  let stage=0; STAGES.forEach((s,i)=>{if(totalLvl>=s.at)stage=i;});
+  D={T,start,areaXP,levels,prog,totalLvl,totalXP,stage,days,streak,tally,nWork,nTodo,nGoal,mcDoneAll,monthsCleared,mc};
+  return D;
+}
+function mcMonthKey(){const t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,'0');}
+function dayRec(iso){return D.days.find(d=>d.iso===iso)||{done:0,total:1,pct:0};}
+
+/* ===== honors — all derivable, all retroactive ===== */
+const ACH=[
+  {id:'spark',   ic:'⛏️', nm:'Groundbreaking',  ds:'Complete your first quest',            t:s=>s.tally.questsDone>=1},
+  {id:'perfect', ic:'🌟', nm:'Perfect Day',      ds:'100% of a day’s charter',              t:s=>s.tally.perfect>=1},
+  {id:'perfect7',ic:'👑', nm:'Flawless Week',    ds:'7 perfect days',                       t:s=>s.tally.perfect>=7},
+  {id:'streak3', ic:'🔥', nm:'Kindling',         ds:'3-day streak (≥70%)',                  t:s=>s.streak>=3},
+  {id:'streak7', ic:'🔥', nm:'On Fire',          ds:'7-day streak',                         t:s=>s.streak>=7},
+  {id:'streak14',ic:'🌋', nm:'Unstoppable',      ds:'14-day streak',                        t:s=>s.streak>=14},
+  {id:'streak30',ic:'☄️', nm:'Force of Nature',  ds:'30-day streak',                        t:s=>s.streak>=30},
+  {id:'gal7',    ic:'🌊', nm:'Well Runs Deep',   ds:'7 full-gallon days',                   t:s=>s.tally.gallons>=7},
+  {id:'gal30',   ic:'🐋', nm:'Aqueduct',         ds:'30 full-gallon days',                  t:s=>s.tally.gallons>=30},
+  {id:'push500', ic:'💪', nm:'500 Club',         ds:'500 push-up reps',                     t:s=>s.tally.pushSets*20>=500},
+  {id:'push2500',ic:'🦾', nm:'Iron Arms',        ds:'2,500 push-up reps',                   t:s=>s.tally.pushSets*20>=2500},
+  {id:'push10k', ic:'🗿', nm:'Ten Thousand',     ds:'10,000 push-up reps',                  t:s=>s.tally.pushSets*20>=10000},
+  {id:'dw25',    ic:'🎯', nm:'Deep Diver',       ds:'25 deep work blocks',                  t:s=>s.tally.dwBlocks>=25},
+  {id:'dw100',   ic:'🧠', nm:'Flow State',       ds:'100 deep work blocks',                 t:s=>s.tally.dwBlocks>=100},
+  {id:'es10',    ic:'🇪🇸', nm:'Hola',             ds:'10 Spanish sessions',                  t:s=>s.tally.es>=10},
+  {id:'es50',    ic:'🗣️', nm:'Conversador',      ds:'50 Spanish sessions',                  t:s=>s.tally.es>=50},
+  {id:'gym10',   ic:'🏋️', nm:'Regular',          ds:'10 workouts / sport sessions',         t:s=>s.tally.gymish>=10},
+  {id:'gym50',   ic:'🏆', nm:'Athlete',          ds:'50 workouts / sport sessions',         t:s=>s.tally.gymish>=50},
+  {id:'plan7',   ic:'✍️', nm:'The Planner',      ds:'7 tomorrow-plans written',             t:s=>s.tally.plans>=7},
+  {id:'boss1',   ic:'⚔️', nm:'Siege Broken',     ds:'Clear every monthly constant',         t:s=>s.monthsCleared>=1},
+  {id:'boss3',   ic:'🐉', nm:'Warden',           ds:'Clear 3 months',                       t:s=>s.monthsCleared>=3},
+  {id:'bounty10',ic:'💼', nm:'Contractor',       ds:'10 work commissions done',             t:s=>s.nWork>=10},
+  {id:'bounty50',ic:'💎', nm:'Magnate',          ds:'50 work commissions done',             t:s=>s.nWork>=50},
+  {id:'allL3',   ic:'🏘️', nm:'Well-Planned',     ds:'Every district level 3+',              t:s=>AREA_KEYS.every(a=>s.levels[a]>=3)},
+  {id:'allL5',   ic:'🏛️', nm:'Thriving Capital', ds:'Every district level 5+',              t:s=>AREA_KEYS.every(a=>s.levels[a]>=5)},
+  {id:'stage3',  ic:'🏙️', nm:'Township',         ds:'Reach the Town stage',                 t:s=>s.stage>=3},
+  {id:'stage4',  ic:'🌆', nm:'Cityhood',         ds:'Reach the City stage',                 t:s=>s.stage>=4},
+  {id:'stage5',  ic:'🌇', nm:'Metropolis',       ds:'Reach the final stage',                t:s=>s.stage>=5},
+];
+
+/* ===== the settlement — procedural isometric SVG ===== */
+const TW=40, TH=20, ZH=18, OX=200, OY=60;
+function iso(gx,gy,gz){return [OX+(gx-gy)*TW/2, OY+(gx+gy)*TH/2 - (gz||0)*ZH];}
+function P(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}
+function shade(hex,amt){let n=parseInt(hex.slice(1),16);
+  let r=Math.max(0,Math.min(255,(n>>16)+amt)),g=Math.max(0,Math.min(255,((n>>8)&255)+amt)),b=Math.max(0,Math.min(255,(n&255)+amt));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+const WALL_R='#EFE8D7', WALL_F='#DCD1B7', INK='#1E2A22';
+function poly(pts,fill,sw,op){return `<polygon points="${pts.map(P).join(' ')}" fill="${fill}" stroke="${INK}" stroke-width="${sw||0.8}" stroke-linejoin="round"${op?` opacity="${op}"`:''}/>`;}
+/* a building: footprint w×d (tile units) at (gx,gy), height h; flat roof or hip roof (peak) */
+function bldg(gx,gy,w,d,h,roof,peak){
+  const hw=w/2, hd=d/2;
+  const A=iso(gx-hw,gy-hd,0),B=iso(gx+hw,gy-hd,0),C=iso(gx+hw,gy+hd,0),Dn=iso(gx-hw,gy+hd,0);
+  const At=iso(gx-hw,gy-hd,h),Bt=iso(gx+hw,gy-hd,h),Ct=iso(gx+hw,gy+hd,h),Dt=iso(gx-hw,gy+hd,h);
+  let s=poly([B,C,Ct,Bt],WALL_R)+poly([Dn,C,Ct,Dt],WALL_F);
+  if(peak){const ap=iso(gx,gy,h+peak);
+    s+=poly([At,Bt,ap],shade(roof,14))+poly([Bt,Ct,ap],roof)+poly([Dt,Ct,ap],shade(roof,-14));
+  }else{ s+=poly([At,Bt,Ct,Dt],roof); }
+  return s;
+}
+function foundation(gx,gy,w,d){const hw=w/2,hd=d/2;
+  return `<polygon points="${[iso(gx-hw,gy-hd),iso(gx+hw,gy-hd),iso(gx+hw,gy+hd),iso(gx-hw,gy+hd)].map(P).join(' ')}" fill="none" stroke="${INK}" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4"/>`;}
+function renderTown(){
+  const s=D, L=s.levels, stage=s.stage, svg=document.getElementById('townsvg');
+  const draws=[];
+  const put=(gx,gy,str,area)=>draws.push({d:gx+gy, s:`<g class="org" data-area="${area}"><title>${AREAS[area].org} — ${AREAS[area].nm} (Lv ${L[area]})</title>${str}</g>`});
+  const H=a=>0.5+Math.min(L[a],9)*0.14;   // height by level
+  const cnt=(base,per,lvl,max)=>Math.max(base,Math.min(max,base+Math.floor(lvl*per)));
+
+  /* ---- ground ---- */
+  let bg='';
+  bg+=poly([iso(-.4,-.4),iso(8.4,-.4),iso(8.4,8.4),iso(-.4,8.4)],'#F3EFE4',1.2);
+  for(let i=1;i<8;i++){const a=iso(i,-.4),b=iso(i,8.4),c=iso(-.4,i),e=iso(8.4,i);
+    bg+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#E7DFCB" stroke-width="0.5"/>`;
+    bg+=`<line x1="${c[0].toFixed(1)}" y1="${c[1].toFixed(1)}" x2="${e[0].toFixed(1)}" y2="${e[1].toFixed(1)}" stroke="#E7DFCB" stroke-width="0.5"/>`;}
+  /* main road (cross through plaza) */
+  bg+=poly([iso(3.7,-.4),iso(4.3,-.4),iso(4.3,8.4),iso(3.7,8.4)],'#E6DCC4',0.6);
+  bg+=poly([iso(-.4,3.7),iso(8.4,3.7),iso(8.4,4.3),iso(-.4,4.3)],'#E6DCC4',0.6);
+
+  /* ---- DISCIPLINE · ramparts & gates (perimeter) ---- */
+  const wh=0.28+Math.min(L.discipline,9)*0.13;
+  function wallRun(x0,y0,x1,y1){
+    const b0=iso(x0,y0,0),b1=iso(x1,y1,0),t1=iso(x1,y1,wh),t0=iso(x0,y0,wh);
+    return poly([b0,b1,t1,t0],shade('#8C6A1D',52))+poly([t0,t1,iso(x1,y1,wh),iso(x0,y0,wh)],WALL_R,0.5);
+  }
+  if(L.discipline>=0) put(0,4, wallRun(-.15,-.15,-.15,8.15),'discipline');       // W wall (always)
+  if(L.discipline>=1) put(4,-.2, wallRun(-.15,-.15,8.15,-.15),'discipline');     // N wall
+  if(L.discipline>=2) put(8.2,4, wallRun(8.15,-.15,8.15,8.15),'discipline');     // E wall
+  const towerAt=(x,y)=>bldg(x,y,.5,.5,wh+0.5,shade('#8C6A1D',-10));
+  if(L.discipline>=3){ put(-.15,-.15, towerAt(-.15,-.15),'discipline'); put(8.15,-.15, towerAt(8.15,-.15),'discipline'); }
+  if(L.discipline>=5){ put(-.15,8.15, towerAt(-.15,8.15),'discipline'); put(8.15,8.15, towerAt(8.15,8.15),'discipline'); }
+
+  /* ---- MIND · grand library (NW) ---- */
+  if(L.mind===0) put(2,2, foundation(2,2,.9,.9),'mind');
+  else{
+    put(2,2, bldg(2,2,.75,.75,H('mind')*1.7,'#566288'),'mind');            // tower
+    put(2,2, bldg(2,2,.4,.4,H('mind')*1.7+0.35,shade('#566288',-12)),'mind'); // spire cap
+    if(L.mind>=2) put(3,1.7, bldg(3,1.7,.8,.6,H('mind')*.8,shade('#566288',18)),'mind');
+    if(L.mind>=4) put(1.7,3, bldg(1.7,3,.6,.8,H('mind')*.8,shade('#566288',18)),'mind');
+  }
+
+  /* ---- WORK · forge guild (NE) ---- */
+  if(L.work===0) put(6,2, foundation(6,2,.9,.9),'work');
+  else{
+    put(6,2, bldg(6,2,.9,.7,H('work'),'#2E5641'),'work');
+    put(6.35,1.75, bldg(6.35,1.75,.18,.18,H('work')+0.6,shade('#2E5641',-18)),'work'); // chimney
+    if(L.work>=2) put(5.1,1.8, bldg(5.1,1.8,.6,.55,H('work')*.75,shade('#2E5641',16)),'work');
+    if(L.work>=4) put(6.4,3.1, bldg(6.4,3.1,.55,.6,H('work')*.75,shade('#2E5641',16)),'work');
+  }
+
+  /* ---- BODY · the arena (SW) ---- */
+  (function(){const cx=2,cy=6; const rr=0.7+Math.min(L.body,9)*0.06;
+    const c=iso(cx,cy,0); const rx=rr*TW*0.62, ry=rr*TH*0.62;
+    let a=`<ellipse cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" rx="${(rx+7).toFixed(1)}" ry="${(ry+7).toFixed(1)}" fill="${WALL_R}" stroke="${INK}" stroke-width="0.9"/>`;
+    a+=`<ellipse cx="${c[0].toFixed(1)}" cy="${(c[1]-3).toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="#C9765A" stroke="${INK}" stroke-width="0.8" opacity="0.9"/>`;
+    if(L.body>0){const bp=iso(cx-rr*.7,cy-rr*.7,0); a+=`<line x1="${bp[0].toFixed(1)}" y1="${bp[1].toFixed(1)}" x2="${bp[0].toFixed(1)}" y2="${(bp[1]-16).toFixed(1)}" stroke="${INK}" stroke-width="1.2"/><polygon points="${bp[0].toFixed(1)},${(bp[1]-16).toFixed(1)} ${(bp[0]+11).toFixed(1)},${(bp[1]-13).toFixed(1)} ${bp[0].toFixed(1)},${(bp[1]-10).toFixed(1)}" fill="#9C3D22"/>`;}
+    put(cx,cy,a,'body');
+  })();
+
+  /* ---- RECOVERY · tavern & gardens (SE) ---- */
+  if(L.recovery===0) put(6,6, foundation(6,6,.8,.8),'recovery');
+  else{
+    put(6,5.9, bldg(6,5.9,.8,.7,H('recovery')*1.05,'#7A5C86',0.5),'recovery');   // tavern (hip roof)
+    const gN=cnt(0,0.5,L.recovery,3);
+    const gs=[[6.7,6.7],[5.6,6.7],[6.9,5.8]];
+    for(let i=0;i<gN;i++){const gp=iso(gs[i][0],gs[i][1],0);
+      put(gs[i][0],gs[i][1], `<ellipse cx="${gp[0].toFixed(1)}" cy="${gp[1].toFixed(1)}" rx="12" ry="6" fill="#6E7B4E" stroke="${INK}" stroke-width="0.7" opacity="0.85"/><ellipse cx="${(gp[0]-3).toFixed(1)}" cy="${(gp[1]-2).toFixed(1)}" rx="3" ry="1.6" fill="#9C3D22"/>`,'recovery');}
+  }
+
+  /* ---- LANGUAGE · market bazaar (center-south) ---- */
+  (function(){const stalls=[[3.4,4.7],[4.2,4.7],[3.6,5.3],[4.4,5.2],[3.9,4.95],[4.7,4.9],[3.15,5.1]];
+    const n=cnt(2,0.7,L.language,7);
+    for(let i=0;i<n;i++){const[x,y]=stalls[i];
+      put(x,y, bldg(x,y,.34,.34,0.32,'#B07B2B')+ (function(){const tp=iso(x,y,0.32); return `<rect x="${(tp[0]-9).toFixed(1)}" y="${(tp[1]-4).toFixed(1)}" width="18" height="4" fill="${i%2?'#9C3D22':'#B07B2B'}" stroke="${INK}" stroke-width="0.5"/>`;})(),'language');}
+    if(n<3){const[x,y]=stalls[0]; put(x,y,foundation(x,y,1.4,1.2),'language');}
+  })();
+
+  /* ---- LIFE · homesteads (mid-edges) ---- */
+  (function(){const homes=[[4,2.4],[2.4,4],[5.8,4.3],[3.3,6.1],[4.9,3.3]];
+    const n=cnt(1,0.6,L.life,5);
+    for(let i=0;i<n;i++){const[x,y]=homes[i]; put(x,y, bldg(x,y,.5,.45,0.5,'#6E7B4E',0.42),'life');}
+  })();
+
+  /* ---- central plaza landmark (stage) ---- */
+  (function(){const cx=4,cy=4;
+    if(stage===0){const p=iso(cx,cy,0);
+      draws.push({d:8.05,s:`<polygon points="${(p[0]-6).toFixed(1)},${p[1].toFixed(1)} ${(p[0]+6).toFixed(1)},${p[1].toFixed(1)} ${p[0].toFixed(1)},${(p[1]-9).toFixed(1)}" fill="#9C3D22" stroke="${INK}" stroke-width="0.7"/>`});
+    }else{
+      const th=0.5+stage*0.42;
+      let str=bldg(cx,cy,.62,.62,th,shade('#8C6A1D',-4))+bldg(cx,cy,.34,.34,th+0.4,'#8C6A1D');
+      const fp=iso(cx,cy,th+0.4); str+=`<line x1="${fp[0].toFixed(1)}" y1="${fp[1].toFixed(1)}" x2="${fp[0].toFixed(1)}" y2="${(fp[1]-13).toFixed(1)}" stroke="${INK}" stroke-width="1"/><polygon points="${fp[0].toFixed(1)},${(fp[1]-13).toFixed(1)} ${(fp[0]+12).toFixed(1)},${(fp[1]-10.5).toFixed(1)} ${fp[0].toFixed(1)},${(fp[1]-8).toFixed(1)}" fill="#2E5641"/>`;
+      draws.push({d:8.06,s:str});
+    }
+  })();
+
+  /* depth-sort structures */
+  draws.sort((a,b)=>a.d-b.d);
+  let mid=draws.map(x=>x.s).join('');
+
+  /* ---- HYDRATION · river (front, drawn last) + well + bridge ---- */
+  let riv='';
+  const rLen=cnt(3,0.6,L.hydration,9);   // how far the river reaches across the front
+  const rx0=-0.4, rx1=-0.4+rLen;
+  riv+=poly([iso(rx0,7.5),iso(rx1,7.5),iso(rx1,8.4),iso(rx0,8.4)],'#3E6E8E',0.8,0.55);
+  riv+=poly([iso(rx0,7.7),iso(rx1,7.7),iso(rx1,7.85),iso(rx0,7.85)],'#EAF1F6',0,0.5);
+  if(L.hydration>0){ // well near center
+    const wp=iso(3.3,3.4,0);
+    riv+=`<ellipse cx="${wp[0].toFixed(1)}" cy="${wp[1].toFixed(1)}" rx="7" ry="4" fill="#3E6E8E" stroke="${INK}" stroke-width="0.8"/><ellipse cx="${wp[0].toFixed(1)}" cy="${(wp[1]-1).toFixed(1)}" rx="4" ry="2" fill="#EAF1F6"/>`;
+  }
+  if(L.hydration>=3){ // bridge where the road meets the river
+    const bp=iso(4,7.6,0);
+    riv+=`<polygon points="${(bp[0]-10).toFixed(1)},${bp[1].toFixed(1)} ${(bp[0]+10).toFixed(1)},${bp[1].toFixed(1)} ${(bp[0]+10).toFixed(1)},${(bp[1]-5).toFixed(1)} ${(bp[0]-10).toFixed(1)},${(bp[1]-5).toFixed(1)}" fill="${WALL_R}" stroke="${INK}" stroke-width="0.8"/>`;
+  }
+
+  svg.innerHTML=`<g>${bg}</g>${mid}<g class="org" data-area="hydration"><title>Aqueduct & Well — Hydration (Lv ${L.hydration})</title>${riv}</g>`;
+  svg.querySelectorAll('.org').forEach(el=>{el.addEventListener('click',()=>flashArea(el.dataset.area));});
+  spawnClouds();
+}
+let cloudsDone=false;
+function spawnClouds(){
+  if(cloudsDone)return; cloudsDone=true;
+  const w=document.getElementById('townwrap'); const seeds=[[14,10,26,10],[62,16,34,13],[40,7,20,8]];
+  seeds.forEach((c,i)=>{const el=document.createElement('div'); el.className='cloud';
+    el.style.cssText=`left:${c[0]}%;top:${c[1]}%;width:${c[2]}px;height:${c[3]}px;animation-duration:${18+i*7}s;animation-delay:-${i*4}s;`;
+    w.appendChild(el);});
+}
+function flashArea(a){const el=document.querySelector(`.area[data-area="${a}"]`); if(!el)return;
+  el.scrollIntoView({block:'nearest',behavior:'smooth'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),1600);}
+
+/* ===== UI renderers ===== */
+let VIEW_ISO=todayISO();
+function navDay(n){const nx=addISO(VIEW_ISO,n); if(nx>todayISO())return; if(addISO(nx,45)<todayISO())return; VIEW_ISO=nx; renderQuests();}
+function renderQuests(){
+  const T=todayISO(); if(VIEW_ISO>T)VIEW_ISO=T;
+  const d=fromISO(VIEW_ISO), qs=questsFor(VIEW_ISO);
+  document.getElementById('dLabel').textContent=(VIEW_ISO===T?'Today · ':'')+d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  document.getElementById('dType').textContent={work:'work day',golf:'golf day',rest:'rest day'}[dayType(VIEW_ISO)];
+  document.getElementById('dNext').disabled=VIEW_ISO>=T;
+  document.getElementById('dPrev').disabled=addISO(VIEW_ISO,44)<T;
+  const secs=[]; qs.forEach(q=>{if(secs.indexOf(q.sec)<0)secs.push(q.sec);});
+  let html='';
+  secs.forEach(sec=>{
+    html+=`<div class="qsec">${sec}</div>`;
+    qs.filter(q=>q.sec===sec).forEach(q=>{
+      const done=questDone(q), a=AREAS[q.area]; const style=`--ac:${a.hex}`;
+      if(q.type==='check'){
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <input type="checkbox" ${done?'checked':''} onchange="toggleQuest('${q.key}',this)">
+          <span class="adot" title="${a.nm}"></span><span class="qtxt">${q.label}</span>
+          ${q.opt?'<span class="opt">optional</span>':''}<span class="qxp">+${q.xp}</span></div>`;
+      }else if(q.type==='text'){
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <span class="adot" title="${a.nm}"></span>
+          <input class="dwtxt" data-tkey="${q.key}" placeholder="${q.label} — type your focus…" value="${escAttr(localStorage.getItem(q.key)||'')}">
+          ${q.opt?'<span class="opt">optional</span>':''}<span class="qxp">+${q.xp}</span></div>`;
+      }else{
+        html+=`<div class="quest ${done?'done':''}" style="${style}" data-qkey="${q.key}">
+          <span class="adot" title="${a.nm}"></span>
+          <textarea class="plantxt" data-tkey="${q.key}" placeholder="${q.label}…">${escHtml(localStorage.getItem(q.key)||'')}</textarea>
+          <span class="qxp">+${q.xp}</span></div>`;
+      }});
+  });
+  document.getElementById('questList').innerHTML=html;
+  document.querySelectorAll('[data-tkey]').forEach(el=>{
+    let t=null; el.addEventListener('input',()=>{clearTimeout(t); t=setTimeout(()=>{const was=questDone({key:el.dataset.tkey,type:'text'});
+      setKey(el.dataset.tkey,el.value); afterChange(el.closest('.quest'), !was && !!el.value.trim());},600);});
+  });
+  renderRing();
+}
+function renderRing(){
+  const qs=questsFor(VIEW_ISO).filter(q=>!q.opt); const done=qs.filter(questDone).length;
+  const pct=qs.length?done/qs.length:0; const CIRC=131.9;
+  document.getElementById('ringFg').style.strokeDashoffset=(CIRC*(1-pct)).toFixed(1);
+  document.getElementById('ringPct').textContent=Math.round(pct*100)+'%';
+}
+function toggleQuest(key,el){ setKey(key,el.checked?'1':'0'); afterChange(el.closest('.quest'), el.checked); }
+function afterChange(qEl,gained){
+  const prevStage=D?D.stage:0, prevLv=D?{...D.levels}:{}, prevAch=earnedAchIds();
+  derive();
+  if(qEl){qEl.classList.toggle('done',questDone({key:qEl.dataset.qkey,type:qEl.querySelector('input[type=checkbox]')?'check':'text'}));
+    if(gained){const f=document.createElement('span'); f.className='xpfloat'; f.textContent='+XP'; qEl.appendChild(f); setTimeout(()=>f.remove(),1200);}}
+  renderRing(); renderAreas(); renderStats(); renderStage(); renderTown(); renderHeat(); renderMC(); renderBounties(); renderAch();
+  celebrate(prevStage,prevLv,prevAch);
+}
+function earnedAchIds(){return D?ACH.filter(a=>a.t(D)).map(a=>a.id):[];}
+function celebrate(prevStage,prevLv,prevAch){
+  AREA_KEYS.forEach(a=>{ if(D.levels[a]>(prevLv[a]||0)){toast(`${AREAS[a].ic} ${AREAS[a].nm} reached <b>Lv ${D.levels[a]}</b> — the ${AREAS[a].org} expands!`); confetti(AREAS[a].hex); flashArea(a);} });
+  if(D.stage>prevStage){toast(`🏙️ YOUR SETTLEMENT GREW — now a <b>${STAGES[D.stage].nm}</b>!`,'gold'); confetti('#8C6A1D'); confetti('#2E5641');}
+  earnedAchIds().forEach(id=>{ if(prevAch.indexOf(id)<0){const a=ACH.find(x=>x.id===id); toast(`🏅 Honor earned — <b>${a.nm}</b>: ${a.ds}`,'gold'); confetti('#8C6A1D');} });
+  const today=dayRec(D.T); if(today.pct>=1&&today.total>0&&!celebrate._perfectShown){celebrate._perfectShown=true; toast(`🌟 <b>PERFECT DAY</b> — every charter item complete. +${PERFECT_BONUS} bonus XP`,'gold'); confetti('#B07B2B');}
+}
+function renderStage(){
+  const st=STAGES[D.stage], nx=STAGES[D.stage+1];
+  document.getElementById('stageName').textContent=`${st.nm}`;
+  document.getElementById('stageSub').textContent=st.sub+` · total level ${D.totalLvl} · ${D.totalXP.toLocaleString()} XP`;
+  document.getElementById('stagePillTop').textContent=`🏙️ Stage ${D.stage+1}/${STAGES.length} · ${st.nm}`;
+  document.getElementById('streakPill').innerHTML=`🔥 <b>${D.streak}</b> day${D.streak===1?'':'s'}`;
+  if(nx){const span=nx.at-st.at, into=D.totalLvl-st.at;
+    document.getElementById('evoFill').style.width=Math.min(100,into/span*100).toFixed(1)+'%';
+    document.getElementById('evoNow').textContent=st.nm;
+    document.getElementById('evoNext').textContent=`${nx.nm} @ lvl ${nx.at}`;
+  }else{document.getElementById('evoFill').style.width='100%';
+    document.getElementById('evoNow').textContent=st.nm; document.getElementById('evoNext').textContent='FULLY GROWN';}
+}
+function renderAreas(){
+  const host=document.getElementById('areaCards');
+  const todayXP={}; AREA_KEYS.forEach(a=>todayXP[a]=0);
+  questsFor(D.T).forEach(q=>{if(questDone(q))todayXP[q.area]+=q.xp;});
+  host.innerHTML=AREA_KEYS.map(a=>{const A=AREAS[a],p=D.prog[a];
+    return `<div class="area" data-area="${a}" style="--ac:${A.hex}">
+      <div class="top"><span>${A.ic}</span><span class="nm">${A.nm}</span><span class="lvl">Lv ${p.lvl}</span></div>
+      <div class="orgn">${A.org}</div>
+      <div class="bar"><i style="width:${(p.into/p.next*100).toFixed(1)}%"></i></div>
+      <div class="xps"><span>${D.areaXP[a].toLocaleString()} xp</span><span class="today">${todayXP[a]?'+'+todayXP[a]+' today':''}</span><span>${p.next-p.into} to Lv ${p.lvl+1}</span></div>
+    </div>`;}).join('');
+}
+function renderStats(){
+  const t=D.tally;
+  const rows=[
+    [D.totalXP.toLocaleString(),'total xp'], [D.streak+'🔥','day streak'],
+    [t.perfect,'perfect days'], [t.gallons,'gallons 💧'],
+    [(t.pushSets*20).toLocaleString(),'push-up reps'], [t.dwBlocks,'deep work'],
+    [t.es,'spanish'], [D.nWork+D.nTodo+D.nGoal,'commissions'],
+  ];
+  document.getElementById('statsRow').innerHTML=rows.map(r=>`<div class="stat"><div class="v">${r[0]}</div><div class="l">${r[1]}</div></div>`).join('');
+}
+function renderHeat(){
+  const host=document.getElementById('heat'); const T=todayISO();
+  const end=fromISO(T); const cells=[];
+  const back=111+end.getDay();
+  for(let i=back;i>=0;i--){const iso=addISO(T,-i); const d=fromISO(iso);
+    if(cells.length===0){for(let k=0;k<d.getDay();k++)cells.push(null);}
+    const rec=D.days.find(x=>x.iso===iso);
+    cells.push({iso,rec});}
+  host.innerHTML=cells.map(c=>{
+    if(!c)return `<span class="hcell" style="visibility:hidden"></span>`;
+    let cls=''; if(c.rec&&c.rec.total){const p=c.rec.pct; cls=p>=1?'h4':p>=.7?'h3':p>=.4?'h2':p>0?'h1':'';}
+    const tip=c.rec?`${c.iso} — ${c.rec.done}/${c.rec.total} (${Math.round(c.rec.pct*100)}%)`:c.iso+' — before the beginning';
+    return `<span class="hcell ${cls} ${c.iso===T?'today':''}" title="${tip}"></span>`;}).join('');
+}
+function renderMC(){
+  const mk=mcMonthKey(), mc=D.mc, st=mc.S[mk]||{};
+  const monthName=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('bossMonth').textContent=monthName;
+  const total=mc.L.length, done=mc.L.filter(l=>st[l]).length, hp=total-done;
+  const faces=['👾','🐙','🦑','🐲','👹','🤖','🦠','🐍','🦂','🕷️','🐉','💀'];
+  const face=faces[new Date().getMonth()];
+  const slain=total>0&&hp===0;
+  document.getElementById('bossBar').className='boss'+(slain?' slain':'');
+  document.getElementById('bossBar').innerHTML=`<span class="face">${face}</span><div class="bwrap">
+    <div class="bname"><span>${slain?'SIEGE BROKEN — the month is yours 🏆':'The '+monthName.split(' ')[0]+' Siege'}</span><span class="hp">${hp}/${total} HP</span></div>
+    <div class="hpbar"><i style="width:${total?(hp/total*100).toFixed(1):0}%"></i></div>
+    ${slain?'':'<div class="slainflag" style="color:var(--ink-mut)">each monthly constant = 1 hit · +'+XP_MONTHLY+' xp</div>'}</div>`;
+  document.getElementById('mcList').innerHTML=mc.L.length?mc.L.map((lab,i)=>{
+    const d=!!st[lab];
+    return `<div class="quest ${d?'done':''}" style="--ac:${AREAS.life.hex}">
+      <input type="checkbox" ${d?'checked':''} onchange="mcToggle(${i},this)">
+      <span class="adot" style="background:${AREAS.life.hex}"></span>
+      <span class="qtxt">${mc.U[lab]?'⚠ ':''}${escHtml(lab)}</span><span class="qxp">+${XP_MONTHLY}</span></div>`;
+  }).join(''):'<div class="emptymsg">No monthly constants yet — add them in the Command Center.</div>';
+}
+function mcToggle(i,el){
+  const mc=loadMC(), mk=mcMonthKey(); const lab=mc.L[i]; if(lab===undefined)return;
+  mc.S[mk]=mc.S[mk]||{}; mc.S[mk][lab]=el.checked;
+  setKey('cc_mc_state',JSON.stringify(mc.S));
+  afterChange(el.closest('.quest'), el.checked);
+}
+function renderBounties(){
+  const lists=loadLists(); const host=document.getElementById('bountyList');
+  const cats=[['work','💼 Professional',[['prominato','Prominato','#8C6A1D'],['highmark','Highmark','#566288'],['ai','AI Creation','#2E5641']],XP_WORK_BOUNTY],
+              ['todo','🏡 Personal',null,XP_TODO_BOUNTY],['goals','🎯 Goals',null,XP_GOAL]];
+  let html='';
+  cats.forEach(([w,title,sub,xp])=>{
+    const items=(lists[w]||[]).filter(x=>!x.done);
+    if(w==='goals'&&!items.length)return;
+    html+=`<div class="bcat" style="color:var(--ink-dim)">${title} <span style="color:var(--ink-mut)">· ${items.length} open</span></div>`;
+    if(!items.length){html+='<div class="emptymsg">Board clear ✨</div>'; return;}
+    items.forEach(it=>{
+      const catCol=sub?(sub.find(c=>c[0]===it.cat)||[])[2]:null;
+      html+=`<div class="bounty ${it.urgent?'urgent':''}">
+        <input type="checkbox" onchange="claimBounty('${w}','${it.id}',this)" style="appearance:none;width:19px;height:19px;min-width:19px;border:1.5px solid var(--line2);background:var(--bg);cursor:pointer;">
+        ${catCol?`<span class="wdot" style="width:7px;height:7px;background:${catCol}"></span>`:''}
+        <span class="btxt">${escHtml(it.text)}</span><span class="brew">+${xp} xp</span></div>`;});
+  });
+  host.innerHTML=html||'<div class="emptymsg">Nothing on the board.</div>';
+}
+function claimBounty(w,id,el){
+  const lists=loadLists(); const it=(lists[w]||[]).find(x=>x.id===id); if(!it)return;
+  it.done=true; if(w==='work')it.archivedAt=Date.now();
+  setKey('cc_lists',JSON.stringify(lists));
+  toast(`💰 Commission filled — <b>${escHtml(it.text)}</b>`);
+  afterChange(null,true);
+}
+function renderAch(){
+  const earned=earnedAchIds();
+  document.getElementById('achCount').textContent=`${earned.length} / ${ACH.length} earned`;
+  document.getElementById('achGrid').innerHTML=ACH.map(a=>{
+    const won=earned.indexOf(a.id)>=0;
+    return `<div class="ach ${won?'won':''}"><div class="ic">${a.ic}</div><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div></div>`;}).join('');
+}
+
+/* ===== toasts / confetti ===== */
+function toast(html,cls){const t=document.createElement('div'); t.className='toast '+(cls||''); t.innerHTML=html;
+  document.getElementById('toasts').appendChild(t); setTimeout(()=>t.remove(),3800);}
+function confetti(color){
+  for(let i=0;i<24;i++){const c=document.createElement('div'); c.className='confetti';
+    const x=(Math.random()*100).toFixed(0), cx=(Math.random()*160-80).toFixed(0), cy=(120+Math.random()*260).toFixed(0);
+    c.style.cssText=`left:${x}vw;top:-12px;background:${color};--cx:${cx}px;--cy:${cy}px;${Math.random()>.5?'border-radius:50%;':''}animation-delay:${(Math.random()*.4).toFixed(2)}s;`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),2100);}
+}
+
+/* ===== level-up detection across sessions ===== */
+function seenCheck(){
+  let seen=null; try{seen=JSON.parse(localStorage.getItem('cell_seen'));}catch(e){}
+  if(seen&&seen.lv){
+    AREA_KEYS.forEach(a=>{if(D.levels[a]>(seen.lv[a]||0))toast(`${AREAS[a].ic} While you were away: <b>${AREAS[a].nm}</b> reached Lv ${D.levels[a]}`);});
+    if(D.stage>(seen.stage||0))toast(`🏙️ Welcome back to your <b>${STAGES[D.stage].nm}</b>`,'gold');
+  }
+  localStorage.setItem('cell_seen',JSON.stringify({lv:D.levels,stage:D.stage,t:Date.now()}));
+}
+
+/* ===== export ===== */
+function exportData(){
+  const all={}; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); all[k]=localStorage.getItem(k);}
+  const blob=new Blob([JSON.stringify(all,null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='settlement-backup-'+todayISO()+'.json'; a.click();
+}
+
+/* ===== boot ===== */
+function renderAll(){
+  derive();
+  renderStage(); renderTown(); renderAreas(); renderStats();
+  renderQuests(); renderMC(); renderBounties(); renderHeat(); renderAch();
+  localStorage.setItem('cell_seen',JSON.stringify({lv:D.levels,stage:D.stage,t:Date.now()}));
+}
+derive(); seenCheck(); renderAll();
+SYNC.start();
+window.addEventListener('storage',()=>renderAll());
+setInterval(()=>{ if(todayISO()!==D.T){VIEW_ISO=todayISO(); celebrate._perfectShown=false; renderAll();} },60*1000);
+</script>
+</body>
+</html>
