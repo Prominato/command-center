@@ -87,7 +87,16 @@
   details.evmgr>summary{list-style:none; cursor:pointer; font-family:'Fraunces',ui-serif,Georgia,Cambria,serif; font-weight:600; font-size:1rem; display:flex; align-items:center; gap:8px;}
   details.evmgr>summary::-webkit-details-marker{display:none;}
   details.evmgr[open]>summary{margin-bottom:10px;}
-  .addrow input[type=color]{width:34px; height:30px; border:1px solid var(--divider); border-radius:6px; padding:1px; background:var(--card); cursor:pointer; flex:0 0 auto;}
+  .tintdd{position:relative; display:inline-flex; align-items:center; gap:6px; flex:0 0 auto;}
+  .tintbtn{display:inline-flex; align-items:center; gap:5px; background:var(--card); border:1px solid var(--divider); border-radius:8px; padding:6px 8px; cursor:pointer;}
+  .tintbtn i{width:16px; height:16px; border-radius:4px; display:inline-block; background:var(--gold); border:1px solid rgba(0,0,0,.18);}
+  .tintbtn .caret{font-size:.6rem; color:var(--ink-muted);}
+  .tintmenu{position:absolute; top:38px; left:0; z-index:30; display:none; grid-template-columns:repeat(3,24px); gap:7px; background:var(--bg2); border:1px solid var(--divider); border-radius:10px; padding:9px; box-shadow:var(--shadow);}
+  .tintmenu.open{display:grid;}
+  .tintmenu button{width:24px; height:24px; border-radius:6px; border:1px solid rgba(0,0,0,.22); cursor:pointer; padding:0;}
+  .tintmenu button:hover{transform:scale(1.14);}
+  .tintdd .tintundo{flex:0 0 auto; padding:6px 9px;}
+  body.skin-ledger .tintbtn,body.skin-ledger .tintmenu,body.skin-ledger .tintmenu button,body.skin-ledger .tintbtn i{border-radius:0}
 
   /* calendar */
   .months{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
@@ -462,8 +471,18 @@
           <label class="fld">End <input id="evEnd" type="date"></label>
           <label class="fld">From <input id="evStartTime" type="time"></label>
           <label class="fld">To <input id="evEndTime" type="time"></label>
-          <label class="fld">Color <input id="evTint" type="color" value="#8C6A1D" oninput="evTintTouch(this.value)"></label>
-          <button class="ghost" id="evTintClearBtn" onclick="evTintClear()" title="Use the default color for this event type">↺ default</button>
+          <span class="tintdd">
+            <button type="button" class="tintbtn" onclick="evTintMenu(event)" title="Event color"><i id="evTintSwatch"></i><span class="caret">▾</span></button>
+            <div class="tintmenu" id="evTintList">
+              <button type="button" style="background:#B5483F" onclick="evTintPick('#B5483F')"></button>
+              <button type="button" style="background:#D98E3B" onclick="evTintPick('#D98E3B')"></button>
+              <button type="button" style="background:#3F7D4E" onclick="evTintPick('#3F7D4E')"></button>
+              <button type="button" style="background:#4A7FB5" onclick="evTintPick('#4A7FB5')"></button>
+              <button type="button" style="background:#7B6FD0" onclick="evTintPick('#7B6FD0')"></button>
+              <button type="button" style="background:#C15E86" onclick="evTintPick('#C15E86')"></button>
+            </div>
+            <button type="button" class="ghost tintundo" onclick="evTintClear()" title="Use the default color">↺</button>
+          </span>
           <button id="evPickBtn" onclick="togglePick()">📅 Pick on calendar</button>
           <button id="evAddBtn" onclick="addEvent()">Add</button>
           <button id="evCancelBtn" class="ghost" style="display:none" onclick="cancelEdit()">Cancel</button>
@@ -735,12 +754,15 @@ function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
 function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
   const p=evPalette(), pro=(e.cal==='prominato');
   return evKind(e)==='appt' ? (pro?p.apptP:p.appt) : (pro?p.blockP:p.block); }
-/* per-event color field in the add/edit form. EVTINT: null = untouched,
-   'auto' = user chose "default", '#hex' = user picked a custom color */
+/* per-event color dropdown in the add/edit form. EVTINT: null = untouched,
+   'auto' = user chose "default", '#hex' = one of the six picks */
 let EVTINT=null;
-function evTintTouch(v){ EVTINT=v; }
-function evTintClear(){ EVTINT='auto'; const el=document.getElementById('evTint'); if(el)el.value=evPalette().block; }
-function evTintReset(){ EVTINT=null; const el=document.getElementById('evTint'); if(el)el.value=evPalette().block; }
+function evTintPaint(c){ const el=document.getElementById('evTintSwatch'); if(el)el.style.background=c||evPalette().block; }
+function evTintMenu(e){ e.stopPropagation(); document.getElementById('evTintList').classList.toggle('open'); }
+function evTintPick(c){ EVTINT=c; evTintPaint(c); document.getElementById('evTintList').classList.remove('open'); }
+function evTintClear(){ EVTINT='auto'; evTintPaint(null); document.getElementById('evTintList').classList.remove('open'); }
+function evTintReset(){ EVTINT=null; evTintPaint(null); }
+document.addEventListener('click',()=>{ const m=document.getElementById('evTintList'); if(m)m.classList.remove('open'); });
 const DEFAULT_EVENTS=[{id:'seed-dallas',label:'Dallas ✈️',start:'2026-06-26',end:'2026-06-28',color:'#5C6BA0',loc:'Dallas, Texas, US',lat:32.7767,lon:-96.797}];
 const WX_CACHE={}; let GEO_MAP={};
 function wmo(code){const m={0:['☀️','Clear'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Showers'],81:['🌧️','Showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};return m[code]||['🌡️',''];}
@@ -769,7 +791,7 @@ async function addEvent(){const l=document.getElementById('evLabel').value.trim(
 function editEvent(id){const ev=EVENTS.find(x=>x.id===id); if(!ev)return; EDIT_ID=id;
   document.getElementById('evLabel').value=ev.label; document.getElementById('evLoc').value=ev.loc||""; document.getElementById('evStart').value=ev.start; document.getElementById('evEnd').value=ev.end;
   document.getElementById('evStartTime').value=ev.startTime||""; document.getElementById('evEndTime').value=ev.endTime||"";
-  EVTINT=null; document.getElementById('evTint').value=ev.tint||evColor(ev);   // show the event's effective color; only saves if you change it
+  EVTINT=null; evTintPaint(ev.tint||evColor(ev));   // show the event's effective color; only saves if you change it
   document.getElementById('evAddBtn').textContent="Save"; document.getElementById('evCancelBtn').style.display=""; document.getElementById('evLabel').focus();}
 function cancelEdit(){EDIT_ID=null; document.getElementById('evLabel').value=""; document.getElementById('evLoc').value=""; document.getElementById('evStartTime').value=""; document.getElementById('evEndTime').value="";
   evTintReset();
