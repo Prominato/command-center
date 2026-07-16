@@ -87,9 +87,7 @@
   details.evmgr>summary{list-style:none; cursor:pointer; font-family:'Fraunces',ui-serif,Georgia,Cambria,serif; font-weight:600; font-size:1rem; display:flex; align-items:center; gap:8px;}
   details.evmgr>summary::-webkit-details-marker{display:none;}
   details.evmgr[open]>summary{margin-bottom:10px;}
-  .evcolors{display:flex; gap:14px 18px; flex-wrap:wrap; align-items:center; font-size:.8rem;}
-  .evcolors label{display:flex; align-items:center; gap:7px; color:var(--ink); cursor:pointer;}
-  .evcolors input[type=color]{width:30px; height:24px; border:1px solid var(--divider); border-radius:6px; padding:1px; background:var(--card); cursor:pointer;}
+  .addrow input[type=color]{width:34px; height:30px; border:1px solid var(--divider); border-radius:6px; padding:1px; background:var(--card); cursor:pointer; flex:0 0 auto;}
 
   /* calendar */
   .months{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
@@ -464,6 +462,8 @@
           <label class="fld">End <input id="evEnd" type="date"></label>
           <label class="fld">From <input id="evStartTime" type="time"></label>
           <label class="fld">To <input id="evEndTime" type="time"></label>
+          <label class="fld">Color <input id="evTint" type="color" value="#8C6A1D" oninput="evTintTouch(this.value)"></label>
+          <button class="ghost" id="evTintClearBtn" onclick="evTintClear()" title="Use the default color for this event type">↺ default</button>
           <button id="evPickBtn" onclick="togglePick()">📅 Pick on calendar</button>
           <button id="evAddBtn" onclick="addEvent()">Add</button>
           <button id="evCancelBtn" class="ghost" style="display:none" onclick="cancelEdit()">Cancel</button>
@@ -471,16 +471,6 @@
         <div class="hint" id="pickHint" style="display:none; color:var(--teal);">Pick mode on — click a <b>start day</b>, then an <b>end day</b> on any month below.</div>
         <div class="hint" style="color:var(--accent);">📅 Your Google Calendar events flow in automatically — add manual trips &amp; events here too.</div>
         <div id="evList"></div>
-      </details>
-      <details class="evmgr">
-        <summary><span class="arrow">▸</span> 🎨 Event colors <span style="font-weight:400;color:var(--ink-muted);font-size:.76rem">saved per skin · syncs to your devices</span></summary>
-        <div class="evcolors">
-          <label><input type="color" id="evcBlock" oninput="evcSet('block',this.value)"> Trips &amp; all-day</label>
-          <label><input type="color" id="evcAppt" oninput="evcSet('appt',this.value)"> Appointments</label>
-          <label><input type="color" id="evcBlockP" oninput="evcSet('blockP',this.value)"> Prominato — trips</label>
-          <label><input type="color" id="evcApptP" oninput="evcSet('apptP',this.value)"> Prominato — appts</label>
-          <button class="iconbtn" onclick="evcReset()" title="Back to this skin's default palette">↺ Reset</button>
-        </div>
       </details>
       <div class="hint">Click a <b>month</b> to focus it, or any <b>week</b> to load it into This Week. <b>Solid bars</b> = trips &amp; all-day events · <b>outlined bars</b> = appointments &amp; meetings · your <b>Prominato calendar</b> gets its own color once connected.</div>
       <div class="months" id="months"></div>
@@ -579,7 +569,7 @@ function applyTheme(key,fromUser){key=normSkin(key);
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
   ["--bg","--bg2","--card","--card-hover","--ink","--ink-muted","--amber","--gold","--teal","--dusk","--rain","--rose","--gym","--urgent","--divider","--wknd","--wknd-bd","--wknd-hover","--accent"]
     .forEach(p=>document.documentElement.style.removeProperty(p));   // clear inline vars from the old theme system
-  try{ evcSync(); renderEvents(); renderMonths(); renderWeek(); }catch(e){}   // event colors are skin-derived — repaint pickers + bars on toggle (no-op at boot)
+  try{ renderEvents(); renderMonths(); renderWeek(); if(!EDIT_ID)evTintReset(); }catch(e){}   // default colors are skin-derived — repaint on toggle (no-op at boot)
 }
 function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.innerHTML=Object.entries(SKINS).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
 
@@ -741,19 +731,16 @@ const EVC_DEFAULTS={
   ledger:{block:'#8C6A1D', appt:'#C2A253', blockP:'#2E5641', apptP:'#6E9B85'},   // gold · forest = Prominato
   aurora:{block:'#9F7CFF', appt:'#C9B8FF', blockP:'#2DD4BF', apptP:'#8FF0E0'}};  // violet · teal = Prominato
 function evSkin(){ return document.body.classList.contains('skin-aurora')?'aurora':'ledger'; }
-function evOverrides(){ try{ return JSON.parse(localStorage.getItem('cc_evcolors'))||{}; }catch(e){ return {}; } }
-function evPalette(){ const s=evSkin(); return Object.assign({}, EVC_DEFAULTS[s], evOverrides()[s]||{}); }
-function evColor(e){ const p=evPalette(), pro=(e.cal==='prominato');
+function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
+function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
+  const p=evPalette(), pro=(e.cal==='prominato');
   return evKind(e)==='appt' ? (pro?p.apptP:p.appt) : (pro?p.blockP:p.block); }
-function evcSync(){ const p=evPalette();
-  [['evcBlock','block'],['evcAppt','appt'],['evcBlockP','blockP'],['evcApptP','apptP']]
-    .forEach(([id,slot])=>{ const el=document.getElementById(id); if(el)el.value=p[slot]; }); }
-function evcSet(slot,val){ const o=evOverrides(), s=evSkin(); o[s]=o[s]||{}; o[s][slot]=val;
-  const v=JSON.stringify(o); localStorage.setItem('cc_evcolors',v); SYNC.queue('cc_evcolors',v);
-  renderEvents(); renderMonths(); renderWeek(); }
-function evcReset(){ const o=evOverrides(); delete o[evSkin()];
-  const v=JSON.stringify(o); localStorage.setItem('cc_evcolors',v); SYNC.queue('cc_evcolors',v);
-  evcSync(); renderEvents(); renderMonths(); renderWeek(); }
+/* per-event color field in the add/edit form. EVTINT: null = untouched,
+   'auto' = user chose "default", '#hex' = user picked a custom color */
+let EVTINT=null;
+function evTintTouch(v){ EVTINT=v; }
+function evTintClear(){ EVTINT='auto'; const el=document.getElementById('evTint'); if(el)el.value=evPalette().block; }
+function evTintReset(){ EVTINT=null; const el=document.getElementById('evTint'); if(el)el.value=evPalette().block; }
 const DEFAULT_EVENTS=[{id:'seed-dallas',label:'Dallas ✈️',start:'2026-06-26',end:'2026-06-28',color:'#5C6BA0',loc:'Dallas, Texas, US',lat:32.7767,lon:-96.797}];
 const WX_CACHE={}; let GEO_MAP={};
 function wmo(code){const m={0:['☀️','Clear'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Showers'],81:['🌧️','Showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};return m[code]||['🌡️',''];}
@@ -773,14 +760,19 @@ function to12(t){if(!t)return""; let[h,m]=t.split(":").map(Number); const ap=h>=
 async function addEvent(){const l=document.getElementById('evLabel').value.trim(); let s=document.getElementById('evStart').value, e=document.getElementById('evEnd').value; const st=document.getElementById('evStartTime').value, et=document.getElementById('evEndTime').value; const locStr=document.getElementById('evLoc').value.trim(); if(!l||!s||!e)return; if(e<s){const t=s;s=e;e=t;}
   let loc=locStr||null, lat=null, lon=null;
   if(locStr){let g=GEO_MAP[locStr]; if(!g) g=await geocodeOne(locStr); if(g){loc=g.name; lat=g.lat; lon=g.lon;}}
-  if(EDIT_ID){const ev=EVENTS.find(x=>x.id===EDIT_ID); if(ev){ev.label=l;ev.start=s;ev.end=e;ev.startTime=st;ev.endTime=et;ev.loc=loc;ev.lat=lat;ev.lon=lon;}}
-  else{EVENTS.push({id:String(Date.now()), label:l, start:s, end:e, startTime:st, endTime:et, loc:loc, lat:lat, lon:lon, color:EVCOLORS[EVENTS.length%EVCOLORS.length]});}
+  if(EDIT_ID){const ev=EVENTS.find(x=>x.id===EDIT_ID); if(ev){ev.label=l;ev.start=s;ev.end=e;ev.startTime=st;ev.endTime=et;ev.loc=loc;ev.lat=lat;ev.lon=lon;
+    if(EVTINT==='auto'){delete ev.tint;} else if(EVTINT){ev.tint=EVTINT;}}}   // untouched → keep event's color as-is
+  else{const nev={id:String(Date.now()), label:l, start:s, end:e, startTime:st, endTime:et, loc:loc, lat:lat, lon:lon, color:EVCOLORS[EVENTS.length%EVCOLORS.length]};
+    if(EVTINT&&EVTINT!=='auto')nev.tint=EVTINT;
+    EVENTS.push(nev);}
   cancelEdit(); evsave(); renderEvents(); renderMonths(); renderWeek(); renderGlance(); fetchEventWeather();}
 function editEvent(id){const ev=EVENTS.find(x=>x.id===id); if(!ev)return; EDIT_ID=id;
   document.getElementById('evLabel').value=ev.label; document.getElementById('evLoc').value=ev.loc||""; document.getElementById('evStart').value=ev.start; document.getElementById('evEnd').value=ev.end;
   document.getElementById('evStartTime').value=ev.startTime||""; document.getElementById('evEndTime').value=ev.endTime||"";
+  EVTINT=null; document.getElementById('evTint').value=ev.tint||evColor(ev);   // show the event's effective color; only saves if you change it
   document.getElementById('evAddBtn').textContent="Save"; document.getElementById('evCancelBtn').style.display=""; document.getElementById('evLabel').focus();}
 function cancelEdit(){EDIT_ID=null; document.getElementById('evLabel').value=""; document.getElementById('evLoc').value=""; document.getElementById('evStartTime').value=""; document.getElementById('evEndTime').value="";
+  evTintReset();
   document.getElementById('evAddBtn').textContent="Add"; document.getElementById('evCancelBtn').style.display="none"; if(PICK)togglePick();}
 function delEvent(id){EVENTS=EVENTS.filter(e=>e.id!==id); if(EDIT_ID===id)cancelEdit(); evsave(); renderEvents(); renderMonths(); renderWeek(); renderGlance();}
 function togglePick(){PICK=!PICK; PICK_STEP=0; PICK_START=null; PICK_END=null; document.body.classList.toggle('pickmode',PICK);
@@ -1143,6 +1135,7 @@ refreshDayTrackers();
 applySectionOrder();
 renderGlance();
 applyTheme(normSkin(localStorage.getItem('cc_theme')));
+evTintReset();
 SYNC.start();
 </script>
 </body>
