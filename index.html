@@ -140,6 +140,26 @@
   .constants{margin-bottom:16px;}
   .constants h3{font-family:'Fraunces',ui-serif,Georgia,Cambria,serif; font-weight:600; font-size:1rem; margin:0 0 10px; color:var(--accent);}
   details.day{background:var(--card); border:1px solid var(--divider); border-radius:11px; margin-bottom:10px; overflow:hidden;}
+  /* daily agenda: today (or any opened day) spans full width; other days sit compact, two per row */
+  #days{display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start;}
+  #days details.day{margin-bottom:0;}
+  #days details.day[open]{grid-column:1 / -1;}
+  #days details.day:not([open])>summary{padding:9px 13px;}
+  #days details.day:not([open]) .day-date{font-size:.94rem;}
+  /* concept-of-the-day actions */
+  .cactions{display:flex; gap:8px; flex-wrap:wrap; margin-top:9px;}
+  .cbtn{font-size:.76rem; font-weight:600; color:var(--accent); background:var(--bg2); border:1px solid var(--divider); border-radius:8px; padding:4px 10px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:5px;}
+  .cbtn:hover{border-color:var(--accent);}
+  @media(max-width:640px){ #days{grid-template-columns:1fr;} }
+  @media(max-width:520px){
+    html{font-size:15px;}
+    .wrap{padding:8px 12px 80px;}
+    #glance .gh .greet{font-size:1.2rem;}
+    .stat .val{font-size:1.08rem;}
+    .time{min-width:74px;}
+    .day-body{gap:10px;}
+    details.drop>summary{padding:13px 14px;}
+  }
   details.day.wknd{background:var(--wknd); border-color:var(--wknd-bd);}
   details.day.wknd>summary:hover{background:var(--wknd-hover);}
   details.day.has-ev{border-color:var(--evc); box-shadow:inset 5px 0 0 var(--evc);}
@@ -442,7 +462,7 @@
 
   <div id="sections">
 
-  <details class="drop" id="weekDrop" data-sec="week" open>
+  <details class="drop" id="weekDrop" data-sec="week">
     <summary><span class="arrow">▸</span> This Week's Schedule<span class="secmove"><button onclick="moveSection(event,'week',-1)" title="Move up">▲</button><button onclick="moveSection(event,'week',1)" title="Move down">▼</button></span></summary>
     <div class="drop-body">
       <div class="phead">
@@ -703,7 +723,7 @@ function carriedPlan(date){return `<div class="carried"><b>🎯 Today's focus</b
 function tomorrowPlan(date){const key=`plan::${nextDate(date)}`;return `<div class="plan-wrap"><div class="ph">✍️ <b>Tomorrow's plan</b> — one note; it auto-appears as tomorrow's focus.</div><textarea class="plan" data-key="${key}" placeholder="What's the headline for tomorrow?"></textarea></div>`;}
 function morning(date){const c=conceptFor(date);
   return `<div class="section sec-morning"><div class="sec-head">Morning</div>`+task("4:45–4:50a","(5m)","Make bed 🛏️")+task("4:50–5:00a","(10m)","Meditate 🌬️ + today's concept ↓")+
-    `<details class="concept"><summary><span class="ca">▸</span> 💭 Concept of the day</summary><div class="concept-body"><div class="ct">${c.t}</div><div class="cb">${c.b}</div></div></details>`+
+    `<details class="concept"><summary><span class="ca">▸</span> 💭 Concept of the day</summary><div class="concept-body"><div class="ct">${c.t}</div><div class="cb">${c.b}</div><div class="cactions"><button class="cbtn" type="button" onclick="saveConcept('${date}',this)">⭐ Save to favorites</button><a class="cbtn" href="https://www.google.com/search?q=${encodeURIComponent(c.t)}" target="_blank" rel="noopener">Learn more ↗</a></div></div></details>`+
     task("5:00–5:10a","(10m)","Stretch 🧘")+task("5:10–5:15a","(5m)","Read Tao of Joy passage 📖")+task("5:15–5:20a","(5m)","Vitamins 💊")+waterRow(date,0)+pushupRow(date,0)+`</div>`;}
 function pushupRow(date,n){const id=`pushup::${date}::${n}`; return `<div class="water"><input type="checkbox" data-key="${id}" id="${id}"><label for="${id}">💪 Push-ups — set ${n+1}/5 (20 reps)</label></div>`;}
 function gym(date,focus,golf){let s=`<div class="section sec-gym"><div class="sec-head">Gym</div>`+task("5:30–5:40a","(10m)","Drive to gym 🚗")+task("5:40–6:40a","(60m)",`Strength 🏋️ — <b style="color:var(--gym)">${focus}</b> + Core 🔥`)+task("6:40–7:00a","(20m)","Cardio — indoor 🏃 (20 min)");if(!golf){s+=task("7:00–7:10a","(10m)","Drive home 🚗")+task("7:10–7:25a","(15m)","Shower & brush teeth 🚿")+task("7:25–7:50a","(25m)","Get ready + pack lunch 🎒")+task("7:50a","—","Leave for work 🚗");}return s+`</div>`;}
@@ -889,7 +909,9 @@ function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.tri
   if(w==='work'){const s=document.getElementById('workCat'); item.cat=(s&&s.value)||'prominato';}
   LISTS[w].push(item); inp.value=""; lsave(); renderList(w);}
 function toggleUrgent(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.urgent=!it.urgent; lsave(); renderList(w);}}
-function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done; if(w==='work'){it.archivedAt=it.done?Date.now():null;} lsave(); renderList(w);}}
+function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done;
+  if(w==='work'){it.archivedAt=it.done?Date.now():null;} else {it.doneAt=it.done?Date.now():null;}
+  lsave(); renderList(w);}}
 function delItem(w,id){LISTS[w]=LISTS[w].filter(x=>x.id!==id); lsave(); renderList(w);}
 function startEdit(w,id){const sp=document.querySelector(`span[data-edit="${w}::${id}"]`); if(!sp)return; sp.contentEditable="true"; sp.classList.add('editing'); sp.focus();
   const r=document.createRange(); r.selectNodeContents(sp); const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
@@ -929,14 +951,23 @@ function renderWork(){const host=document.getElementById('workList'); const arr=
 function renderList(w){ if(w==='work'){renderWork(); return;} const ul=document.getElementById(w+'List'); const arr=LISTS[w];
   if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>'; updateCounts(); renderGlance(); return;}
   const showBang=(w!=='dconst');
-  ul.innerHTML=arr.map(it=>`<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
+  const MONTH=30*24*3600*1000, now=Date.now();
+  const isArch=x=>x.done&&x.doneAt&&(now-x.doneAt)>=MONTH;               // completed 1+ month ago → archived
+  const archived=arr.filter(isArch).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  const live=arr.filter(x=>!isArch(x));
+  const ordered=live.filter(x=>!x.done).concat(live.filter(x=>x.done).sort((a,b)=>(a.doneAt||0)-(b.doneAt||0)));  // done items sink to bottom; most-recently-checked lands last
+  const row=it=>`<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
     <span class="grip" title="Drag to reorder">⠿</span>
     <input type="checkbox" ${it.done?'checked':''} onchange="toggleDone('${w}','${it.id}')">
     <span class="txt" data-edit="${w}::${it.id}">${escHtml(it.text)}</span>
     <button class="iconbtn" title="Edit" onclick="startEdit('${w}','${it.id}')">✎</button>
     ${showBang?`<button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('${w}','${it.id}')">!</button>`:''}
     <button class="iconbtn del" title="Delete" onclick="delItem('${w}','${it.id}')">✕</button>
-  </li>`).join("");
+  </li>`;
+  let html=ordered.length?ordered.map(row).join(''):'<div class="empty">All clear — see archive below.</div>';
+  if(archived.length){html+=`<details class="warch"><summary>🗄️ Archived <span class="wcount">${archived.length}</span> · completed 1+ month ago</summary>`+
+    archived.map(it=>`<li class="done"><input type="checkbox" checked onchange="toggleDone('${w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${it.doneAt?new Date(it.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete forever" onclick="delItem('${w}','${it.id}')">✕</button></li>`).join('')+'</details>';}
+  ul.innerHTML=html;
   updateCounts(); renderGlance();}
 
 /* ===== monthly constants ===== */
@@ -1028,6 +1059,16 @@ function nRender(){
     : '<div class="empty">'+(q?'No matches.':'No notes here yet — hit “＋ New note”.')+'</div>';
   updateCounts();}
 function nInit(){nfLoad(); nRender();}
+/* concept-of-the-day → favorites bank (stored as notes in a 💭 Concepts folder) */
+function conceptFolder(){ let f=NFOLDERS.find(x=>/💭|concept/i.test(x.name||''));
+  if(!f){ f={id:'nf'+Date.now(),name:'💭 Concepts'}; NFOLDERS.push(f); nfSave(); } return f; }
+function saveConcept(date,btn){ const c=conceptFor(date), f=conceptFolder();
+  if(nAll().some(n=>n.folder===f.id && n.title===c.t)){ if(btn)btn.textContent='✓ Already in favorites'; return; }
+  const n={id:String(Date.now())+Math.floor(Math.random()*1000), folder:f.id, title:c.t,
+    body:c.b+'\n\n🔗 Learn more: https://www.google.com/search?q='+encodeURIComponent(c.t),
+    pinned:false, created:Date.now(), updated:Date.now()};
+  nSaveNote(n); if(typeof nRender==='function')nRender();
+  if(btn)btn.textContent='⭐ Saved to Notes ✓'; }
 
 /* ===== persistence + carry-forward ===== */
 function refreshDisplays(key,val){document.querySelectorAll('[data-display="'+CSS.escape(key)+'"]').forEach(el=>{el.innerHTML = val && val.trim() ? escHtml(val) : '<span class="empty">— nothing carried over —</span>';});}
