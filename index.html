@@ -306,6 +306,21 @@
   .nbar .spacer{flex:1;}
   .nmeta{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:var(--ink-muted); margin-top:6px;}
 
+  /* Primary/Secondary/Completed sections + priority star */
+  .trisec{font-size:.63rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-muted); margin:10px 0 4px; display:flex; align-items:center; gap:7px;}
+  .trisec.pri-h{color:var(--accent);}
+  .trisec .wcount{font-weight:600;}
+  .iconbtn.pristar{color:var(--ink-muted); border-color:transparent; font-size:.92rem; line-height:1; padding:2px 5px;}
+  .iconbtn.pristar.on{color:var(--gold);}
+  /* house tabs + for-sale */
+  .htabs{display:flex; gap:8px; margin-bottom:12px;}
+  .htab{font-size:.82rem; font-weight:600; cursor:pointer; background:var(--bg2); color:var(--ink-muted); border:1px solid var(--divider); border-radius:9px; padding:7px 14px; font-family:inherit;}
+  .htab.on{background:var(--card); color:var(--ink); border-color:var(--accent);}
+  .fsprice{font-family:'IBM Plex Mono',monospace; font-size:.78rem; color:var(--teal); font-weight:600; flex:0 0 auto;}
+  /* master list */
+  .mgroup{margin-bottom:12px;} #masterList .mgroup:last-child{margin-bottom:0;}
+  .mgroup-h{font-size:.72rem; font-weight:700; letter-spacing:.03em; margin:0 0 5px; display:flex; align-items:center; gap:7px;}
+  .mflag{flex:0 0 auto; font-size:.72rem;}
   footer{margin-top:30px; font-size:.78rem; color:var(--ink-muted); text-align:center;}
 
   /* ================== SKIN · LEDGER (option 7) ================== */
@@ -462,6 +477,11 @@
 
   <div id="sections">
 
+  <details class="drop" data-sec="master" open>
+    <summary><span class="arrow">▸</span> ⭐ Master — Primary Focus<span class="secmove"><button onclick="moveSection(event,'master',-1)" title="Move up">▲</button><button onclick="moveSection(event,'master',1)" title="Move down">▼</button></span></summary>
+    <div class="drop-body"><div class="hint">Every ★ Primary task from Personal, Professional &amp; House in one place. Check one off here and it completes in its home list.</div><div id="masterList"></div></div>
+  </details>
+
   <details class="drop" id="weekDrop" data-sec="week">
     <summary><span class="arrow">▸</span> This Week's Schedule<span class="secmove"><button onclick="moveSection(event,'week',-1)" title="Move up">▲</button><button onclick="moveSection(event,'week',1)" title="Move down">▼</button></span></summary>
     <div class="drop-body">
@@ -519,7 +539,7 @@
   <details class="drop" data-sec="constants" open>
     <summary><span class="arrow">▸</span> To-Do Lists<span class="secmove"><button onclick="moveSection(event,'constants',-1)" title="Move up">▲</button><button onclick="moveSection(event,'constants',1)" title="Move down">▼</button></span></summary>
     <div class="drop-body">
-      <div class="hint">Drag <b>⠿</b> to reorder, <b>✎</b> to edit, <b>!</b> for urgent.</div>
+      <div class="hint">Each list has <b>Primary</b> ★, <b>Secondary</b>, and <b>Completed</b> (auto-clears after 90 days). Tap <b>★</b> to move a task between Primary/Secondary — Primary items appear on your ⭐ Master list.</div>
       <div class="lists">
         <div class="listcard">
           <h3>✅ Personal To-Do</h3><div class="lh">Day-to-day tasks</div>
@@ -527,7 +547,7 @@
           <ul class="items" id="todoList"></ul>
         </div>
         <div class="listcard">
-          <h3>💼 Professional To-Do</h3><div class="lh">Work &amp; business — completed tasks move to the archive below</div>
+          <h3>💼 Professional To-Do</h3><div class="lh">Prominato · Highmark · AI Creation — each with Primary / Secondary / Completed</div>
           <div class="addrow"><input id="workInput" placeholder="Add a work to-do…" onkeydown="if(event.key==='Enter')addItem('work')"><select id="workCat"><option value="prominato">Prominato</option><option value="highmark">Highmark</option><option value="ai">AI Creation</option></select><button onclick="addItem('work')">Add</button></div>
           <div class="items" id="workList"></div>
         </div>
@@ -575,12 +595,22 @@
   </details>
 
   <details class="drop" data-sec="house" open>
-    <summary><span class="arrow">▸</span> House Projects<span class="secmove"><button onclick="moveSection(event,'house',-1)" title="Move up">▲</button><button onclick="moveSection(event,'house',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> House<span class="secmove"><button onclick="moveSection(event,'house',-1)" title="Move up">▲</button><button onclick="moveSection(event,'house',1)" title="Move down">▼</button></span></summary>
     <div class="drop-body">
-      <div class="listcard">
-        <h3>🏠 House Projects</h3><div class="lh">Bigger home to-dos · drag ⠿, edit ✎, ! for urgent</div>
-        <div class="addrow"><input id="houseInput" placeholder="Add a house project…" onkeydown="if(event.key==='Enter')addItem('house')"><button onclick="addItem('house')">Add</button></div>
-        <ul class="items" id="houseList"></ul>
+      <div class="htabs"><button class="htab on" id="htabProjects" onclick="houseTab('projects')">🏠 Projects</button><button class="htab" id="htabForsale" onclick="houseTab('forsale')">🏷️ For Sale</button></div>
+      <div id="houseProjects">
+        <div class="listcard">
+          <h3>🏠 House Projects</h3><div class="lh">Primary / Secondary / Completed · ★ toggles priority</div>
+          <div class="addrow"><input id="houseInput" placeholder="Add a house project…" onkeydown="if(event.key==='Enter')addItem('house')"><button onclick="addItem('house')">Add</button></div>
+          <ul class="items" id="houseList"></ul>
+        </div>
+      </div>
+      <div id="houseForsale" style="display:none">
+        <div class="listcard">
+          <h3>🏷️ For Sale</h3><div class="lh">Things to sell — check when sold (sold items clear after 90 days)</div>
+          <div class="addrow"><input id="fsInput" placeholder="Item to sell…" onkeydown="if(event.key==='Enter')addForSale()"><input id="fsPrice" placeholder="$" style="flex:0 0 78px"><button onclick="addForSale()">Add</button></div>
+          <ul class="items" id="forsaleList"></ul>
+        </div>
       </div>
     </div>
   </details>
@@ -898,77 +928,104 @@ function refreshDayTrackers(){
 }
 
 /* ===== lists ===== */
-const LISTS={todo:[],work:[],house:[],goals:[],dconst:[]};
+const LISTS={todo:[],work:[],house:[],goals:[],dconst:[],forsale:[]};
 function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urgent:false}));}
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
-  LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
+  LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.forsale=o.forsale||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
   localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
-function lsave(){const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
+function pruneOld(){const now=Date.now(), MS=90*24*3600*1000; ['todo','work','house','goals','forsale'].forEach(w=>{ if(!LISTS[w])return;
+  LISTS[w]=LISTS[w].filter(x=>{ const ts=x.doneAt||x.archivedAt||x.soldAt||0; return !((x.done||x.sold)&&ts&&(now-ts)>=MS); }); });}
+function lsave(){pruneOld(); const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
-  const item={id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false};
+  const item={id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false,pri:'primary'};
   if(w==='work'){const s=document.getElementById('workCat'); item.cat=(s&&s.value)||'prominato';}
-  LISTS[w].push(item); inp.value=""; lsave(); renderList(w);}
-function toggleUrgent(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.urgent=!it.urgent; lsave(); renderList(w);}}
-function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done;
-  if(w==='work'){it.archivedAt=it.done?Date.now():null;} else {it.doneAt=it.done?Date.now():null;}
-  lsave(); renderList(w);}}
-function delItem(w,id){LISTS[w]=LISTS[w].filter(x=>x.id!==id); lsave(); renderList(w);}
+  LISTS[w].unshift(item); inp.value=""; lsave(); renderList(w); renderMaster();}
+function toggleUrgent(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.urgent=!it.urgent; lsave(); renderList(w); renderMaster();}}
+function togglePri(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.pri=(it.pri==='secondary')?'primary':'secondary'; lsave(); renderList(w); renderMaster();}}
+function toggleDone(w,id){const it=LISTS[w].find(x=>x.id===id); if(it){it.done=!it.done; it.doneAt=it.done?Date.now():null; lsave(); renderList(w); renderMaster();}}
+function delItem(w,id){LISTS[w]=LISTS[w].filter(x=>x.id!==id); lsave(); renderList(w); renderMaster();}
 function startEdit(w,id){const sp=document.querySelector(`span[data-edit="${w}::${id}"]`); if(!sp)return; sp.contentEditable="true"; sp.classList.add('editing'); sp.focus();
   const r=document.createRange(); r.selectNodeContents(sp); const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
-  const fin=()=>{sp.contentEditable="false"; sp.classList.remove('editing'); const it=LISTS[w].find(x=>x.id===id); if(it){const v=sp.textContent.trim(); if(v)it.text=v;} lsave(); renderList(w);};
-  sp.addEventListener('blur',fin,{once:true}); sp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault(); sp.blur();} if(ev.key==='Escape'){sp.textContent=LISTS[w].find(x=>x.id===id).text; sp.blur();}});}
+  const fin=()=>{sp.contentEditable="false"; sp.classList.remove('editing'); const it=LISTS[w].find(x=>x.id===id); if(it){const v=sp.textContent.trim(); if(v)it.text=v;} lsave(); renderList(w); renderMaster();};
+  sp.addEventListener('blur',fin,{once:true}); sp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault(); sp.blur();} if(ev.key==='Escape'){const o=LISTS[w].find(x=>x.id===id); sp.textContent=o?o.text:''; sp.blur();}});}
 let dragCtx=null;
 function onDragStart(w,id,e){dragCtx={w,id}; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',id);}catch(_){}}
 function onDragOver(li,e){e.preventDefault(); li.classList.add('dragover');}
 function onDragLeave(li){li.classList.remove('dragover');}
 function onDrop(w,id,e){e.preventDefault(); document.querySelectorAll('li.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!==w){dragCtx=null;return;}
   const arr=LISTS[w], from=arr.findIndex(x=>x.id===dragCtx.id), to=arr.findIndex(x=>x.id===id); dragCtx=null; if(from<0||to<0||from===to)return; const tgt=arr[to]; const[m]=arr.splice(from,1); arr.splice(to,0,m); if(w==='work'&&tgt)m.cat=tgt.cat; lsave(); renderList(w);}
-/* ===== professional to-do: categories + archive ===== */
-const WORKCATS=[['prominato','Prominato','var(--gold)'],['highmark','Highmark','var(--dusk)'],['ai','AI Creation','var(--teal)']];
-function workRow(it){return `<li class="${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('work','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('work','${it.id}',event)">
-    <span class="grip" title="Drag to reorder or between categories">⠿</span>
-    <input type="checkbox" onchange="toggleDone('work','${it.id}')">
-    <span class="txt" data-edit="work::${it.id}">${escHtml(it.text)}</span>
-    <button class="iconbtn" title="Edit" onclick="startEdit('work','${it.id}')">✎</button>
-    <button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('work','${it.id}')">!</button>
-    <button class="iconbtn del" title="Delete" onclick="delItem('work','${it.id}')">✕</button>
-  </li>`;}
-function onDropCat(cat,e){e.preventDefault(); document.querySelectorAll('.wcat-h.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!=='work')return; const it=LISTS.work.find(x=>x.id===dragCtx.id); dragCtx=null; if(it){it.cat=cat; lsave(); renderWork();}}
-function renderWork(){const host=document.getElementById('workList'); const arr=LISTS.work;
-  const active=arr.filter(x=>!x.done), archived=arr.filter(x=>x.done).sort((a,b)=>(b.archivedAt||0)-(a.archivedAt||0));
-  const known=WORKCATS.map(c=>c[0]); let html='';
-  WORKCATS.forEach(c=>{const items=active.filter(x=>x.cat===c[0]);
-    html+=`<div class="wcat"><div class="wcat-h" style="color:${c[2]}" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="onDropCat('${c[0]}',event)"><span class="wdot" style="background:${c[2]}"></span>${c[1]} <span class="wcount">${items.length}</span></div>`;
-    html+=items.length? items.map(workRow).join('') : '<div class="empty" style="padding:1px 0 6px">—</div>';
-    html+='</div>';});
-  const stray=active.filter(x=>known.indexOf(x.cat)<0);
-  if(stray.length){html+=`<div class="wcat"><div class="wcat-h"><span class="wdot" style="background:var(--ink-muted)"></span>General <span class="wcount">${stray.length}</span></div>`+stray.map(workRow).join('')+'</div>';}
-  if(archived.length){html+=`<details class="warch"><summary>🗄️ Archive <span class="wcount">${archived.length}</span> — uncheck to restore</summary>`+
-    archived.map(it=>`<li class="done"><input type="checkbox" checked onchange="toggleDone('work','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${it.archivedAt?new Date(it.archivedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete forever" onclick="delItem('work','${it.id}')">✕</button></li>`).join('')+'</details>';}
-  host.innerHTML=html;
-  updateCounts(); renderGlance();}
 
-function renderList(w){ if(w==='work'){renderWork(); return;} const ul=document.getElementById(w+'List'); const arr=LISTS[w];
-  if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>'; updateCounts(); renderGlance(); return;}
-  const showBang=(w!=='dconst');
-  const MONTH=30*24*3600*1000, now=Date.now();
-  const isArch=x=>x.done&&x.doneAt&&(now-x.doneAt)>=MONTH;               // completed 1+ month ago → archived
-  const archived=arr.filter(isArch).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  const live=arr.filter(x=>!isArch(x));
-  const ordered=live.filter(x=>!x.done).concat(live.filter(x=>x.done).sort((a,b)=>(a.doneAt||0)-(b.doneAt||0)));  // done items sink to bottom; most-recently-checked lands last
-  const row=it=>`<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
+/* ===== shared task rows + Primary / Secondary / Completed sections ===== */
+const PRUNE_DAYS=90, PRUNE_MS=90*24*3600*1000;
+function starBtn(w,it){const isPri=it.pri!=='secondary'; return `<button class="iconbtn pristar ${isPri?'on':''}" title="${isPri?'Primary — click to make Secondary':'Secondary — click to make Primary'}" onclick="togglePri('${w}','${it.id}')">${isPri?'★':'☆'}</button>`;}
+function taskRow(w,it,showStar){return `<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
     <span class="grip" title="Drag to reorder">⠿</span>
     <input type="checkbox" ${it.done?'checked':''} onchange="toggleDone('${w}','${it.id}')">
     <span class="txt" data-edit="${w}::${it.id}">${escHtml(it.text)}</span>
+    ${showStar===false?'':starBtn(w,it)}
     <button class="iconbtn" title="Edit" onclick="startEdit('${w}','${it.id}')">✎</button>
-    ${showBang?`<button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('${w}','${it.id}')">!</button>`:''}
+    <button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('${w}','${it.id}')">!</button>
     <button class="iconbtn del" title="Delete" onclick="delItem('${w}','${it.id}')">✕</button>
-  </li>`;
-  let html=ordered.length?ordered.map(row).join(''):'<div class="empty">All clear — see archive below.</div>';
-  if(archived.length){html+=`<details class="warch"><summary>🗄️ Archived <span class="wcount">${archived.length}</span> · completed 1+ month ago</summary>`+
-    archived.map(it=>`<li class="done"><input type="checkbox" checked onchange="toggleDone('${w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${it.doneAt?new Date(it.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete forever" onclick="delItem('${w}','${it.id}')">✕</button></li>`).join('')+'</details>';}
-  ul.innerHTML=html;
+  </li>`;}
+function completedRow(w,it){const ts=it.doneAt||it.archivedAt; return `<li class="done"><input type="checkbox" checked onchange="toggleDone('${w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${ts?new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete" onclick="delItem('${w}','${it.id}')">✕</button></li>`;}
+function triSections(w,items){const now=Date.now();
+  const pri=items.filter(x=>!x.done&&x.pri!=='secondary');
+  const sec=items.filter(x=>!x.done&&x.pri==='secondary');
+  const done=items.filter(x=>x.done&&!((x.doneAt||x.archivedAt)&&now-(x.doneAt||x.archivedAt)>=PRUNE_MS)).sort((a,b)=>((b.doneAt||b.archivedAt||0)-(a.doneAt||a.archivedAt||0)));
+  let h=`<div class="trisec pri-h">Primary <span class="wcount">${pri.length}</span></div>`+(pri.length?pri.map(x=>taskRow(w,x)).join(''):'<div class="empty" style="padding:1px 0 5px">—</div>');
+  if(sec.length)h+=`<div class="trisec sec-h">Secondary <span class="wcount">${sec.length}</span></div>`+sec.map(x=>taskRow(w,x)).join('');
+  if(done.length)h+=`<details class="warch"><summary>✅ Completed <span class="wcount">${done.length}</span> · auto-clears after ${PRUNE_DAYS} days</summary>`+done.map(x=>completedRow(w,x)).join('')+'</details>';
+  return h;}
+
+/* ===== professional to-do: company blocks, each with Primary/Secondary/Completed ===== */
+const WORKCATS=[['prominato','Prominato','var(--gold)'],['highmark','Highmark','var(--dusk)'],['ai','AI Creation','var(--teal)']];
+function onDropCat(cat,e){e.preventDefault(); document.querySelectorAll('.wcat-h.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!=='work')return; const it=LISTS.work.find(x=>x.id===dragCtx.id); dragCtx=null; if(it){it.cat=cat; lsave(); renderWork(); renderMaster();}}
+function renderWork(){const host=document.getElementById('workList'); const arr=LISTS.work; const known=WORKCATS.map(c=>c[0]); let html='';
+  const block=(label,color,items,catKey)=>{const open=items.filter(x=>!x.done).length;
+    return `<div class="wcat"><div class="wcat-h" style="color:${color}" ${catKey?`ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="onDropCat('${catKey}',event)"`:''}><span class="wdot" style="background:${color}"></span>${label} <span class="wcount">${open}</span></div>`+triSections('work',items)+'</div>';};
+  WORKCATS.forEach(c=>{html+=block(c[1],c[2],arr.filter(x=>x.cat===c[0]),c[0]);});
+  const stray=arr.filter(x=>known.indexOf(x.cat)<0);
+  if(stray.length)html+=block('General','var(--ink-muted)',stray,null);
+  host.innerHTML=html; updateCounts(); renderGlance();}
+
+function renderList(w){
+  if(w==='work'){renderWork(); return;}
+  if(w==='forsale'){renderForSale(); return;}
+  const ul=document.getElementById(w+'List'); const arr=LISTS[w]||[];
+  if(w==='goals'){ if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>';}
+    else{const active=arr.filter(x=>!x.done), done=arr.filter(x=>x.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)); ul.innerHTML=active.concat(done).map(x=>taskRow('goals',x,false)).join('');}
+    updateCounts(); renderGlance(); return; }
+  if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>'; updateCounts(); renderGlance(); return;}
+  ul.innerHTML=triSections(w,arr);
   updateCounts(); renderGlance();}
+
+/* ===== master list — every Primary task across Personal / Professional / House ===== */
+function renderMaster(){const host=document.getElementById('masterList'); if(!host)return;
+  const groups=[{label:'✅ Personal',color:'',w:'todo',items:(LISTS.todo||[]).filter(x=>!x.done&&x.pri!=='secondary')}];
+  WORKCATS.forEach(c=>groups.push({label:'💼 '+c[1],color:c[2],w:'work',items:(LISTS.work||[]).filter(x=>!x.done&&x.pri!=='secondary'&&x.cat===c[0])}));
+  groups.push({label:'🏠 House',color:'',w:'house',items:(LISTS.house||[]).filter(x=>!x.done&&x.pri!=='secondary')});
+  let html='',total=0;
+  groups.forEach(g=>{if(!g.items.length)return; total+=g.items.length;
+    html+=`<div class="mgroup"><div class="mgroup-h"${g.color?` style="color:${g.color}"`:''}>${g.label} <span class="wcount">${g.items.length}</span></div><ul class="items">`+
+      g.items.map(it=>`<li class="${it.urgent?'urgent':''}"><input type="checkbox" onchange="toggleDone('${g.w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span>${it.urgent?'<span class="mflag">🔴</span>':''}</li>`).join('')+'</ul></div>';});
+  host.innerHTML=total?html:'<div class="empty">No primary tasks yet — mark items ★ Primary in any list and they gather here.</div>';
+  if(typeof setCount==='function')setCount('master',total?total+' focus':null);}
+
+/* ===== For Sale (a tab inside House Projects) ===== */
+function houseTab(t){const p=document.getElementById('houseProjects'),f=document.getElementById('houseForsale'); if(!p||!f)return;
+  document.getElementById('htabProjects').classList.toggle('on',t!=='forsale');
+  document.getElementById('htabForsale').classList.toggle('on',t==='forsale');
+  p.style.display=t==='forsale'?'none':''; f.style.display=t==='forsale'?'':'none'; if(t==='forsale')renderForSale();}
+function addForSale(){const inp=document.getElementById('fsInput'),t=inp.value.trim(); if(!t)return; const pr=(document.getElementById('fsPrice').value||'').trim();
+  LISTS.forsale.unshift({id:String(Date.now())+Math.floor(Math.random()*1000),text:t,price:pr,sold:false}); inp.value=''; document.getElementById('fsPrice').value=''; lsave(); renderForSale();}
+function toggleSold(id){const it=LISTS.forsale.find(x=>x.id===id); if(it){it.sold=!it.sold; it.soldAt=it.sold?Date.now():null; lsave(); renderForSale();}}
+function delFS(id){LISTS.forsale=LISTS.forsale.filter(x=>x.id!==id); lsave(); renderForSale();}
+function renderForSale(){const ul=document.getElementById('forsaleList'); if(!ul)return; const arr=LISTS.forsale||[]; const now=Date.now();
+  const active=arr.filter(x=>!x.sold), sold=arr.filter(x=>x.sold&&!(x.soldAt&&now-x.soldAt>=PRUNE_MS)).sort((a,b)=>(b.soldAt||0)-(a.soldAt||0));
+  const row=it=>`<li class="${it.sold?'done ':''}"><input type="checkbox" ${it.sold?'checked':''} onchange="toggleSold('${it.id}')"><span class="txt" data-edit="forsale::${it.id}">${escHtml(it.text)}</span>${it.price?`<span class="fsprice">$${escHtml(it.price)}</span>`:''}<button class="iconbtn" title="Edit" onclick="startEdit('forsale','${it.id}')">✎</button><button class="iconbtn del" title="Delete" onclick="delFS('${it.id}')">✕</button></li>`;
+  let html=active.length?active.map(row).join(''):'<div class="empty">Nothing listed — add something to sell above.</div>';
+  if(sold.length)html+=`<details class="warch"><summary>💰 Sold <span class="wcount">${sold.length}</span> · clears after ${PRUNE_DAYS} days</summary>`+sold.map(row).join('')+'</details>';
+  ul.innerHTML=html; if(typeof updateCounts==='function')updateCounts();}
 
 /* ===== monthly constants ===== */
 const MC_DEFAULT=["📚 Finish 1 book","📊 Review monthly budget & spending","🧹 Deep clean one area of the house","📞 Call family / check in with friends","🎯 Review progress on monthly goals","🗓️ Plan next month ahead","🚗 Car check — gas, wash, maintenance","💊 Refill vitamins / prescriptions","💇 Haircut / grooming","🧾 Pay bills & review subscriptions","🏃 Log a benchmark workout / weigh-in"];
@@ -1078,10 +1135,11 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
-const SEC_DEFAULT=['week','agenda','calendar','constants','mc','notes','goals','house'];
-const SEC_LABEL={week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Dos',mc:'Monthly Constants',notes:'Notes',goals:'Goals',house:'House'};
+const SEC_DEFAULT=['master','week','agenda','calendar','constants','mc','notes','goals','house'];
+const SEC_LABEL={master:'⭐ Master',week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',constants:'To-Dos',mc:'Monthly Constants',notes:'Notes',goals:'Goals',house:'House'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
-  SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){ const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // new sections slot in after their default neighbor
+  SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){ if(id==='master'){o.unshift(id); return;}       // Master defaults to the very top
+    const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // other new sections slot in after their default neighbor
     if(at>=0)o.splice(at+1,0,id); else o.push(id); }});
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
@@ -1192,7 +1250,7 @@ if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
-renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderMC(); nInit();
+renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderForSale(); renderMC(); nInit(); renderMaster();
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
