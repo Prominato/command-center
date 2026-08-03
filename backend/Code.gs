@@ -53,6 +53,20 @@ function doPost(e) {
 
 /** Send a real email FROM this account. Only to Max's own addresses — this web app
  *  is "anyone with the link", so the allow-list stops it being used as a relay. */
+/** RUN THIS ONCE from the editor (Run ▸ authorizeMail) to grant the send-mail scope.
+ *  MailApp is a NEW permission — until it's approved, sendMail_ throws and no mail goes out.
+ *  Underscore-suffixed helpers are hidden from the Run menu, hence this plain-named wrapper. */
+function authorizeMail() {
+  MailApp.sendEmail({
+    to: 'max@prominato.com',
+    subject: '✅ Command Center can now email you',
+    body: 'Mail sending is authorized. Your scheduled tasks can now deliver real email to this inbox instead of leaving drafts.\n\nmaxhq.netlify.app',
+    name: 'Command Center'
+  });
+  saveBatch_([{ k: 'cc_last_mail', v: JSON.stringify({ to: 'max@prominato.com', subject: '✅ Command Center can now email you', at: Date.now() }), t: Date.now() }]);
+  return 'sent; quota left: ' + MailApp.getRemainingDailyQuota();
+}
+
 var MAIL_ALLOW = ['max@prominato.com', 'msteinberg115@gmail.com'];
 function sendMail_(b) {
   var to = String(b.to || '').trim().toLowerCase();
