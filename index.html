@@ -7,17 +7,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-  :root{ color-scheme:light;
-    --bg:#EEF2F7; --bg2:#E3EAF1; --card:#FFFFFF; --card-hover:#ECF1F7;
-    --ink:#1F2A37; --ink-muted:#64748B;
-    --amber:#4F7CAC; --gold:#3E6E8E; --teal:#3F8487; --dusk:#5C6BA0;
-    --rain:#4F7CAC; --rose:#9C6B5E; --gym:#6B7C99; --urgent:#C0504D;
-    --divider:#D6DFE8; --radius:14px; --wknd:#E5ECF5; --wknd-bd:#CBD8E6; --wknd-hover:#DCE6F1;
-    --shadow:0 1px 2px rgba(16,32,52,.07), 0 6px 20px rgba(16,32,52,.10);
-    --accent:#3E6E8E;
+  /* ===== Agenda Book design system — warm dark (default) + parchment light ===== */
+  :root{ color-scheme:dark;
+    --panel:#1E1A14; --inset:#16130F; --line:#2E2820;
+    --mut:#8F8471; --faint:#5C5344; --dim:#3A332A;
+    --brass:#C9A96A; --sage:#6FA396; --slate:#8B93BC; --onaccent:#16130F;
+    --tint:rgba(201,169,106,.05); --todaybg:rgba(201,169,106,.08); --barbg:rgba(22,19,15,.94);
+    /* legacy aliases — existing component CSS keeps working */
+    --bg:#16130F; --bg2:var(--inset); --card:var(--panel); --card-hover:#241F18;
+    --ink:#E9E2D6; --ink-muted:var(--mut);
+    --amber:#D0A35C; --gold:var(--brass); --teal:var(--sage); --dusk:var(--slate);
+    --rain:var(--slate); --rose:#C2705C; --gym:#A08FBF; --urgent:#C2705C;
+    --divider:var(--line); --radius:10px; --wknd:var(--inset); --wknd-bd:var(--line); --wknd-hover:#241F18;
+    --shadow:none; --accent:var(--brass);
+  }
+  body.skin-light{ color-scheme:light;
+    --panel:#FBFAF6; --inset:#F1EDE4; --line:#DBD3C2;
+    --mut:#7A7060; --faint:#A79C88; --dim:#D5CCBA;
+    --brass:#8A6E3A; --sage:#3E7A6C; --slate:#54608F; --onaccent:#FBFAF6;
+    --tint:rgba(138,110,58,.06); --todaybg:rgba(138,110,58,.10); --barbg:rgba(251,250,246,.94);
+    --bg:#EFEBE3; --card-hover:#F5F1E9;
+    --ink:#2A251C; --amber:#A0722F; --rose:#A04A36; --gym:#6E5E93; --urgent:#A04A36;
+    --wknd-hover:#F5F1E9;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); background-image:radial-gradient(1200px 600px at 80% -10%, rgba(62,110,142,.10), transparent 60%); background-attachment:fixed; color:var(--ink); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; line-height:1.45; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+  body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
+  ::selection{background:rgba(201,169,106,.25);}
   a{color:inherit;}
 
   /* ===== top app bar ===== */
@@ -30,8 +45,8 @@
   .appbar .datepill{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace; font-size:.76rem; color:var(--ink-muted); background:var(--bg2); padding:5px 10px; border-radius:20px; white-space:nowrap;}
   .appbar select{background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-family:inherit; font-size:.8rem; padding:6px 9px; border-radius:9px; cursor:pointer;}
   .syncpill{font-size:.7rem; font-weight:600; border:1px solid currentColor; border-radius:20px; padding:3px 10px; white-space:nowrap; color:var(--ink-muted);}
-  .celllink{font-size:.78rem; color:var(--ink-muted); border:1px solid var(--divider); padding:5px 11px; border-radius:20px; text-decoration:none; white-space:nowrap;}
-  .celllink:hover{color:var(--ink); border-color:var(--accent);}
+  .celllink{font-size:.69rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--mut); border:none; border-bottom:1px solid transparent; padding:2px 0; border-radius:0; text-decoration:none; white-space:nowrap;}
+  .celllink:hover{color:var(--ink); border-bottom-color:var(--brass);}
   .appbar .databtn{position:relative;}
   .appbar .databtn>button{background:var(--bg2); border:1px solid var(--divider); color:var(--ink); font-size:.8rem; padding:6px 11px; border-radius:9px; cursor:pointer;}
   .menu{position:absolute; right:0; top:38px; background:var(--card); border:1px solid var(--divider); border-radius:11px; box-shadow:var(--shadow); padding:6px; min-width:180px; display:none;}
@@ -99,7 +114,7 @@
   .tintmenu button{width:24px; height:24px; border-radius:6px; border:1px solid rgba(0,0,0,.22); cursor:pointer; padding:0;}
   .tintmenu button:hover{transform:scale(1.14);}
   .tintdd .tintundo{flex:0 0 auto; padding:6px 9px;}
-  body.skin-ledger .tintbtn,body.skin-ledger .tintmenu,body.skin-ledger .tintmenu button,body.skin-ledger .tintbtn i{border-radius:0}
+  .tintbtn,.tintmenu,.tintmenu button,.tintbtn i{border-radius:4px}
 
   /* calendar */
   .months{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
@@ -328,127 +343,86 @@
   footer{margin-top:30px; font-size:.78rem; color:var(--ink-muted); text-align:center;}
 
   /* ================== SKIN · LEDGER (option 7) ================== */
-  body.skin-ledger{
-    --bg:#FBFAF7; --bg2:#F3EFE4; --card:#FBFAF7; --card-hover:#F3EFE4;
-    --ink:#1E2A22; --ink-muted:#5C6A5E;
-    --amber:#8C6A1D; --gold:#8C6A1D; --teal:#2E5641; --dusk:#566288;
-    --rain:#2E5641; --rose:#9C3D22; --gym:#8C6A1D; --urgent:#9C3D22;
-    --divider:#D8D0BC; --wknd:#F3EFE4; --wknd-bd:#D8D0BC; --wknd-hover:#EDE7D8;
-    --accent:#8C6A1D; --shadow:none;
-    background:#FBFAF7; background-image:none; color:#1E2A22;
-  }
-  body.skin-ledger .appbar{box-shadow:none; border-bottom:3px double var(--ink); background:var(--bg)}
-  body.skin-ledger .appbar .brand h1{font-family:'Newsreader',serif; font-style:italic; font-weight:500; font-size:1.3rem}
-  body.skin-ledger .datepill,body.skin-ledger .appbar select,body.skin-ledger .appbar .databtn>button,body.skin-ledger .syncpill{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
-  body.skin-ledger .menu{border-radius:0; border:1px solid var(--ink); box-shadow:none; background:var(--bg)}
-  body.skin-ledger .menu button{border-radius:0}
-  body.skin-ledger .quicknav{background:var(--bg)}
-  body.skin-ledger .quicknav button{border-radius:0; background:var(--bg); border:1px solid var(--divider); text-transform:uppercase; font-size:.68rem; letter-spacing:.12em}
-  body.skin-ledger .quicknav button:hover{border-color:var(--ink); color:var(--ink)}
-  body.skin-ledger #glance{background:var(--bg); border:1px solid var(--ink); border-radius:0; box-shadow:none}
-  body.skin-ledger #glance .gh .greet{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
-  body.skin-ledger .stat{background:var(--bg); border:1px solid var(--divider); border-radius:0; box-shadow:none}
-  body.skin-ledger .stat .val{font-family:'Newsreader',serif; font-weight:400}
-  body.skin-ledger .stat .lbl{letter-spacing:.18em}
-  body.skin-ledger .progress{border-radius:0; background:var(--bg2)}
-  body.skin-ledger details.drop{border:1px solid var(--ink); border-left:1px solid var(--ink); border-radius:0; box-shadow:none; background:var(--bg)}
-  body.skin-ledger details.drop>summary{font-family:'Newsreader',serif; font-style:italic; font-weight:500; background:var(--bg)}
-  body.skin-ledger .count{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
-  body.skin-ledger .secmove button,body.skin-ledger .phead button,body.skin-ledger .iconbtn{border-radius:0}
-  body.skin-ledger .phead .which{font-family:'Newsreader',serif; font-style:italic}
-  body.skin-ledger .dayline{border-radius:0}
-  body.skin-ledger .dayline.today{border:none; border-bottom:2px solid var(--gold); background:none}
-  body.skin-ledger .chip{border-radius:0}
-  body.skin-ledger details.evmgr{border-radius:0; background:var(--bg2)}
-  body.skin-ledger .month{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
-  body.skin-ledger .month.active{border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink)}
-  body.skin-ledger .month h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
-  body.skin-ledger .cell{border-radius:0}
-  body.skin-ledger .cell.today .dnum{background:var(--ink); color:var(--bg); border-radius:0}
-  body.skin-ledger .evbar{border-radius:0}
-  body.skin-ledger details.day{border-radius:0; background:var(--bg); border:1px solid var(--divider)}
-  body.skin-ledger details.day.today{border:1px solid var(--gold)}
-  body.skin-ledger details.day[open]{border-color:var(--ink)}
-  body.skin-ledger .day-date{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
-  body.skin-ledger .sec-head{font-family:'Newsreader',serif; font-style:italic; font-weight:500; text-transform:none; letter-spacing:.02em; font-size:.98rem}
-  body.skin-ledger .section{border-left:none; padding-left:2px}
-  body.skin-ledger .day-track{background:var(--bg); border:1px solid var(--divider); border-radius:0}
-  body.skin-ledger input.dw{border:none; border-bottom:1px solid var(--ink); border-radius:0; background:transparent; font-family:'Newsreader',serif; font-style:italic; font-size:.95rem}
-  body.skin-ledger input.dw:focus{box-shadow:none; border-bottom-color:var(--gold)}
-  body.skin-ledger .plan-wrap,body.skin-ledger textarea.plan,body.skin-ledger .carried,body.skin-ledger .dt-num{border-radius:0}
-  body.skin-ledger .listcard{background:var(--bg); border:1px solid var(--ink); border-radius:0}
-  body.skin-ledger .listcard h3{font-family:'Newsreader',serif; font-style:italic; font-weight:500}
-  body.skin-ledger .addrow input,body.skin-ledger .addrow select,body.skin-ledger .addrow button{border-radius:0}
-  body.skin-ledger .addrow button{background:var(--ink); color:var(--bg)}
-  body.skin-ledger .addrow button.ghost,body.skin-ledger .addrow button#evPickBtn{background:none; color:var(--ink-muted); border:1px solid var(--divider)}
-  body.skin-ledger .celllink{border-radius:0; background:var(--bg)}
-  body.skin-ledger .items li{border-radius:0; background:var(--bg)}
-  body.skin-ledger .wcat-h{letter-spacing:.16em}
-  body.skin-ledger details.warch{border-top:1px solid var(--divider)}
-  body.skin-ledger .nfolders,body.skin-ledger .nfolder,body.skin-ledger .ncard,body.skin-ledger #nEditor input.ntitle,body.skin-ledger #nEditor textarea,body.skin-ledger #nEditor select{border-radius:0}
-  body.skin-ledger .ncard{background:var(--bg); border:1px solid var(--divider)}
-  body.skin-ledger .ncard .nt,body.skin-ledger #nEditor input.ntitle{font-family:'Newsreader',serif; font-weight:500}
-  body.skin-ledger footer{font-family:'Newsreader',serif; font-style:italic; font-size:.85rem}
+  /* ===== Agenda Book component styling ===== */
+  h1,h2,h3,.stat .val,details.drop>summary,#glance .gh .greet,.month h3,.listcard h3,.day-date,.phead .which,.ncard .nt{font-family:'Fraunces',Georgia,serif;}
+  .stat .lbl,.trisec,.wcat-h,.mgroup-h,.quicknav button,.count,.htab,.wwhen,.fsprice,.dt-num,.chip,.syncpill{font-family:'IBM Plex Mono',monospace;}
 
-  /* ================== SKIN · AURORA (option 5) ================== */
-  body.skin-aurora{
-    --bg:#0B0D1A; --bg2:#151830; --card:rgba(255,255,255,.055); --card-hover:rgba(255,255,255,.1);
-    --ink:#EDEFF7; --ink-muted:#A9AFC7;
-    --amber:#9F7CFF; --gold:#2DD4BF; --teal:#8FF0E0; --dusk:#9FB4FF;
-    --rain:#8FF0E0; --rose:#FF9E9E; --gym:#C9B8FF; --urgent:#FF7A88;
-    --divider:rgba(255,255,255,.13); --wknd:rgba(159,124,255,.07); --wknd-bd:rgba(159,124,255,.28); --wknd-hover:rgba(159,124,255,.12);
-    --accent:#9F7CFF; --shadow:0 10px 40px rgba(0,0,0,.5);
-    background:#0B0D1A; background-image:none; color:#EDEFF7;
-  }
-  body.skin-aurora::before{content:""; position:fixed; width:640px; height:640px; border-radius:50%; top:-260px; right:-160px; z-index:0;
-    background:radial-gradient(closest-side, rgba(124,92,255,.30), transparent); pointer-events:none}
-  body.skin-aurora::after{content:""; position:fixed; width:560px; height:560px; border-radius:50%; bottom:-260px; left:-160px; z-index:0;
-    background:radial-gradient(closest-side, rgba(45,212,191,.18), transparent); pointer-events:none}
-  body.skin-aurora .wrap{position:relative; z-index:1}
-  body.skin-aurora .quicknav{background:rgba(11,13,26,.78); backdrop-filter:blur(12px)}
-  body.skin-aurora .appbar{background:rgba(15,17,34,.72); backdrop-filter:blur(14px); border-bottom:1px solid var(--divider); box-shadow:none}
-  body.skin-aurora .appbar .brand h1{font-family:'Space Grotesk',sans-serif; font-weight:700;
-    background:linear-gradient(90deg,#9F7CFF,#2DD4BF); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
-  body.skin-aurora .datepill,body.skin-aurora .appbar select,body.skin-aurora .appbar .databtn>button{background:rgba(255,255,255,.07); border:1px solid var(--divider); color:var(--ink)}
-  body.skin-aurora .menu{background:#151830; border:1px solid var(--divider)}
-  body.skin-aurora .quicknav button{background:rgba(255,255,255,.06); border:1px solid var(--divider); backdrop-filter:blur(10px)}
-  body.skin-aurora .quicknav button:hover{border-color:#9F7CFF}
-  body.skin-aurora #glance{background:rgba(255,255,255,.05); border:1px solid var(--divider); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-  body.skin-aurora #glance .gh .greet{font-family:'Space Grotesk',sans-serif; font-weight:700}
-  body.skin-aurora .stat{background:rgba(255,255,255,.055); border:1px solid var(--divider); backdrop-filter:blur(14px); box-shadow:inset 0 1px 0 rgba(255,255,255,.08); border-radius:16px}
-  body.skin-aurora .stat .val{font-family:'Space Grotesk',sans-serif; font-weight:700}
-  body.skin-aurora .progress span{background:linear-gradient(90deg,#9F7CFF,#2DD4BF)}
-  body.skin-aurora details.drop{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-left:1px solid var(--divider); backdrop-filter:blur(14px); border-radius:16px; box-shadow:none}
-  body.skin-aurora details.drop>summary{font-family:'Space Grotesk',sans-serif; font-weight:600; background:transparent}
-  body.skin-aurora details.drop[open]>summary{border-bottom:1px solid var(--divider)}
-  body.skin-aurora .count{background:rgba(255,255,255,.08)}
-  body.skin-aurora .phead .which{font-family:'Space Grotesk',sans-serif; font-weight:600}
-  body.skin-aurora .dayline.today{background:linear-gradient(90deg, rgba(159,124,255,.18), rgba(45,212,191,.08)); border:none; border-radius:12px}
-  body.skin-aurora .chip{background:rgba(255,255,255,.05)}
-  body.skin-aurora details.evmgr{background:rgba(255,255,255,.04)}
-  body.skin-aurora .month{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-radius:14px}
-  body.skin-aurora .month.active{border-color:#9F7CFF; box-shadow:inset 0 0 0 1px #9F7CFF}
-  body.skin-aurora .month h3{font-family:'Space Grotesk',sans-serif; font-weight:600}
-  body.skin-aurora .cell.today .dnum{background:linear-gradient(135deg,#9F7CFF,#2DD4BF); color:#0B0D1A; border-radius:6px; font-weight:700}
-  body.skin-aurora details.day{background:rgba(255,255,255,.045); border:1px solid var(--divider); border-radius:14px}
-  body.skin-aurora details.day.today{border-color:#9F7CFF}
-  body.skin-aurora details.day[open]{border-color:#9F7CFF}
-  body.skin-aurora .day-date{font-family:'Space Grotesk',sans-serif; font-weight:600}
-  body.skin-aurora .day-track{background:rgba(255,255,255,.05); border:1px solid var(--divider); border-radius:14px}
-  body.skin-aurora input.dw,body.skin-aurora textarea.plan,body.skin-aurora .dt-num{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:var(--ink)}
-  body.skin-aurora .listcard{background:rgba(255,255,255,.05); border:1px solid var(--divider); border-radius:16px}
-  body.skin-aurora .listcard h3{font-family:'Space Grotesk',sans-serif; font-weight:600}
-  body.skin-aurora .addrow input,body.skin-aurora .addrow select{background:rgba(255,255,255,.07); border:1px solid var(--divider); color:var(--ink)}
-  body.skin-aurora .addrow button{background:linear-gradient(90deg,#9F7CFF,#2DD4BF); color:#0B0D1A; font-weight:700}
-  body.skin-aurora .addrow button.ghost,body.skin-aurora .addrow button#evPickBtn{background:rgba(255,255,255,.06); color:var(--ink-muted); border:1px solid var(--divider); font-weight:500}
-  body.skin-aurora .addrow button#evPickBtn.active{background:var(--teal); color:#0B0D1A}
-  body.skin-aurora .celllink{background:rgba(255,255,255,.07)}
-  body.skin-aurora .items li{background:rgba(255,255,255,.05)}
-  body.skin-aurora .txt.editing{background:rgba(255,255,255,.1)}
-  body.skin-aurora .ncard{background:rgba(255,255,255,.05); border:1px solid var(--divider)}
-  body.skin-aurora .ncard .nt,body.skin-aurora #nEditor input.ntitle{font-family:'Space Grotesk',sans-serif; font-weight:600}
-  body.skin-aurora #nEditor input.ntitle,body.skin-aurora #nEditor textarea,body.skin-aurora #nEditor select{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:var(--ink)}
-  body.skin-aurora .nfolder.active{background:rgba(159,124,255,.18); border-color:#9F7CFF}
+  /* app bar — sticky, translucent, hairline rule */
+  .appbar{background:var(--barbg); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); box-shadow:none;}
+  .appbar .brand h1{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.15rem; letter-spacing:.2px;}
+  .datepill,.appbar select,.appbar .databtn>button,.syncpill{background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--mut); font-size:.72rem; letter-spacing:.08em;}
+  .syncpill{color:var(--sage); text-transform:uppercase;}
+  .menu{background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.35);}
+
+  /* quick nav — small caps chips */
+  .quicknav{background:var(--bg);}
+  .quicknav button{background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--mut); text-transform:uppercase; font-size:.66rem; font-weight:600; letter-spacing:.1em; padding:6px 12px;}
+  .quicknav button:hover{color:var(--ink); border-color:var(--brass);}
+  .quicknav button.navover{color:var(--ink); border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass);}
+
+  /* glance + stat cards */
+  #glance{background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:none;}
+  #glance .gh .greet{font-weight:600; letter-spacing:-.01em;}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; box-shadow:none;}
+  .stat .lbl{font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600;}
+  .stat .val{font-weight:600; letter-spacing:-.01em;}
+  .progress{background:var(--inset); border-radius:2px; height:4px;}
+  .progress>i{background:var(--brass);}
+
+  /* section panels — hairline frame + brass top rule */
+  details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
+  details.drop>summary{font-weight:600; font-size:1.02rem; background:transparent; letter-spacing:-.01em;}
+  details.drop[open]>summary{border-bottom:1px solid var(--line);}
+  .count{background:transparent; border:1px solid var(--line); border-radius:5px; color:var(--mut); font-size:.62rem; letter-spacing:.08em;}
+  .secmove button,.phead button,.iconbtn{border-radius:5px;}
+  .hint{color:var(--mut);}
+
+  /* tabs */
+  .htab{background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--mut); font-size:.68rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase; padding:7px 13px;}
+  .htab.on{background:var(--tint); color:var(--ink); border-color:var(--brass);}
+  .tcount{color:var(--faint);}
+
+  /* list cards + rows */
+  .listcard{background:transparent; border:none; border-radius:0; box-shadow:none; padding:0;}
+  .listcard h3{font-weight:600; font-size:1rem;}
+  .lh{color:var(--mut); font-size:.78rem;}
+  .items li{border-bottom:1px solid var(--line); background:transparent; border-radius:0; padding:9px 4px;}
+  .items li:hover{background:var(--tint);}
+  .items li.done{opacity:.45;}
+  .items li.urgent{background:transparent;}
+  .trisec{font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600; margin:14px 0 4px; padding-top:8px;}
+  .trisec.pri-h{color:var(--brass);}
+  .wcat-h,.mgroup-h{font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; font-weight:600;}
+  .wcount{color:var(--faint); font-family:'IBM Plex Mono',monospace; font-size:.68rem;}
+  .wwhen,.fsprice{color:var(--mut); font-size:.7rem;}
+  .iconbtn{color:var(--faint);} .iconbtn:hover{color:var(--ink);}
+  .iconbtn.pristar.on{color:var(--brass);}
+  .iconbtn.bang.on{color:var(--urgent);}
+  .warch>summary{color:var(--mut); font-size:.72rem; letter-spacing:.06em;}
+  .empty{color:var(--faint);}
+  input,textarea,select{background:var(--inset); border:1px solid var(--line); color:var(--ink); border-radius:6px; font-family:'Inter',system-ui,sans-serif;}
+  .addrow button{background:var(--brass); color:var(--onaccent); border:none; border-radius:6px; font-weight:600;}
+  .addrow button:hover{filter:brightness(1.08);}
+
+  /* week / agenda / calendar */
+  .phead .which{font-weight:600;}
+  .dayline{border-bottom:1px solid var(--line); border-radius:0;}
+  .dayline.today,details.day.today{background:var(--todaybg); border-left:2px solid var(--brass);}
+  .chip{background:var(--inset); border:1px solid var(--line); border-radius:5px; font-size:.66rem; letter-spacing:.06em;}
+  details.day{background:var(--panel); border:1px solid var(--line); border-radius:8px;}
+  details.day[open]{border-color:var(--brass);}
+  .day-date{font-weight:600;}
+  .day-track{background:var(--inset); border:1px solid var(--line); border-radius:8px;}
+  .month{background:var(--panel); border:1px solid var(--line); border-radius:10px;}
+  .month.active{border-color:var(--brass);}
+  .month h3{font-weight:600; font-size:.92rem;}
+  .cell.today .dnum{background:var(--brass); color:var(--onaccent); border-radius:4px; font-weight:700;}
+  details.evmgr{background:var(--inset); border:1px solid var(--line); border-radius:8px;}
+
+  /* notes */
+  .ncard{background:var(--panel); border:1px solid var(--line); border-radius:8px;}
+  .ncard .nt{font-weight:600;}
+  .nfolder.active{background:var(--tint); border-color:var(--brass); color:var(--ink);}
 </style>
 </head>
 <body>
@@ -456,8 +430,8 @@
 <div class="appbar">
   <div class="brand"><h1>Command Center</h1><span class="loc">Royal Oak, MI</span></div>
   <div class="spacer"></div>
-  <a href="cell.html" title="The Cell — gamified agenda" class="celllink">🧬 The Cell</a>
-  <a href="town.html" title="The Settlement — gamified agenda (ledger)" class="celllink">🏙️ The Settlement</a>
+  <a href="cell.html" title="The Cell — gamified agenda" class="celllink">The Cell</a>
+  <a href="town.html" title="The Settlement — gamified agenda (ledger)" class="celllink">The Settlement</a>
   <span class="syncpill" id="syncPill">●</span>
   <span class="datepill" id="datePill">—</span>
   <select id="themeSelect" title="Color theme"></select>
@@ -645,10 +619,10 @@ const TODAY_ISO=TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).padStart(2,"0
 function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"T00:00:00";}
 
 /* ===== themes ===== */
-const SKINS={ledger:{name:"📒 Ledger"},aurora:{name:"✨ Aurora"}};
-function normSkin(v){return SKINS[v]?v:"ledger";}
+const SKINS={dark:{name:"◗ Dark"},light:{name:"◖ Light"}};
+function normSkin(v){ if(v==='ledger')return 'light'; if(v==='aurora')return 'dark'; return SKINS[v]?v:"dark"; }   // migrate old theme keys
 function applyTheme(key,fromUser){key=normSkin(key);
-  document.body.classList.remove("skin-ledger","skin-aurora");
+  document.body.classList.remove("skin-dark","skin-light","skin-ledger","skin-aurora");
   document.body.classList.add("skin-"+key);
   if(fromUser){localStorage.setItem("cc_theme",key); if(typeof SYNC!=="undefined")SYNC.queue("cc_theme",key);}
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
@@ -815,9 +789,9 @@ const EVCOLORS=['#5C6BA0','#3F8487','#4F7CAC','#9C6B5E','#6B7C99','#3E6E8E'];
    color for timed appointments (outlined, no fill). Second family = Prominato. */
 function evKind(e){ return (e.start===e.end && e.startTime) ? 'appt' : 'block'; }
 const EVC_DEFAULTS={
-  ledger:{block:'#8C6A1D', appt:'#C2A253', blockP:'#2E5641', apptP:'#6E9B85'},   // gold · forest = Prominato
-  aurora:{block:'#9F7CFF', appt:'#C9B8FF', blockP:'#2DD4BF', apptP:'#8FF0E0'}};  // violet · teal = Prominato
-function evSkin(){ return document.body.classList.contains('skin-aurora')?'aurora':'ledger'; }
+  dark:{block:'#C9A96A', appt:'#D0A35C', blockP:'#6FA396', apptP:'#8B93BC'},     // brass · sage = Prominato
+  light:{block:'#8A6E3A', appt:'#A0722F', blockP:'#3E7A6C', apptP:'#54608F'}};   // deep brass · forest = Prominato
+function evSkin(){ return document.body.classList.contains('skin-light')?'light':'dark'; }
 function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
 function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
   const p=evPalette(), pro=(e.cal==='prominato');
