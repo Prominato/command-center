@@ -45,6 +45,9 @@
   .quicknav{position:sticky; top:55px; z-index:40; background:var(--bg); display:flex; gap:8px; flex-wrap:wrap; padding:12px 22px 6px;}
   .quicknav button{background:var(--card); border:1px solid var(--divider); color:var(--ink-muted); font-size:.8rem; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:inherit;}
   .quicknav button:hover{color:var(--ink); border-color:var(--accent);}
+  .quicknav button.drag{cursor:grab; touch-action:none;}
+  .quicknav button.navdragging{opacity:.45; cursor:grabbing;}
+  .quicknav button.navover{color:var(--ink); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
 
   .wrap{max-width:1180px; margin:0 auto; padding:8px 22px 80px;}
 
@@ -1144,8 +1147,35 @@ function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
-function buildNav(){const nav=document.getElementById('quicknav'); const items=[['today','Today']].concat(secLoad().map(id=>[id,SEC_LABEL[id]]));
-  nav.innerHTML=items.map(([id,lbl])=>`<button onclick="jumpTo('${id}')">${lbl}</button>`).join("");}
+function buildNav(){const nav=document.getElementById('quicknav');
+  let html='<button class="navchip" onclick="jumpTo(\'today\')">Today</button>';
+  html+=secLoad().map(id=>`<button class="navchip drag" data-navid="${id}" title="Drag to reorder · tap to jump">${SEC_LABEL[id]}</button>`).join("");
+  nav.innerHTML=html;
+  nav.querySelectorAll('.navchip.drag').forEach(el=>el.addEventListener('pointerdown',navPointerDown));}
+/* Pointer-based drag reorder — works with mouse AND touch (phone). Tap = jump, drag = reorder. */
+let navDrag={id:null,el:null,active:false,x0:0,y0:0,target:null};
+function navPointerDown(e){ if(e.button&&e.button!==0)return; const el=e.currentTarget;
+  navDrag={id:el.dataset.navid, el:el, active:false, x0:e.clientX, y0:e.clientY, target:null};
+  try{el.setPointerCapture(e.pointerId);}catch(_){}
+  el.addEventListener('pointermove',navPointerMove); el.addEventListener('pointerup',navPointerUp); el.addEventListener('pointercancel',navPointerUp);}
+function navPointerMove(e){ const d=navDrag; if(!d.el)return;
+  if(!d.active){ if(Math.abs(e.clientX-d.x0)+Math.abs(e.clientY-d.y0)<8)return; d.active=true; d.el.classList.add('navdragging'); }
+  e.preventDefault();
+  const under=document.elementFromPoint(e.clientX,e.clientY);
+  const chip=(under&&under.closest)?under.closest('.navchip.drag'):null;
+  if(d.target&&d.target!==chip)d.target.classList.remove('navover');
+  if(chip&&chip!==d.el){chip.classList.add('navover'); d.target=chip;} else d.target=null;}
+function navPointerUp(e){ const d=navDrag; if(!d.el)return;
+  d.el.removeEventListener('pointermove',navPointerMove); d.el.removeEventListener('pointerup',navPointerUp); d.el.removeEventListener('pointercancel',navPointerUp);
+  try{d.el.releasePointerCapture(e.pointerId);}catch(_){}
+  const wasActive=d.active, dragId=d.id, tgt=d.target;
+  d.el.classList.remove('navdragging'); document.querySelectorAll('.navchip.navover').forEach(c=>c.classList.remove('navover'));
+  navDrag={id:null,el:null,active:false,x0:0,y0:0,target:null};
+  if(!wasActive){ jumpTo(dragId); return; }
+  if(!tgt||!tgt.dataset)return; const targetId=tgt.dataset.navid; if(!targetId||targetId===dragId)return;
+  const order=secLoad(); const from=order.indexOf(dragId), to=order.indexOf(targetId); if(from<0||to<0)return;
+  const[m]=order.splice(from,1); order.splice(to,0,m);
+  const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 
 /* ===== counts + glance ===== */

@@ -121,23 +121,24 @@ function saveBatch_(items) {
 }
 
 /** Next 90 days of calendar events — read-only, declined dropped.
- *  Reads the default (personal) calendar, plus any calendar on this account
- *  whose name or id mentions "prominato" — those events get cal:'prominato'
- *  so the app renders them in the work-calendar color. To connect it later:
- *  subscribe to the Prominato calendar in Google Calendar, then re-paste and
- *  re-deploy this file (Deploy ▸ Manage deployments ▸ ✏️ ▸ New version). */
+ *  Reads TWO calendars and color-tags each:
+ *    • the account's own (default) calendar  → cal:'prominato'  (work color)
+ *    • msteinberg115@gmail.com (personal)     → cal:'personal'   (personal color)
+ *  Plus any other calendar whose name mentions "prominato" (work color).
+ *  If a personal-calendar event still doesn't show after redeploying, make sure
+ *  msteinberg115@gmail.com is shared to this account with "See all event details". */
+var PERSONAL_CAL_ID = 'msteinberg115@gmail.com';
 function calEvents_() {
   var now = new Date();
   var end = new Date(now.getTime() + 90 * 24 * 3600 * 1000);
   var out = [];
-  var sources = [{ cal: CalendarApp.getDefaultCalendar(), tag: 'personal' }];
+  var seen = {}, sources = [];
+  try { var def = CalendarApp.getDefaultCalendar(); if (def) { sources.push({ cal: def, tag: 'prominato' }); seen[def.getId()] = 1; } } catch (e) {}
+  try { var pers = CalendarApp.getCalendarById(PERSONAL_CAL_ID); if (pers && !seen[pers.getId()]) { sources.push({ cal: pers, tag: 'personal' }); seen[pers.getId()] = 1; } } catch (e) {}
   try {
-    var primaryId = sources[0].cal.getId();
     CalendarApp.getAllCalendars().forEach(function (c) {
-      var nm = (c.getName() || '') + ' ' + (c.getId() || '');
-      if (/prominato/i.test(nm) && c.getId() !== primaryId) {
-        sources.push({ cal: c, tag: 'prominato' });
-      }
+      var id = c.getId(); if (seen[id]) return;
+      if (/prominato/i.test((c.getName() || '') + ' ' + id)) { sources.push({ cal: c, tag: 'prominato' }); seen[id] = 1; }
     });
   } catch (e) {}
   sources.forEach(function (src) {
