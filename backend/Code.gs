@@ -43,11 +43,25 @@ function doGet(e) {
 function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (body.action === 'mail') return json_(sendMail_(body));   // {action:'mail',to,subject,body}
     var n = saveBatch_(body.items || []);
     return json_({ ok: true, n: n });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
+}
+
+/** Send a real email FROM this account. Only to Max's own addresses — this web app
+ *  is "anyone with the link", so the allow-list stops it being used as a relay. */
+var MAIL_ALLOW = ['max@prominato.com', 'msteinberg115@gmail.com'];
+function sendMail_(b) {
+  var to = String(b.to || '').trim().toLowerCase();
+  if (MAIL_ALLOW.indexOf(to) < 0) return { ok: false, error: 'recipient not allowed' };
+  var subj = String(b.subject || '(no subject)').slice(0, 250);
+  var text = String(b.body || '');
+  if (!text) return { ok: false, error: 'empty body' };
+  MailApp.sendEmail({ to: to, subject: subj, body: text, name: 'Command Center' });
+  return { ok: true, sent: to, quotaLeft: MailApp.getRemainingDailyQuota() };
 }
 
 /** Same backing spreadsheet as before (created on first use). */
