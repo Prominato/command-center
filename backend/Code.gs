@@ -61,6 +61,11 @@ function sendMail_(b) {
   var text = String(b.body || '');
   if (!text) return { ok: false, error: 'empty body' };
   MailApp.sendEmail({ to: to, subject: subj, body: text, name: 'Command Center' });
+  // Record the send in state. POST responses are unreadable through Apps Script's
+  // redirect, so callers confirm success by GETting ?action=state and checking this.
+  try {
+    saveBatch_([{ k: 'cc_last_mail', v: JSON.stringify({ to: to, subject: subj, at: Date.now() }), t: Date.now() }]);
+  } catch (e) {}
   return { ok: true, sent: to, quotaLeft: MailApp.getRemainingDailyQuota() };
 }
 
