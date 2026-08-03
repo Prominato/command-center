@@ -675,7 +675,9 @@ const SYNC=(function(){
         Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return; if(!(j.state&&j.state[k])) queue(k,localStorage.getItem(k)); });
         localStorage.setItem('cc_sync_init','1');
       }
-      applyCal(j.events||[]);
+      let __cal=j.events||[];   // prefer the cc_gcal feed (both calendars, kept fresh by the daily job) when present
+      try{ const g=(j.state&&j.state['cc_gcal']&&j.state['cc_gcal'].v)||localStorage.getItem('cc_gcal'); if(g){ const a=JSON.parse(g); if(Array.isArray(a)&&a.length)__cal=a; } }catch(_){}
+      applyCal(__cal);
       pill('synced');
       const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
       if(changed && !typing) location.reload();   // pick up remote changes; skipped while you're typing
@@ -1274,6 +1276,7 @@ document.getElementById('evStart').value=TODAY_ISO; document.getElementById('evE
 document.getElementById('days').innerHTML=DAYS.map(renderDay).join("");
 renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
+try{ const __g=localStorage.getItem('cc_gcal'); if(__g){ const __a=JSON.parse(__g); if(Array.isArray(__a)&&__a.length) applyCal(__a); } }catch(_){}   // instant calendar from last synced feed
 (function(){const el=document.getElementById('evLoc'); let t=null; el.addEventListener('input',()=>{clearTimeout(t); const q=el.value.trim(); if(q.length<3)return; t=setTimeout(()=>geoSearch(q),250);});})();
 lload(); mcload();
 if(!localStorage.getItem('cc_mig_books')){
