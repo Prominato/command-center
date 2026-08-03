@@ -487,6 +487,7 @@
       <div class="htabs" id="listTabs">
         <button class="htab on" data-tab="master" onclick="ccTab('master')">⭐ Master<span class="tcount"></span></button>
         <button class="htab" data-tab="todo" onclick="ccTab('todo')">✅ Personal<span class="tcount"></span></button>
+        <button class="htab" data-tab="routine" onclick="ccTab('routine')">🔁 Routinely<span class="tcount"></span></button>
         <button class="htab" data-tab="prominato" onclick="ccTab('prominato')">💼 Prominato<span class="tcount"></span></button>
         <button class="htab" data-tab="highmark" onclick="ccTab('highmark')">💼 Highmark<span class="tcount"></span></button>
         <button class="htab" data-tab="ai" onclick="ccTab('ai')">💼 AI Creation<span class="tcount"></span></button>
@@ -502,6 +503,11 @@
           <div class="listcard"><h3>✅ Personal To-Do</h3><div class="lh">Day-to-day tasks</div>
             <div class="addrow"><input id="todoInput" placeholder="Add a to-do…" onkeydown="if(event.key==='Enter')addItem('todo')"><button onclick="addItem('todo')">Add</button></div>
             <ul class="items" id="todoList"></ul></div>
+        </div>
+        <div class="tabpanel" data-panel="routine" style="display:none">
+          <div class="listcard"><h3>🔁 Routinely</h3><div class="lh">Recurring life admin — added automatically on schedule by the <b>routine reminders</b> job. Add your own here too.</div>
+            <div class="addrow"><input id="routineInput" placeholder="Add a recurring to-do…" onkeydown="if(event.key==='Enter')addItem('routine')"><button onclick="addItem('routine')">Add</button></div>
+            <ul class="items" id="routineList"></ul></div>
         </div>
         <div class="tabpanel" data-panel="prominato" style="display:none">
           <div class="listcard"><h3 style="color:var(--gold)">💼 Prominato</h3><div class="lh">Professional to-do</div>
@@ -940,12 +946,12 @@ function refreshDayTrackers(){
 }
 
 /* ===== lists ===== */
-const LISTS={todo:[],work:[],house:[],goals:[],dconst:[],forsale:[]};
+const LISTS={todo:[],work:[],house:[],goals:[],dconst:[],forsale:[],routine:[]};
 function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urgent:false}));}
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
-  LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.forsale=o.forsale||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
+  LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.forsale=o.forsale||[]; LISTS.routine=o.routine||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
   localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
-function pruneOld(){const now=Date.now(), MS=90*24*3600*1000; ['todo','work','house','goals','forsale'].forEach(w=>{ if(!LISTS[w])return;
+function pruneOld(){const now=Date.now(), MS=90*24*3600*1000; ['todo','work','house','goals','forsale','routine'].forEach(w=>{ if(!LISTS[w])return;
   LISTS[w]=LISTS[w].filter(x=>{ const ts=x.doneAt||x.archivedAt||x.soldAt||0; return !((x.done||x.sold)&&ts&&(now-ts)>=MS); }); });}
 function lsave(){pruneOld(); const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
@@ -993,11 +999,12 @@ function triSections(w,items){const now=Date.now();
 const WORKCATS=[['prominato','Prominato','var(--gold)'],['highmark','Highmark','var(--dusk)'],['ai','AI Creation','var(--teal)']];
 function onDropCat(cat,e){e.preventDefault(); document.querySelectorAll('.wcat-h.dragover').forEach(l=>l.classList.remove('dragover')); if(!dragCtx||dragCtx.w!=='work')return; const it=LISTS.work.find(x=>x.id===dragCtx.id); dragCtx=null; if(it){it.cat=cat; lsave(); renderWork(); renderMaster();}}
 function tabCount(name,n){const el=document.querySelector('#listTabs .htab[data-tab="'+name+'"] .tcount'); if(el)el.textContent=n?n:'';}
-function ccTab(name){const tabs=['master','todo','prominato','highmark','ai','house','forsale']; if(tabs.indexOf(name)<0)name='master';
+function ccTab(name){const tabs=['master','todo','routine','prominato','highmark','ai','house','forsale']; if(tabs.indexOf(name)<0)name='master';
   document.querySelectorAll('#listTabs .htab').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
   document.querySelectorAll('#listPanels .tabpanel').forEach(p=>{p.style.display=(p.dataset.panel===name)?'':'none';});
   localStorage.setItem('cc_listtab',name);
-  if(name==='master')renderMaster(); else if(name==='todo')renderList('todo'); else if(name==='house')renderList('house'); else if(name==='forsale')renderForSale(); else renderWorkCat(name);}
+  if(name==='master')renderMaster(); else if(name==='forsale')renderForSale();
+  else if(name==='todo'||name==='house'||name==='routine')renderList(name); else renderWorkCat(name);}
 function workItems(cat){const known=WORKCATS.map(c=>c[0]); return LISTS.work.filter(x=> x.cat===cat || (cat==='prominato' && known.indexOf(x.cat)<0));}  // unknown cats fall into Prominato
 function renderWorkCat(cat){const host=document.getElementById('workList_'+cat); if(!host)return; const items=workItems(cat);
   host.innerHTML=items.length?triSections('work',items):'<div class="empty">Nothing yet — add one above.</div>';
@@ -1011,7 +1018,7 @@ function renderList(w){
   if(w==='work'){renderWork(); return;}
   if(w==='forsale'){renderForSale(); return;}
   const ul=document.getElementById(w+'List'); const arr=LISTS[w]||[];
-  if(w==='todo'||w==='house')tabCount(w,arr.filter(x=>!x.done).length);
+  if(w==='todo'||w==='house'||w==='routine')tabCount(w,arr.filter(x=>!x.done).length);
   if(w==='goals'){ if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>';}
     else{const active=arr.filter(x=>!x.done), done=arr.filter(x=>x.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)); ul.innerHTML=active.concat(done).map(x=>taskRow('goals',x,false)).join('');}
     updateCounts(); renderGlance(); return; }
@@ -1024,6 +1031,7 @@ function renderMaster(){const host=document.getElementById('masterList'); if(!ho
   const groups=[{label:'✅ Personal',color:'',w:'todo',items:(LISTS.todo||[]).filter(x=>!x.done&&x.pri!=='secondary')}];
   WORKCATS.forEach(c=>groups.push({label:'💼 '+c[1],color:c[2],w:'work',items:(LISTS.work||[]).filter(x=>!x.done&&x.pri!=='secondary'&&x.cat===c[0])}));
   groups.push({label:'🏠 House',color:'',w:'house',items:(LISTS.house||[]).filter(x=>!x.done&&x.pri!=='secondary')});
+  groups.push({label:'🔁 Routinely',color:'',w:'routine',items:(LISTS.routine||[]).filter(x=>!x.done&&x.pri!=='secondary')});
   let html='',total=0;
   groups.forEach(g=>{if(!g.items.length)return; total+=g.items.length;
     html+=`<div class="mgroup"><div class="mgroup-h"${g.color?` style="color:${g.color}"`:''}>${g.label} <span class="wcount">${g.items.length}</span></div><ul class="items">`+
@@ -1306,7 +1314,7 @@ if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
-renderList('todo'); renderList('work'); renderList('house'); renderList('goals'); renderForSale(); renderMC(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
+renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); renderMC(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
