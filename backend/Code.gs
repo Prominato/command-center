@@ -120,24 +120,29 @@ function saveBatch_(items) {
   }
 }
 
-/** Next 90 days of calendar events — read-only, declined dropped.
- *  Reads TWO calendars and color-tags each:
- *    • the account's own (default) calendar  → cal:'prominato'  (work color)
- *    • msteinberg115@gmail.com (personal)     → cal:'personal'   (personal color)
- *  Plus any other calendar whose name mentions "prominato" (work color).
- *  If a personal-calendar event still doesn't show after redeploying, make sure
- *  msteinberg115@gmail.com is shared to this account with "See all event details". */
+/** Next 90 days of events — read-only, declined dropped. Reads BOTH calendars:
+ *    • max@prominato.com   → cal:'prominato' (work color) — where Mom & Dad, trips, golf live
+ *    • msteinberg115@gmail → cal:'personal'  (personal color) — Koloff, tournaments
+ *  This Web App runs as msteinberg115, so the Prominato calendar must be SHARED to it:
+ *  Google Calendar ▸ hover "max@prominato.com" under My/Other calendars ▸ ⋮ Settings and
+ *  sharing ▸ Share with specific people ▸ add msteinberg115@gmail.com ▸ "See all event
+ *  details". Then redeploy: Deploy ▸ Manage deployments ▸ ✏️ ▸ Version: New version ▸ Deploy. */
+var WORK_CAL_ID = 'max@prominato.com';
 var PERSONAL_CAL_ID = 'msteinberg115@gmail.com';
 function calEvents_() {
   var now = new Date();
   var end = new Date(now.getTime() + 90 * 24 * 3600 * 1000);
   var out = [];
   var seen = {}, sources = [];
-  try { var def = CalendarApp.getDefaultCalendar(); if (def) { sources.push({ cal: def, tag: 'prominato' }); seen[def.getId()] = 1; } } catch (e) {}
-  try { var pers = CalendarApp.getCalendarById(PERSONAL_CAL_ID); if (pers && !seen[pers.getId()]) { sources.push({ cal: pers, tag: 'personal' }); seen[pers.getId()] = 1; } } catch (e) {}
+  function addCal(getter, tag) {
+    try { var c = getter(); if (c && !seen[c.getId()]) { sources.push({ cal: c, tag: tag }); seen[c.getId()] = 1; } } catch (e) {}
+  }
+  addCal(function () { return CalendarApp.getCalendarById(WORK_CAL_ID); }, 'prominato');      // real schedule lives here
+  addCal(function () { return CalendarApp.getCalendarById(PERSONAL_CAL_ID); }, 'personal');
+  addCal(function () { return CalendarApp.getDefaultCalendar(); }, 'personal');               // fallback: whichever account runs this
   try {
     CalendarApp.getAllCalendars().forEach(function (c) {
-      var id = c.getId(); if (seen[id]) return;
+      var id = c.getId(); if (seen[id] || /holiday/i.test(id)) return;
       if (/prominato/i.test((c.getName() || '') + ' ' + id)) { sources.push({ cal: c, tag: 'prominato' }); seen[id] = 1; }
     });
   } catch (e) {}
