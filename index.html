@@ -857,15 +857,15 @@ function evColor(e){ if(e.tint) return e.tint;                       // per-even
    'auto' = user chose "default", '#hex' = one of the six picks */
 let EVTINT=null;
 function evTintPaint(c){ const el=document.getElementById('evTintSwatch'); if(el)el.style.background=c||evPalette().block; }
-function evTintMenu(e){ e.stopPropagation(); document.getElementById('evTintList').classList.toggle('open'); }
-function evTintPick(c){ EVTINT=c; evTintPaint(c); document.getElementById('evTintList').classList.remove('open'); }
-function evTintClear(){ EVTINT='auto'; evTintPaint(null); document.getElementById('evTintList').classList.remove('open'); }
+function evTintMenu(e){ const l=document.getElementById('evTintList'); if(!l)return; e.stopPropagation(); l.classList.toggle('open'); }
+function evTintPick(c){ EVTINT=c; evTintPaint(c); const l=document.getElementById('evTintList'); if(l)l.classList.remove('open'); }
+function evTintClear(){ EVTINT='auto'; evTintPaint(null); const l=document.getElementById('evTintList'); if(l)l.classList.remove('open'); }
 function evTintReset(){ EVTINT=null; evTintPaint(null); }
 document.addEventListener('click',()=>{ const m=document.getElementById('evTintList'); if(m)m.classList.remove('open'); });
 const DEFAULT_EVENTS=[{id:'seed-dallas',label:'Dallas ✈️',start:'2026-06-26',end:'2026-06-28',color:'#5C6BA0',loc:'Dallas, Texas, US',lat:32.7767,lon:-96.797}];
 const WX_CACHE={}; let GEO_MAP={};
 function wmo(code){const m={0:['☀️','Clear'],1:['🌤️','Mainly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Showers'],81:['🌧️','Showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};return m[code]||['🌡️',''];}
-function geoSearch(q){fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`).then(r=>r.json()).then(j=>{const dl=document.getElementById('geoList'); GEO_MAP={}; dl.innerHTML=(j.results||[]).map(p=>{const disp=[p.name,p.admin1,p.country_code].filter(Boolean).join(', '); GEO_MAP[disp]={name:disp,lat:p.latitude,lon:p.longitude}; return `<option value="${disp.replace(/"/g,'&quot;')}">`;}).join("");}).catch(()=>{});}
+function geoSearch(q){ if(!document.getElementById('geoList'))return; fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`).then(r=>r.json()).then(j=>{const dl=document.getElementById('geoList'); GEO_MAP={}; dl.innerHTML=(j.results||[]).map(p=>{const disp=[p.name,p.admin1,p.country_code].filter(Boolean).join(', '); GEO_MAP[disp]={name:disp,lat:p.latitude,lon:p.longitude}; return `<option value="${disp.replace(/"/g,'&quot;')}">`;}).join("");}).catch(()=>{});}
 function geocodeOne(q){return fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`).then(r=>r.json()).then(j=>{const p=(j.results||[])[0]; if(!p)return null; return {name:[p.name,p.admin1,p.country_code].filter(Boolean).join(', '),lat:p.latitude,lon:p.longitude};}).catch(()=>null);}
 function fetchEventWeather(){const jobs=EVENTS.filter(e=>e.lat!=null&&e.lon!=null).map(e=>
   fetch(`https://api.open-meteo.com/v1/forecast?latitude=${e.lat}&longitude=${e.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto&start_date=${e.start}&end_date=${e.end}`).then(r=>r.json()).then(j=>{const d=j.daily; if(d&&d.time)d.time.forEach((t,i)=>{WX_CACHE[e.lat+','+e.lon+','+t]={code:d.weather_code[i],tmax:d.temperature_2m_max[i]};});}).catch(()=>{}));
@@ -878,7 +878,7 @@ function evsave(){const v=JSON.stringify(EVENTS.filter(e=>e.src!=='cal')); local
    there; tentative ones show with a ⏳ prefix. */
 function eventsOnISO(ds){return EVENTS.filter(e=>ds>=e.start && ds<=e.end);}
 function to12(t){if(!t)return""; let[h,m]=t.split(":").map(Number); const ap=h>=12?"pm":"am"; h=h%12||12; return h+(m?":"+String(m).padStart(2,"0"):"")+ap;}
-async function addEvent(){const l=document.getElementById('evLabel').value.trim(); let s=document.getElementById('evStart').value, e=document.getElementById('evEnd').value; const st=document.getElementById('evStartTime').value, et=document.getElementById('evEndTime').value; const locStr=document.getElementById('evLoc').value.trim(); if(!l||!s||!e)return; if(e<s){const t=s;s=e;e=t;}
+async function addEvent(){ if(!document.getElementById('evLabel'))return;const l=document.getElementById('evLabel').value.trim(); let s=document.getElementById('evStart').value, e=document.getElementById('evEnd').value; const st=document.getElementById('evStartTime').value, et=document.getElementById('evEndTime').value; const locStr=document.getElementById('evLoc').value.trim(); if(!l||!s||!e)return; if(e<s){const t=s;s=e;e=t;}
   let loc=locStr||null, lat=null, lon=null;
   if(locStr){let g=GEO_MAP[locStr]; if(!g) g=await geocodeOne(locStr); if(g){loc=g.name; lat=g.lat; lon=g.lon;}}
   if(EDIT_ID){const ev=EVENTS.find(x=>x.id===EDIT_ID); if(ev){ev.label=l;ev.start=s;ev.end=e;ev.startTime=st;ev.endTime=et;ev.loc=loc;ev.lat=lat;ev.lon=lon;
@@ -887,16 +887,19 @@ async function addEvent(){const l=document.getElementById('evLabel').value.trim(
     if(EVTINT&&EVTINT!=='auto')nev.tint=EVTINT;
     EVENTS.push(nev);}
   cancelEdit(); evsave(); renderEvents(); renderMonths(); renderWeek(); renderGlance(); fetchEventWeather();}
-function editEvent(id){const ev=EVENTS.find(x=>x.id===id); if(!ev)return; EDIT_ID=id;
+function editEvent(id){ if(!document.getElementById('evLabel'))return;   // manual editor retired
+  const ev=EVENTS.find(x=>x.id===id); if(!ev)return; EDIT_ID=id;
   document.getElementById('evLabel').value=ev.label; document.getElementById('evLoc').value=ev.loc||""; document.getElementById('evStart').value=ev.start; document.getElementById('evEnd').value=ev.end;
   document.getElementById('evStartTime').value=ev.startTime||""; document.getElementById('evEndTime').value=ev.endTime||"";
   EVTINT=null; evTintPaint(ev.tint||evColor(ev));   // show the event's effective color; only saves if you change it
   document.getElementById('evAddBtn').textContent="Save"; document.getElementById('evCancelBtn').style.display=""; document.getElementById('evLabel').focus();}
-function cancelEdit(){EDIT_ID=null; document.getElementById('evLabel').value=""; document.getElementById('evLoc').value=""; document.getElementById('evStartTime').value=""; document.getElementById('evEndTime').value="";
+function cancelEdit(){EDIT_ID=null; if(!document.getElementById('evLabel'))return;
+  document.getElementById('evLabel').value=""; document.getElementById('evLoc').value=""; document.getElementById('evStartTime').value=""; document.getElementById('evEndTime').value="";
   evTintReset();
   document.getElementById('evAddBtn').textContent="Add"; document.getElementById('evCancelBtn').style.display="none"; if(PICK)togglePick();}
 function delEvent(id){EVENTS=EVENTS.filter(e=>e.id!==id); if(EDIT_ID===id)cancelEdit(); evsave(); renderEvents(); renderMonths(); renderWeek(); renderGlance();}
-function togglePick(){PICK=!PICK; PICK_STEP=0; PICK_START=null; PICK_END=null; document.body.classList.toggle('pickmode',PICK);
+function togglePick(){ if(!document.getElementById('evPickBtn'))return;   // calendar pick-mode retired with the manual editor
+  PICK=!PICK; PICK_STEP=0; PICK_START=null; PICK_END=null; document.body.classList.toggle('pickmode',PICK);
   document.getElementById('evPickBtn').classList.toggle('active',PICK); document.getElementById('evPickBtn').textContent=PICK?"✓ Picking…":"📅 Pick on calendar";
   document.getElementById('pickHint').style.display=PICK?"":"none"; renderMonths();}
 function cellClick(ds,e){ if(!PICK) return; e.stopPropagation();
@@ -1107,7 +1110,7 @@ function mcsave(){const l=JSON.stringify(MC_LABELS), s=JSON.stringify(MC_STATE),
   SYNC.queue('cc_mc_labels',l); SYNC.queue('cc_mc_state',s); SYNC.queue('cc_mc_urgent',u);}
 function mcToggle(i){const mk=mcMonthKey(); MC_STATE[mk]=MC_STATE[mk]||{}; const lab=MC_LABELS[i]; MC_STATE[mk][lab]=!MC_STATE[mk][lab]; mcsave(); renderMC(); renderGlance();}
 function mcToggleUrgent(i){const lab=MC_LABELS[i]; MC_URGENT[lab]=!MC_URGENT[lab]; mcsave(); renderMC();}
-function mcAdd(){const inp=document.getElementById('mcInput'),v=inp.value.trim(); if(!v)return; MC_LABELS.push(v); inp.value=""; mcsave(); renderMC();}
+function mcAdd(){const inp=document.getElementById('mcInput'); if(!inp)return; const v=inp.value.trim(); if(!v)return; MC_LABELS.push(v); inp.value=""; mcsave(); renderMC();}
 function mcDel(i){MC_LABELS.splice(i,1); mcsave(); renderMC();}
 let mcDrag=null;
 function mcDragStart(i,e){mcDrag=i; e.dataTransfer.effectAllowed='move';}
@@ -1521,12 +1524,9 @@ if(!localStorage.getItem('cc_seed_v1')){
 document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODAY.getMonth()].slice(0,3)+" "+TODAY.getDate()+", "+TODAY.getFullYear();
 document.getElementById('monthName').textContent=MON[TODAY.getMonth()];
 
-document.getElementById('evStart').value=TODAY_ISO; document.getElementById('evEnd').value=ymd(addDays(TODAY,2));
-document.getElementById('days').innerHTML=DAYS.map(renderDay).join("");
 renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
 try{ const __g=localStorage.getItem('cc_gcal'); if(__g){ const __a=JSON.parse(__g); if(Array.isArray(__a)&&__a.length) applyCal(__a); } }catch(_){}   // instant calendar from last synced feed
-(function(){const el=document.getElementById('evLoc'); let t=null; el.addEventListener('input',()=>{clearTimeout(t); const q=el.value.trim(); if(q.length<3)return; t=setTimeout(()=>geoSearch(q),250);});})();
 lload(); mcload(); reLoad(); dcLoad();
 if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
