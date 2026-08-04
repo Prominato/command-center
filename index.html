@@ -1334,7 +1334,13 @@ function renderConcept(){
 function renderTrips(){
   const host=document.getElementById('tripsList'); if(!host)return;
   const f=iso=>new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  const up=EVENTS.filter(e=>(e.end||e.start)>=TODAY_ISO).sort((a,b)=>a.start<b.start?-1:1).slice(0,14);
+  // one row per distinct event — recurring items (e.g. weekly "Koloff") would otherwise
+  // fill the card with a dozen identical rows; show only the next occurrence of each.
+  const seen=new Set();
+  const up=EVENTS.filter(e=>(e.end||e.start)>=TODAY_ISO)
+    .sort((a,b)=>a.start<b.start?-1:1)
+    .filter(e=>{const k=(e.label||'').trim().toLowerCase(); if(seen.has(k))return false; seen.add(k); return true;})
+    .slice(0,12);
   if(!up.length){host.innerHTML='<div class="empty">Nothing upcoming on either calendar.</div>'; return;}
   host.innerHTML=up.map(e=>{
     const multi=e.start!==e.end;
