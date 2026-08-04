@@ -405,6 +405,28 @@
   .wcat-h,.mgroup-h,.trisec{font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut);}
   .iconbtn.del{color:var(--red);}
 
+  /* ---- Notes, matched to the sample ---- */
+  .nhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .nrecent{font-family:'Inter',system-ui,sans-serif; font-size:12px; color:var(--mut);}
+  .nacts{display:flex; gap:6px;}
+  .nnew{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.84px; color:var(--slate);
+    background:transparent; border:1px solid var(--line); border-radius:5px; padding:3px 10px; cursor:pointer;}
+  .nnew:hover{color:var(--ink); border-color:var(--slate);}
+  .ncard{background:transparent; border:none; border-bottom:1px solid var(--line); border-radius:0; padding:9px 0; margin:0; cursor:pointer;}
+  .ncard:last-child{border-bottom:none;}
+  .ncard:hover{background:var(--tint);}
+  .ncard .nt,#nList .ncard .nt{font-family:'Inter',system-ui,sans-serif; font-size:13.5px; font-weight:500; color:var(--ink); margin:0 0 3px;}
+  .ncard .ntag{font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut); margin-bottom:3px;}
+  .ncard .np{font-family:'Inter',system-ui,sans-serif; font-size:12px; color:var(--mut); line-height:1.45; margin-bottom:3px;}
+  .ncard .nm{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--faint);}
+
+  /* ---- weather bar details ---- */
+  .wxcond{font-family:'Inter',system-ui,sans-serif; font-size:10.5px; color:var(--mut); margin-top:4px;}
+  .wxcond .est{display:block; font-family:'Inter',system-ui,sans-serif; font-size:10.5px; color:var(--red); letter-spacing:normal; margin-top:2px;}
+
+  /* ---- card subtitles (Goals / To-Do) ---- */
+  .hint{font-family:'Inter',system-ui,sans-serif; font-size:12px; color:var(--mut); line-height:1.45;}
+
   /* concept of the day — kept from the retired Daily Agenda */
   .conceptcard{border:1px solid var(--line); border-left:2px solid var(--brass); border-radius:8px; padding:11px 14px; margin-bottom:14px; background:var(--panel);}
   .conceptcard .clabel{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); margin-bottom:6px;}
@@ -432,6 +454,7 @@
   .nfolders{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; padding:0; border:none; background:none;}
   .nfolders .addrow{width:100%; margin-bottom:6px;}
   #nfList{display:flex; flex-wrap:wrap; gap:6px;}
+  #nfList[hidden]{display:none;}
   .nfolder{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.9px; text-transform:uppercase; padding:4px 9px; border:1px solid var(--line); border-radius:5px; color:var(--mut); cursor:pointer; background:transparent;}
   .nfolder.active{color:var(--brass); border-color:var(--brass); background:var(--tint);}
   .ncard{padding:10px 12px; margin-bottom:8px;}
@@ -677,15 +700,12 @@
     <summary><span class="arrow">▸</span> Notes</summary>
     <div class="drop-body">
       <div class="notes-wrap">
-        <aside class="nfolders">
-          <div class="addrow" style="margin-bottom:8px"><input id="nfName" placeholder="New folder…" onkeydown="if(event.key==='Enter')nfAdd()"><button onclick="nfAdd()">Add</button></div>
-          <div id="nfList"></div>
-        </aside>
-        <div class="nmain">
-          <div class="addrow"><input id="nSearch" placeholder="🔎 Search all notes…" oninput="nRender()"><button onclick="nNew()">＋ New note</button></div>
-          <div id="nList"></div>
-          <div id="nEditor" style="display:none"></div>
-        </div>
+        <div class="nhead"><span class="nrecent">Recent</span>
+          <span class="nacts"><button class="nnew" onclick="nfAdd()">+ FOLDER</button><button class="nnew" onclick="nNew()">+ NEW</button></span></div>
+        <input id="nSearch" type="hidden">
+        <div id="nfList" hidden></div>
+        <div id="nList"></div>
+        <div id="nEditor" style="display:none"></div>
       </div>
     </div>
   </details>
@@ -992,6 +1012,7 @@ let currentWeekStart=startOfWeek(TODAY);
 function loadWeek(s,ev){if(ev)ev.stopPropagation(); const[y,m,d]=s.split("-").map(Number); currentWeekStart=new Date(y,m-1,d); document.getElementById('weekDrop').open=true; renderWeek();}
 function thisWeek(){currentWeekStart=startOfWeek(TODAY); renderWeek();}
 function shiftWeek(n){currentWeekStart=addDays(currentWeekStart,n*7); renderWeek();}
+function plainText(t){return String(t||'').replace(/<br\s*\/?>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/\s+/g,' ').trim();}
 function stripEmoji(t){return String(t||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}]/gu,'').replace(/\s+/g,' ').trim();}
 function renderWeek(){const end=addDays(currentWeekStart,6), isThis=sameDay(currentWeekStart,startOfWeek(TODAY));
   document.getElementById('weekWhich').textContent=`${MON[currentWeekStart.getMonth()].slice(0,3)} ${currentWeekStart.getDate()} – ${MON[end.getMonth()].slice(0,3)} ${end.getDate()}`;
@@ -1200,7 +1221,7 @@ function nEdit(id,field,val){const n=nAll().find(x=>x.id===id); if(!n)return; n[
   const all=nAll(); document.querySelectorAll('[data-nfcount]').forEach(el=>{const fid=el.getAttribute('data-nfcount'); el.textContent=all.filter(x=>x.folder===fid).length;});}
 function nRender(){
   const all=nAll();
-  document.getElementById('nfList').innerHTML=NFOLDERS.map(f=>
+  const nfl=document.getElementById('nfList'); if(nfl)nfl.innerHTML=NFOLDERS.map(f=>
     `<button class="nfolder ${f.id===NACTIVE?'active':''}" onclick="nfPick('${f.id}')"><span class="fname">${escHtml(f.name)}</span>`+
     (f.id===NACTIVE?`<span class="iconbtn" title="Rename" onclick="event.stopPropagation();nfRename('${f.id}')">✎</span><span class="iconbtn del" title="Delete folder" onclick="event.stopPropagation();nfDel('${f.id}')">✕</span>`:``)+
     `<span class="wcount" data-nfcount="${f.id}">${all.filter(n=>n.folder===f.id).length}</span></button>`).join('');
@@ -1218,14 +1239,15 @@ function nRender(){
       return; }
     NOPEN=null; }
   ed.style.display='none'; main.style.display='';
-  const q=((document.getElementById('nSearch')||{}).value||'').trim().toLowerCase();
-  let list=q? all.filter(n=>((n.title||'')+' '+(n.body||'')).toLowerCase().indexOf(q)>=0) : all.filter(n=>n.folder===NACTIVE);
-  list.sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0)) || (b.updated-a.updated));
+  // sample layout: every note, newest first, tagged with its folder — no sidebar, no search box
+  let list=all.slice().sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0)) || (b.updated-a.updated)).slice(0,8);
   main.innerHTML=list.length? list.map(n=>{const f=NFOLDERS.find(x=>x.id===n.folder);
-    return `<div class="ncard" onclick="nOpen('${n.id}')"><div class="nt">${n.pinned?'📌 ':''}${escHtml(n.title||'Untitled')}${(q&&f)?` <span class="nfoldertag">${escHtml(f.name)}</span>`:''}</div>`+
-      (n.body&&n.body.trim()?`<div class="np">${escHtml(n.body.trim().slice(0,110))}</div>`:'')+
-      `<div class="nm">${new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div>`;}).join('')
-    : '<div class="empty">'+(q?'No matches.':'No notes here yet — hit “＋ New note”.')+'</div>';
+    const when=new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+new Date(n.updated).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase();
+    return `<div class="ncard" onclick="nOpen('${n.id}')"><div class="nt">${n.pinned?'📌 ':''}${escHtml(n.title||'Untitled')}</div>`+
+      (f?`<div class="ntag">${escHtml(stripEmoji(f.name)||f.name)}</div>`:'')+
+      (n.body&&n.body.trim()?`<div class="np">${escHtml(plainText(n.body).slice(0,72))}…</div>`:'')+
+      `<div class="nm">edited ${when}</div></div>`;}).join('')
+    : '<div class="empty">No notes yet — hit “+ NEW”.</div>';
   updateCounts();}
 function nInit(){nfLoad(); nRender();}
 /* concept-of-the-day → favorites bank (stored as notes in a 💭 Concepts folder) */
