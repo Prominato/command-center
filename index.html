@@ -31,7 +31,7 @@
     --wknd-hover:#F5F1E9;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
+  body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
   ::selection{background:rgba(201,169,106,.25);}
   a{color:inherit;}
 
@@ -83,7 +83,7 @@
   details.drop[open]>summary{border-bottom:1px solid var(--divider);}
   .arrow{display:inline-block; transition:transform .15s; color:var(--accent); font-size:.85rem;}
   details[open]>summary .arrow{transform:rotate(90deg);}
-  .drop-body{padding:2px 22px 22px; overflow-y:auto; resize:vertical; min-height:44px;}
+  .drop-body{padding:0 18px 16px; overflow-y:auto; resize:vertical; min-height:34px;}
   #days{overflow-y:auto;}
   #evList{max-height:200px; overflow-y:auto; margin-top:6px;}
   #weekBody{overflow-y:auto;}
@@ -132,14 +132,14 @@
   .phead .nav{display:flex; gap:5px; flex:0 0 auto;}
   .phead button{background:transparent; border:1px solid var(--line); color:var(--mut); border-radius:5px; padding:3px 8px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.9px; text-transform:uppercase; white-space:nowrap;}
   .phead button:hover{color:var(--ink); border-color:var(--accent);}
-  .dayline{display:flex; gap:12px; padding:9px 8px; border-bottom:1px solid var(--divider); align-items:baseline; border-radius:6px;}
+  .dayline{display:flex; align-items:baseline; gap:8px; padding:5px 6px; font-size:13px; border-bottom:1px solid var(--line); border-radius:0;}
   .dayline.wknd{background:rgba(79,124,172,.06);}
   .dayline.today{border:1px solid var(--accent); border-radius:8px;}
   .dayline:last-child{border-bottom:none;}
   .dayline .dn{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace; font-size:.78rem; color:var(--ink-muted); min-width:120px;}
   .dayline .dn b{color:var(--ink); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;}
   .dayline .items{display:flex; gap:6px; flex-wrap:wrap;}
-  .chip{font-size:.74rem; padding:2px 9px; border-radius:20px; border:1px solid var(--divider); color:var(--ink);}
+  .chip{display:inline-block; padding:1px 7px; font-size:9.5px; border-radius:4px; margin:1px 3px 1px 0; white-space:nowrap;}
   .chip.gym{border-color:var(--gym); color:var(--gym);} .chip.work{border-color:var(--gold); color:var(--gold);}
   .chip.play{border-color:var(--teal); color:var(--teal);} .chip.social{border-color:var(--dusk); color:var(--dusk);}
   .chip.rest{border-color:var(--ink-muted); color:var(--ink-muted);}
@@ -372,18 +372,18 @@
   @media(max-width:520px){ .gbigdate{font-size:1.85rem} .wxcond{font-size:.58rem} .wxcol{padding:9px 4px} .geyebrow{font-size:.56rem} }
 
   /* concept of the day — kept from the retired Daily Agenda */
-  .conceptcard{border:1px solid var(--line); border-left:2px solid var(--brass); border-radius:8px; padding:14px 17px; margin-bottom:16px; background:var(--panel);}
+  .conceptcard{border:1px solid var(--line); border-left:2px solid var(--brass); border-radius:8px; padding:11px 14px; margin-bottom:14px; background:var(--panel);}
   .conceptcard .clabel{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); margin-bottom:6px;}
   .conceptcard .ctitle{font-family:'Fraunces',Georgia,serif; font-size:1.02rem; font-weight:600; color:var(--ink); margin-bottom:5px;}
-  .conceptcard .cbody{font-size:.82rem; color:var(--mut); line-height:1.55;}
+  .conceptcard .cbody{font-size:12.5px; color:var(--mut); line-height:1.45;}
   .conceptcard .cactions{margin-top:10px; display:flex; gap:14px;}
   .conceptcard .cactions button,.conceptcard .cactions a{background:none; border:none; padding:0; cursor:pointer; color:var(--brass); font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; text-decoration:none;}
 
   /* trips & events — read-only from Google */
-  .triprow{display:flex; align-items:baseline; gap:10px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .triprow{display:flex; align-items:baseline; gap:9px; padding:5px 0; border-bottom:1px solid var(--line);}
   .triprow:last-child{border-bottom:none;}
   .tripdot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
-  .tripname{flex:1 1 auto; font-size:.88rem;}
+  .tripname{flex:1 1 auto; font-size:13.5px;}
   .tripwhen{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--mut); white-space:nowrap;}
   .tripaway{font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--faint); white-space:nowrap;}
 
@@ -404,25 +404,26 @@
   .ncard .nt{font-size:.9rem;}
 
   /* Today's Agenda timeline */
-  .tahead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px;}
+  .tahead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:9px;}
   .tasub{font-size:.82rem; color:var(--mut);}
   .tabadge{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--sage); font-weight:600; white-space:nowrap;}
   .tabadge.warn{color:var(--urgent);}
-  .tagroup{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mut); font-weight:600; margin:16px 0 6px; padding-left:11px; border-left:2px solid var(--brass);}
+  .tagroup{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.6px; text-transform:uppercase; color:var(--mut); font-weight:600; margin:11px 0 3px; padding-left:9px; border-left:2px solid var(--brass);}
   .tagroup:first-child{margin-top:2px;}
-  .tarow{display:flex; align-items:baseline; gap:12px; padding:7px 0 7px 11px; border-left:2px solid var(--line);}
+  .tarow{display:flex; align-items:baseline; gap:9px; padding:3px 0 3px 9px; border-left:2px solid var(--line);}
   .tarow:hover{background:var(--tint);}
   .tarow.is-now{border-left-color:var(--brass); background:var(--todaybg);}
-  .tatime{font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--ink); flex:0 0 118px; white-space:nowrap;}
-  .tadur{font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--faint); flex:0 0 52px; white-space:nowrap;}
-  .talabel{flex:1 1 auto; font-size:.88rem;}
+  .tatime{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink); flex:0 0 96px; white-space:nowrap;}
+  .tadur{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--faint); flex:0 0 38px; white-space:nowrap;}
+  .talabel{flex:1 1 auto; font-size:13.5px;}
   .talabel.editing{outline:1px solid var(--brass); border-radius:3px; padding:0 3px;}
   .tarow.is-ev .talabel{color:var(--brass);}
   .tacal{font-family:'IBM Plex Mono',monospace; font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:4px; padding:1px 5px;}
   .tarow .iconbtn{opacity:0; transition:opacity .12s;}
   .tarow:hover .iconbtn{opacity:1;}
-  .dcwrap{margin-top:22px; padding-top:4px; border-top:1px solid var(--line);}
-  .dclist li{border-bottom:none; padding:5px 4px;}
+  .dcwrap{margin-top:14px; padding-top:2px; border-top:1px solid var(--line);}
+  #dcList li{border-bottom:none; padding:1px 2px; font-size:13px; gap:7px; min-height:0;}
+  #dcList li input[type=checkbox]{width:13px; height:13px; margin:0; flex:0 0 auto;}
   @media(max-width:520px){ .tatime{flex-basis:96px; font-size:.7rem} .tadur{display:none} .talabel{font-size:.82rem} }
 
   /* glance + stat cards */
@@ -440,10 +441,16 @@
   #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; align-items:start; grid-auto-flow:row dense;}
   #sections details.drop{margin-bottom:0;}
   #sections details.drop[data-sec="calendar"]{grid-column:1/-1;}
+  /* the two text-dense cards get a double column once there is room, so their
+     rows stop wrapping (a 330px column cuts "Prominato — searches, client calls" in half) */
+  @media(min-width:1240px){
+    #sections details.drop[data-sec="today"],
+    #sections details.drop[data-sec="lists"]{grid-column:span 2;}
+  }
   #sections details.drop[data-sec="calendar"]{order:99;}
   @media(max-width:940px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
-  details.drop>summary{font-weight:600; font-size:18px; background:transparent; letter-spacing:-.01em; padding:22px 22px 12px;}
+  details.drop>summary{font-weight:600; font-size:17px; background:transparent; letter-spacing:-.01em; padding:16px 18px 8px;}
   details.drop>summary .arrow{display:none;}
   details.drop[open]>summary{border-bottom:none;}
   details.drop[data-sec="today"]{border-top-color:var(--amber);}
@@ -453,7 +460,7 @@
   details.drop[data-sec="trips"]{border-top-color:var(--sage);}
   details.drop[data-sec="notes"]{border-top-color:var(--slate);}
   details.drop[data-sec="goals"]{border-top-color:var(--slate);}
-  .hint{color:var(--mut);}
+  .hint{color:var(--mut); font-size:12px; line-height:1.4;}
 
   /* tabs */
   .htab{background:transparent; border:none; border-bottom:1px solid transparent; border-radius:0; color:var(--mut); font-size:9.5px; font-weight:400; letter-spacing:.9px; text-transform:uppercase; padding:5px 0; white-space:nowrap;}
@@ -462,13 +469,14 @@
 
   /* list cards + rows */
   .listcard{background:transparent; border:none; border-radius:0; box-shadow:none; padding:0;}
-  .listcard h3{font-weight:600; font-size:1rem;}
-  .lh{color:var(--mut); font-size:.78rem;}
-  .items li{border-bottom:1px solid var(--line); background:transparent; border-radius:0; padding:9px 4px;}
+  .listcard h3{font-weight:600; font-size:14.5px; margin:0 0 2px;}
+  .lh{color:var(--mut); font-size:11.5px; margin-bottom:6px;}
+  .items li{border-bottom:1px solid var(--line); background:transparent; border-radius:0; padding:5px 2px; font-size:13.5px; gap:7px;}
+  .items li input[type=checkbox]{width:14px; height:14px; margin:0; flex:0 0 auto;}
   .items li:hover{background:var(--tint);}
   .items li.done{opacity:.45;}
   .items li.urgent{background:transparent;}
-  .trisec{font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600; margin:14px 0 4px; padding-top:8px;}
+  .trisec{font-size:9.5px; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut); font-weight:600; margin:10px 0 2px; padding-top:5px;}
   .trisec.pri-h{color:var(--brass);}
   .wcat-h,.mgroup-h{font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; font-weight:600;}
   .wcount{color:var(--faint); font-family:'IBM Plex Mono',monospace; font-size:.68rem;}
