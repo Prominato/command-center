@@ -12,6 +12,7 @@
     --panel:#1E1A14; --inset:#16130F; --line:#2E2820;
     --mut:#8F8471; --faint:#5C5344; --dim:#3A332A;
     --brass:#C9A96A; --sage:#6FA396; --slate:#8B93BC; --onaccent:#16130F;
+    --red:#C2705C; --rest:#5C5344;
     --tint:rgba(201,169,106,.05); --todaybg:rgba(201,169,106,.08); --barbg:rgba(22,19,15,.94);
     /* legacy aliases — existing component CSS keeps working */
     --bg:#16130F; --bg2:var(--inset); --card:var(--panel); --card-hover:#241F18;
@@ -25,6 +26,7 @@
     --panel:#FBFAF6; --inset:#F1EDE4; --line:#DBD3C2;
     --mut:#7A7060; --faint:#A79C88; --dim:#D5CCBA;
     --brass:#8A6E3A; --sage:#3E7A6C; --slate:#54608F; --onaccent:#FBFAF6;
+    --red:#A04A36; --rest:#8A8171;
     --tint:rgba(138,110,58,.06); --todaybg:rgba(138,110,58,.10); --barbg:rgba(251,250,246,.94);
     --bg:#EFEBE3; --card-hover:#F5F1E9;
     --ink:#2A251C; --amber:#A0722F; --rose:#A04A36; --gym:#6E5E93; --urgent:#A04A36;
@@ -404,6 +406,30 @@
   .items li.done .txt,#dcList li.done .txt{color:var(--mut);}
   .wcat-h,.mgroup-h,.trisec{font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut);}
   .iconbtn.del{color:var(--red);}
+
+  /* ---- to-do rows, matched to the sample element-for-element ---- */
+  .items li{display:flex; align-items:center; gap:10px !important; padding:7px 2px; border-bottom:1px solid var(--line); background:transparent; border-radius:0;}
+  #dcList li{gap:8px !important; padding:2px 2px;}
+  .items li .grip{display:none;}
+  .items li input[type=checkbox],#dcList li input[type=checkbox]{
+    appearance:none; -webkit-appearance:none; width:14px; height:14px; flex:0 0 auto;
+    border:1px solid var(--faint); border-radius:3px; background:transparent; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; padding:0;}
+  .items li input[type=checkbox]::before,#dcList li input[type=checkbox]::before{
+    content:'✓'; font-size:10px; line-height:1; color:transparent;}
+  .items li input[type=checkbox]:checked,#dcList li input[type=checkbox]:checked{border-color:var(--sage);}
+  .items li input[type=checkbox]:checked::before,#dcList li input[type=checkbox]:checked::before{color:var(--sage);}
+  .items li .txt{flex:1 1 auto; min-width:0; font-size:13.5px;}
+  .items li .iconbtn.pristar,.mgroup .iconbtn.pristar{font-size:13px; flex:0 0 auto; color:var(--faint);}
+  .iconbtn.pristar.on{color:var(--brass);}
+  .items li .upill,.mgroup .upill,button.upill{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.95px; text-transform:uppercase;
+    padding:1px 6px; border-radius:4px; border:1px solid var(--red) !important; color:var(--red) !important;
+    background:transparent; cursor:pointer; flex:0 0 auto; line-height:1.5;}
+  .items li .iconbtn.bang{opacity:0;} .items li:hover .iconbtn.bang{opacity:1;}
+  .items li .iconbtn{font-size:12px; color:var(--faint); padding:0 3px; flex:0 0 auto;}
+  .items li .iconbtn:hover{color:var(--ink);}
+  .items li .iconbtn.del{color:var(--faint);} .items li .iconbtn.del:hover{color:var(--red);}
+  .mgroup .items li{padding:8px 2px;}
 
   /* ---- Notes, matched to the sample ---- */
   .nhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
@@ -850,7 +876,7 @@ function fetchHomeWeather(){
 
 /* ===== helpers ===== */
 function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function startOfWeek(d){const x=new Date(d); x.setDate(x.getDate()-x.getDay()); x.setHours(0,0,0,0); return x;}
+function startOfWeek(d){const x=new Date(d); x.setDate(x.getDate()-((x.getDay()+6)%7)); x.setHours(0,0,0,0); return x;}   // Monday-based
 function addDays(d,n){const x=new Date(d); x.setDate(x.getDate()+n); return x;}
 function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
 function nextDate(iso){const d=new Date(iso+"T12:00:00"); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10);}
@@ -1002,7 +1028,7 @@ function renderMonths(){const host=document.getElementById('months'); host.inner
         const picking=(PICK&&pmin&&ds>=pmin&&ds<=pmax)?' picking':'';
         cells+=`<td><div class="cell${d.getMonth()!==monthIdx?' out':''}${(i===0||i===6)?' wknd':''}${sameDay(d,TODAY)?' today':''}${picking}" onclick="cellClick('${ds}',event)"><span class="dnum">${d.getDate()}</span>${bars}</div></td>`;}
       rows+=`<tr class="wk" data-wkstart="${ymd(wkStart)}" onclick="loadWeek('${ymd(wkStart)}',event)">${cells}</tr>`;}
-    host.innerHTML+=`<div class="month${monthIdx===activeMonth?' active':''}" onclick="focusMonth(${monthIdx})"><h3>${MON[monthIdx]} ${year}</h3><table><thead><tr>${DOW.map(d=>`<th>${d[0]}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;}
+    host.innerHTML+=`<div class="month${monthIdx===activeMonth?' active':''}" onclick="focusMonth(${monthIdx})"><h3>${MON[monthIdx]} ${year}</h3><table><thead><tr>${[1,2,3,4,5,6,0].map(i=>`<th>${DOW[i][0]}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>`;}
   highlightSelectedWeek();}
 function focusMonth(mi){activeMonth=mi; renderMonths();}
 
@@ -1072,12 +1098,13 @@ function onDrop(w,id,e){e.preventDefault(); document.querySelectorAll('li.dragov
 const PRUNE_DAYS=90, PRUNE_MS=90*24*3600*1000;
 function starBtn(w,it){const isPri=it.pri!=='secondary'; return `<button class="iconbtn pristar ${isPri?'on':''}" title="${isPri?'Primary — click to make Secondary':'Secondary — click to make Primary'}" onclick="togglePri('${w}','${it.id}')">${isPri?'★':'☆'}</button>`;}
 function taskRow(w,it,showStar){return `<li class="${it.done?'done ':''}${it.urgent?'urgent':''}" draggable="true" ondragstart="onDragStart('${w}','${it.id}',event)" ondragover="onDragOver(this,event)" ondragleave="onDragLeave(this)" ondrop="onDrop('${w}','${it.id}',event)">
-    <span class="grip" title="Drag to reorder">⠿</span>
     <input type="checkbox" ${it.done?'checked':''} onchange="toggleDone('${w}','${it.id}')">
-    <span class="txt" data-edit="${w}::${it.id}">${escHtml(it.text)}</span>
     ${showStar===false?'':starBtn(w,it)}
+    <span class="txt" data-edit="${w}::${it.id}">${escHtml(it.text)}</span>
+    ${it.urgent
+      ? `<button class="upill" title="Urgent — click to clear" onclick="toggleUrgent('${w}','${it.id}')">urgent</button>`
+      : `<button class="iconbtn bang" title="Mark urgent" onclick="toggleUrgent('${w}','${it.id}')">!</button>`}
     <button class="iconbtn" title="Edit" onclick="startEdit('${w}','${it.id}')">✎</button>
-    <button class="iconbtn bang ${it.urgent?'on':''}" title="Toggle urgent" onclick="toggleUrgent('${w}','${it.id}')">!</button>
     <button class="iconbtn del" title="Delete" onclick="delItem('${w}','${it.id}')">✕</button>
   </li>`;}
 function completedRow(w,it){const ts=it.doneAt||it.archivedAt; return `<li class="done"><input type="checkbox" checked onchange="toggleDone('${w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span><span class="wwhen">${ts?new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span><button class="iconbtn del" title="Delete" onclick="delItem('${w}','${it.id}')">✕</button></li>`;}
@@ -1130,7 +1157,7 @@ function renderMaster(){const host=document.getElementById('masterList'); if(!ho
   let html='',total=0;
   groups.forEach(g=>{if(!g.items.length)return; total+=g.items.length;
     html+=`<div class="mgroup"><div class="mgroup-h"${g.color?` style="color:${g.color}"`:''}>${g.label} <span class="wcount">${g.items.length}</span></div><ul class="items">`+
-      g.items.map(it=>`<li class="${it.urgent?'urgent':''}"><input type="checkbox" onchange="toggleDone('${g.w}','${it.id}')"><span class="txt">${escHtml(it.text)}</span>${it.urgent?'<span class="mflag">🔴</span>':''}</li>`).join('')+'</ul></div>';});
+      g.items.map(it=>`<li class="${it.urgent?'urgent':''}"><input type="checkbox" onchange="toggleDone('${g.w}','${it.id}')">${starBtn(g.w,it)}<span class="txt">${escHtml(it.text)}</span>${it.urgent?`<button class="upill" title="Urgent — click to clear" onclick="toggleUrgent('${g.w}','${it.id}')">urgent</button>`:''}<button class="iconbtn del" title="Delete" onclick="delItem('${g.w}','${it.id}')">✕</button></li>`).join('')+'</ul></div>';});
   host.innerHTML=total?html:'<div class="empty">No primary tasks yet — mark items ★ Primary in any list and they gather here.</div>';
   if(typeof tabCount==='function')tabCount('master', total);}
 
