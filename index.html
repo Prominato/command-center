@@ -384,6 +384,28 @@
   @media(max-width:760px){ .wxstrip{grid-template-columns:repeat(3,1fr)} .wxcol:nth-child(3){border-right:none} .wxcol:nth-child(-n+3){border-bottom:1px solid var(--line)} }
   @media(max-width:520px){ .gbigdate{font-size:1.85rem} .wxcond{font-size:.58rem} .wxcol{padding:9px 4px} .geyebrow{font-size:.56rem} }
 
+  /* Today's Agenda timeline */
+  .tahead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px;}
+  .tasub{font-size:.82rem; color:var(--mut);}
+  .tabadge{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--sage); font-weight:600; white-space:nowrap;}
+  .tabadge.warn{color:var(--urgent);}
+  .tagroup{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.18em; text-transform:uppercase; color:var(--mut); font-weight:600; margin:16px 0 6px; padding-left:11px; border-left:2px solid var(--brass);}
+  .tagroup:first-child{margin-top:2px;}
+  .tarow{display:flex; align-items:baseline; gap:12px; padding:7px 0 7px 11px; border-left:2px solid var(--line);}
+  .tarow:hover{background:var(--tint);}
+  .tarow.is-now{border-left-color:var(--brass); background:var(--todaybg);}
+  .tatime{font-family:'IBM Plex Mono',monospace; font-size:.76rem; color:var(--ink); flex:0 0 118px; white-space:nowrap;}
+  .tadur{font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--faint); flex:0 0 52px; white-space:nowrap;}
+  .talabel{flex:1 1 auto; font-size:.88rem;}
+  .talabel.editing{outline:1px solid var(--brass); border-radius:3px; padding:0 3px;}
+  .tarow.is-ev .talabel{color:var(--brass);}
+  .tacal{font-family:'IBM Plex Mono',monospace; font-size:.55rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:4px; padding:1px 5px;}
+  .tarow .iconbtn{opacity:0; transition:opacity .12s;}
+  .tarow:hover .iconbtn{opacity:1;}
+  .dcwrap{margin-top:22px; padding-top:4px; border-top:1px solid var(--line);}
+  .dclist li{border-bottom:none; padding:5px 4px;}
+  @media(max-width:520px){ .tatime{flex-basis:96px; font-size:.7rem} .tadur{display:none} .talabel{font-size:.82rem} }
+
   /* glance + stat cards */
   #glance{background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:none;}
   #glance .gh .greet{font-weight:600; letter-spacing:-.01em;}
@@ -478,6 +500,18 @@
   <div id="glance"></div>
 
   <div id="sections">
+
+  <details class="drop" data-sec="today" open>
+    <summary><span class="arrow">▸</span> Today's Agenda<span class="secmove"><button onclick="moveSection(event,'today',-1)" title="Move up">▲</button><button onclick="moveSection(event,'today',1)" title="Move down">▼</button></span></summary>
+    <div class="drop-body">
+      <div class="tahead"><span class="tasub" id="taSub">—</span><span class="tabadge" id="taBadge">—</span></div>
+      <div id="todayTimeline"></div>
+      <div class="dcwrap">
+        <div class="trisec">Daily Constants <span class="wcount" id="dcCount"></span></div>
+        <ul class="items dclist" id="dcList"></ul>
+      </div>
+    </div>
+  </details>
 
   <details class="drop" data-sec="lists" open>
     <summary><span class="arrow">▸</span> To-Do Lists<span class="secmove"><button onclick="moveSection(event,'lists',-1)" title="Move up">▲</button><button onclick="moveSection(event,'lists',1)" title="Move down">▼</button></span></summary>
@@ -704,7 +738,7 @@ function applyCal(list){ try{
     start:ev.start, end:ev.end||ev.start, startTime:ev.startTime||'', endTime:ev.endTime||'',
     loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal', cal:ev.cal||'personal'}));
   EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
-  renderEvents(); renderMonths(); renderWeek(); renderGlance();
+  renderEvents(); renderMonths(); renderWeek(); renderGlance(); if(typeof renderToday==='function')renderToday();
 }catch(e){} }
 
 /* ===== data ===== */
@@ -1170,10 +1204,12 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
-const SEC_DEFAULT=['lists','week','agenda','calendar','mc','notes','goals'];
-const SEC_LABEL={lists:'To-Do Lists',week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',mc:'Monthly Constants',notes:'Notes',goals:'Goals'};
+const SEC_DEFAULT=['today','lists','week','agenda','calendar','mc','notes','goals'];
+const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',mc:'Monthly Constants',notes:'Notes',goals:'Goals'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
-  SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){ if(id==='lists'){o.unshift(id); return;}       // To-Do Lists defaults to the very top
+  SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){
+    if(id==='today'){o.unshift(id); return;}                                        // Today's Agenda pins to the very top…
+    if(id==='lists'){const at=o.indexOf('today'); o.splice(at>=0?at+1:0,0,id); return;}   // …then To-Do Lists right under it
     const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // other new sections slot in after their default neighbor
     if(at>=0)o.splice(at+1,0,id); else o.push(id); }});
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
@@ -1209,6 +1245,103 @@ function navPointerUp(e){ const d=navDrag; if(!d.el)return;
   const[m]=order.splice(from,1); order.splice(to,0,m);
   const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+/* ===== Today's Agenda — timeline built from Max's real routine + today's timed calendar events =====
+   Blocks are generated per day (gym rotation, evening class/pickleball, Sat golf, Sun rest).
+   Edit any label inline (✎) — overrides are stored per block id in cc_routine_edit and synced. */
+const M_=(h,m)=>h*60+(m||0);
+function mins2str(t){const h=Math.floor(t/60), m=t%60, ap=h>=12?'p':'a'; let hh=h%12; if(hh===0)hh=12; return hh+(m?':'+String(m).padStart(2,'0'):':00')+ap;}
+function durStr(a,b){const d=b-a; if(d<=0)return'—'; const h=Math.floor(d/60), m=d%60; return (h?h+'h':'')+(h&&m?' ':'')+(m?m+'m':'');}
+let ROUTINE_EDIT={};
+function reLoad(){try{ROUTINE_EDIT=JSON.parse(localStorage.getItem('cc_routine_edit'))||{};}catch(e){ROUTINE_EDIT={};}}
+function reSave(){const v=JSON.stringify(ROUTINE_EDIT); localStorage.setItem('cc_routine_edit',v); SYNC.queue('cc_routine_edit',v);}
+function dayRoutine(day){
+  const B=[], add=(g,id,s,e,label)=>B.push({g,id,s,e,label:ROUTINE_EDIT[id]||label});
+  const rest=day.type==='rest', golf=day.type==='golf';
+  add('Morning','r-wake',M_(4,45),M_(5,5),'Wake, hydrate, stretch');
+  add('Morning','r-med',M_(5,5),M_(5,30),'Meditate + today’s concept');
+  if(rest)      add('Morning','r-walk',M_(5,40),M_(6,30),'Long walk — easy pace');
+  else if(golf) add('Morning','r-golf',M_(7,0),M_(11,30),'Golf ⛳');
+  else          add('Morning','r-gym',M_(5,40),M_(7,0),'Gym — '+(day.gym||'training')+' day');
+  add('Morning','r-shower',M_(7,0),M_(7,45),'Shower, breakfast');
+  add('Morning','r-setup',M_(7,45),M_(8,15),'Inbox, day setup');
+  if(day.type==='work'){
+    add('Work day','r-prom',M_(8,15),M_(12,0),'Prominato — searches, client calls');
+    add('Work day','r-lunch',M_(12,0),M_(12,30),'Lunch');
+    add('Work day','r-high',M_(12,30),M_(15,30),'Highmark block');
+    add('Work day','r-ai',M_(15,30),M_(16,30),'AI Creation');
+  } else {
+    add('Work day','r-errand',M_(11,30),M_(14,0),golf?'Errands, house projects':'Errands, reset the week');
+  }
+  if(day.activity) add('Afternoon','r-act',M_(16,30),M_(17,15),day.activity);
+  const EVE={class:'Class',pickleball:'Pickleball — open play',friend:'Friends / social'};
+  if(day.evening) add('Afternoon','r-eve',M_(17,30),M_(19,0),EVE[day.evening]||day.evening);
+  add('Evening','r-dinner',M_(19,0),M_(19,45),'Dinner');
+  add('Evening','r-read',M_(19,45),M_(20,45),'Reading, Babbel');
+  add('Evening','r-wind',M_(20,45),M_(21,15),'Wind-down, screens off');
+  add('Evening','r-lights',M_(21,15),M_(21,15),'Lights out');
+  return B;
+}
+function renderToday(){
+  const host=document.getElementById('todayTimeline'); if(!host)return;
+  const day=DAYS.find(d=>d.date===TODAY_ISO)||DAYS[0];
+  const blocks=dayRoutine(day);
+  // merge today's timed calendar events into the timeline
+  const evs=eventsOnISO(TODAY_ISO).filter(e=>e.startTime).map(e=>{
+    const [h,m]=e.startTime.split(':').map(Number); const s=M_(h,m);
+    let en=s+60; if(e.endTime){const [h2,m2]=e.endTime.split(':').map(Number); en=M_(h2,m2);}
+    return {g:s<M_(12,0)?'Morning':(s<M_(17,0)?'Afternoon':'Evening'), id:'ev-'+e.id, s, e:en, label:e.label, isEv:true};});
+  const all=blocks.concat(evs);
+  const GROUPS=['Morning','Work day','Afternoon','Evening'];
+  const now=new Date(); const nowMin=(now.toDateString()===TODAY.toDateString())?M_(now.getHours(),now.getMinutes()):-1;
+  let html='';
+  GROUPS.forEach(g=>{
+    const rows=all.filter(b=>b.g===g).sort((a,b)=>a.s-b.s); if(!rows.length)return;
+    html+=`<div class="tagroup">${g}</div>`;
+    rows.forEach(b=>{
+      const cur=nowMin>=0 && nowMin>=b.s && nowMin<Math.max(b.e,b.s+1);
+      html+=`<div class="tarow${cur?' is-now':''}${b.isEv?' is-ev':''}">
+        <span class="tatime">${mins2str(b.s)}${b.e>b.s?' – '+mins2str(b.e):''}</span>
+        <span class="tadur">${b.e>b.s?durStr(b.s,b.e):'—'}</span>
+        <span class="talabel"${b.isEv?'':` data-redit="${b.id}"`}>${escHtml(b.label)}</span>
+        ${b.isEv?'<span class="tacal">cal</span>':`<button class="iconbtn" title="Edit" onclick="reEdit('${b.id}')">✎</button>`}
+      </div>`;});
+  });
+  host.innerHTML=html;
+  const sub=document.getElementById('taSub'), badge=document.getElementById('taBadge');
+  if(sub)sub.textContent=DOWFULL[TODAY.getDay()]+', '+MON[TODAY.getMonth()]+' '+TODAY.getDate()+' · '+(day.type==='rest'?'rest day':(day.type==='golf'?'golf day':(day.gym||'')+' day'));
+  // conflict check — any two timed items overlapping
+  const sorted=all.slice().sort((a,b)=>a.s-b.s); let clash=0;
+  for(let i=1;i<sorted.length;i++) if(sorted[i].s < sorted[i-1].e) clash++;
+  if(badge){badge.textContent=clash?(clash+' conflict'+(clash>1?'s':'')):'no conflicts'; badge.classList.toggle('warn',!!clash);}
+}
+function reEdit(id){
+  const sp=document.querySelector(`[data-redit="${id}"]`); if(!sp)return;
+  sp.contentEditable="true"; sp.classList.add('editing'); sp.focus();
+  const r=document.createRange(); r.selectNodeContents(sp); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  const fin=()=>{sp.contentEditable="false"; sp.classList.remove('editing'); const v=sp.textContent.trim();
+    if(v)ROUTINE_EDIT[id]=v; else delete ROUTINE_EDIT[id]; reSave(); renderToday();};
+  sp.addEventListener('blur',fin,{once:true});
+  sp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();sp.blur();} if(ev.key==='Escape'){delete ROUTINE_EDIT[id]; sp.blur();}});
+}
+/* ===== Daily Constants — Max's real dconst list, checked per-day (auto-resets each morning) ===== */
+let DC_STATE={};
+function dcLoad(){try{DC_STATE=JSON.parse(localStorage.getItem('cc_dc_state'))||{};}catch(e){DC_STATE={};}
+  const keep={}; const cutoff=new Date(TODAY.getTime()-30*86400000);
+  Object.keys(DC_STATE).forEach(k=>{ if(new Date(k+'T12:00:00')>=cutoff) keep[k]=DC_STATE[k]; });  // prune >30d
+  DC_STATE=keep;}
+function dcSave(){const v=JSON.stringify(DC_STATE); localStorage.setItem('cc_dc_state',v); SYNC.queue('cc_dc_state',v);}
+function dcToggle(id){const d=DC_STATE[TODAY_ISO]=DC_STATE[TODAY_ISO]||{}; d[id]=!d[id]; dcSave(); renderDC(); renderGlance();}
+function renderDC(){
+  const ul=document.getElementById('dcList'); if(!ul)return;
+  const arr=LISTS.dconst||[]; const st=DC_STATE[TODAY_ISO]||{};
+  if(!arr.length){ul.innerHTML='<div class="empty">No daily constants yet.</div>'; return;}
+  ul.innerHTML=arr.map(it=>`<li class="${st[it.id]?'done':''}">
+      <input type="checkbox" ${st[it.id]?'checked':''} onchange="dcToggle('${it.id}')">
+      <span class="txt">${escHtml(it.text)}</span></li>`).join('');
+  const c=document.getElementById('dcCount'); if(c)c.textContent=arr.filter(x=>st[x.id]).length+'/'+arr.length;
+  if(typeof setCount==='function')setCount('today', arr.filter(x=>st[x.id]).length+'/'+arr.length+' daily');
+}
 
 /* ===== counts + glance ===== */
 function updateCounts(){
@@ -1336,12 +1469,13 @@ renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
 try{ const __g=localStorage.getItem('cc_gcal'); if(__g){ const __a=JSON.parse(__g); if(Array.isArray(__a)&&__a.length) applyCal(__a); } }catch(_){}   // instant calendar from last synced feed
 (function(){const el=document.getElementById('evLoc'); let t=null; el.addEventListener('input',()=>{clearTimeout(t); const q=el.value.trim(); if(q.length<3)return; t=setTimeout(()=>geoSearch(q),250);});})();
-lload(); mcload();
+lload(); mcload(); reLoad(); dcLoad();
 if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
 renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); renderMC(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
+renderToday(); renderDC(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
