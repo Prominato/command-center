@@ -402,6 +402,15 @@
   .progress>i{background:var(--brass);}
 
   /* section panels — hairline frame + brass top rule */
+  /* multi-column panel grid (the sample's layout): columns fill by width, wide
+     sections span the full row, and the 3-month calendar always lands last. */
+  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(390px,1fr)); gap:18px; align-items:start; grid-auto-flow:row dense;}
+  #sections details.drop{margin-bottom:0;}
+  #sections details.drop[data-sec="agenda"],
+  #sections details.drop[data-sec="calendar"]{grid-column:1/-1;}
+  #sections details.drop[data-sec="agenda"]{order:98;}
+  #sections details.drop[data-sec="calendar"]{order:99;}
+  @media(max-width:940px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
   details.drop>summary{font-weight:600; font-size:18px; background:transparent; letter-spacing:-.01em; padding:22px 22px 12px;}
   details.drop>summary .arrow{display:none;}
