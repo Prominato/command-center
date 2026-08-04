@@ -361,19 +361,28 @@
   .quicknav button.navover{color:var(--ink); border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass);}
 
   /* hero — big date headline + summary line (matches the Max HQ sample) */
-  .ghero{padding:6px 2px 16px;}
-  .gbigdate{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:2.3rem; line-height:1.1; letter-spacing:-.02em; margin:0 0 8px; color:var(--ink);}
+  .ghero{padding:10px 2px 18px;}
+  .geyebrow{font-family:'IBM Plex Mono',monospace; font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); font-weight:600; margin-bottom:10px;}
+  .gbigdate{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:2.5rem; line-height:1.08; letter-spacing:-.02em; margin:0 0 9px; color:var(--ink);}
   .gsub{font-size:.86rem; color:var(--mut);}
-  /* 4-day weather strip */
-  .wxstrip{display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:16px;}
+  /* 6-day weather strip */
+  .wxstrip{display:grid; grid-template-columns:repeat(6,1fr); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:16px; background:var(--panel);}
   .wxcol{padding:12px 10px; text-align:center; border-right:1px solid var(--line);}
   .wxcol:last-child{border-right:none;}
   .wxcol.is-today{background:var(--tint);}
   .wxday{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600; margin-bottom:6px;}
   .wxtemp{font-family:'IBM Plex Mono',monospace; font-size:1.05rem; color:var(--ink); font-weight:600;}
   .wxlo{color:var(--faint); margin-left:7px; font-weight:500;}
-  .wxcond{font-size:.68rem; color:var(--mut); margin-top:4px;}
-  @media(max-width:520px){ .gbigdate{font-size:1.7rem} .wxcond{font-size:.6rem} .wxcol{padding:10px 5px} }
+  .wxcond{font-size:.66rem; color:var(--mut); margin-top:4px;}
+  .wxcond .est{display:block; font-family:'IBM Plex Mono',monospace; font-size:.55rem; letter-spacing:.1em; color:var(--faint); margin-top:2px;}
+  /* stat card extras */
+  .stat .val-sm{font-size:1.15rem; line-height:1.25;}
+  .stat .sub.is-urgent{color:var(--urgent); font-weight:600;}
+  .pips{display:flex; gap:5px; margin-top:8px;}
+  .pips i{flex:1 1 auto; height:4px; border-radius:2px; background:var(--dim);}
+  .pips i.on{background:var(--sage);}
+  @media(max-width:760px){ .wxstrip{grid-template-columns:repeat(3,1fr)} .wxcol:nth-child(3){border-right:none} .wxcol:nth-child(-n+3){border-bottom:1px solid var(--line)} }
+  @media(max-width:520px){ .gbigdate{font-size:1.85rem} .wxcond{font-size:.58rem} .wxcol{padding:9px 4px} .geyebrow{font-size:.56rem} }
 
   /* glance + stat cards */
   #glance{background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:none;}
@@ -1229,21 +1238,35 @@ function renderGlance(){
   const nextUp=(()=>{ const e=evToday[0]; if(e) return e.startTime?(escHtml(e.label)+' '+to12(e.startTime)):escHtml(e.label);
     const fut=EVENTS.filter(x=>x.start>TODAY_ISO).sort((a,b)=>a.start<b.start?-1:1)[0];
     return fut?(escHtml(fut.label)+' · '+new Date(fut.start+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})):''; })();
-  const strip=DAYS.slice(0,4).map((d,i)=>{const w=d.wx||{};
+  // 6-day weather strip
+  const strip=DAYS.slice(0,6).map((d,i)=>{const w=d.wx||{};
     const lbl=i===0?'Today':new Date(d.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'});
-    const hi=(w.hi!=null)?w.hi+'°':(w.t||'—'), lo=(w.lo!=null)?w.lo+'°':'';
+    const hi=(w.hi!=null)?w.hi+'°':'—', lo=(w.lo!=null)?w.lo+'°':'';
     const cond=[w.label||'', (w.pop!=null&&w.pop>0)?w.pop+'%':''].filter(Boolean).join(' · ');
-    return `<div class="wxcol${i===0?' is-today':''}"><div class="wxday">${lbl}</div><div class="wxtemp">${hi}${lo?`<span class="wxlo">${lo}</span>`:''}</div><div class="wxcond">${escHtml(cond)}</div></div>`;}).join('');
+    return `<div class="wxcol${i===0?' is-today':''}"><div class="wxday">${lbl}</div><div class="wxtemp">${hi}${lo?`<span class="wxlo">${lo}</span>`:''}</div><div class="wxcond">${escHtml(cond)}${w.est?'<span class="est">Est.</span>':''}</div></div>`;}).join('');
+  // stat cards — same five as the sample
+  const goalsDone=(LISTS.goals||[]).filter(x=>x.done).length, goalsTot=(LISTS.goals||[]).length;
+  const urgentPri=['todo','work','house','routine'].reduce((n,w)=>n+(LISTS[w]||[]).filter(x=>!x.done&&x.urgent).length,0);
+  const nextMon=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,1);
+  const trip=(()=>{ const t=EVENTS.filter(e=>e.end>=TODAY_ISO && e.start!==e.end && !e.startTime)
+      .sort((a,b)=>a.start<b.start?-1:1)[0]; if(!t)return null;
+    const f=iso=>new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const days=Math.round((new Date(t.start+'T12:00:00')-TODAY)/86400000);
+    return {label:t.label, when:f(t.start)+' – '+f(t.end).replace(/^[A-Za-z]+ /,''),
+      away:days<=0?'happening now':(days===1?'tomorrow':'in '+days+' days')}; })();
+  const waterPips=[0,1,2,3].map(n=>`<i class="${n<waterDone?'on':''}"></i>`).join('');
   g.innerHTML=`<div class="ghero">
+    <div class="geyebrow">${DOW[TODAY.getDay()].toUpperCase()} · ${MON[TODAY.getMonth()].slice(0,3).toUpperCase()} ${String(TODAY.getDate()).padStart(2,'0')} · ${TODAY.getFullYear()}</div>
     <h2 class="gbigdate">${DOWFULL[TODAY.getDay()]}, ${MON[TODAY.getMonth()]} ${TODAY.getDate()}</h2>
     <div class="gsub">Week ${wkNum} · ${priOpen} primary item${priOpen===1?'':'s'} open${nextUp?' · '+nextUp:''}</div>
   </div>
   <div class="wxstrip">${strip}</div>
   <div class="gstats">
-    <div class="stat"><div class="lbl">Training</div><div class="val">${focus}</div><div class="sub">${day.type==='rest'?'recovery':'5:40a gym'}</div></div>
-    <div class="stat"><div class="lbl">Monthly constants</div><div class="val">${dcDone}/${dcTot}</div><div class="progress"><span style="width:${Math.round(dcDone/dcTot*100)}%"></span></div></div>
-    <div class="stat"><div class="lbl">Water</div><div class="val">${waterDone}/4 qt</div><div class="progress"><span style="width:${waterDone/4*100}%"></span></div></div>
-    <div class="stat urgent-stat"><div class="lbl">Urgent open</div><div class="val">${urgent}</div><div class="sub">${evToday.length?('📍 '+escHtml(evToday[0].label)):'no trips today'}</div></div>
+    <div class="stat"><div class="lbl">Primary to-dos</div><div class="val">${priOpen} open</div><div class="sub${urgentPri?' is-urgent':''}">${urgentPri?urgentPri+' urgent':'nothing urgent'}</div></div>
+    <div class="stat"><div class="lbl">${MON[TODAY.getMonth()]} goals</div><div class="val">${goalsDone} / ${goalsTot||0}</div><div class="progress"><span style="width:${goalsTot?Math.round(goalsDone/goalsTot*100):0}%"></span></div></div>
+    <div class="stat"><div class="lbl">Water today</div><div class="val">${waterDone} / 4</div><div class="pips">${waterPips}</div></div>
+    <div class="stat"><div class="lbl">Next trip</div>${trip?`<div class="val val-sm">${escHtml(trip.label)}</div><div class="sub">${trip.when} · ${trip.away}</div>`:`<div class="val val-sm">—</div><div class="sub">nothing booked</div>`}</div>
+    <div class="stat"><div class="lbl">Monthly constants</div><div class="val">${dcDone} / ${dcTot}</div><div class="sub">resets ${MON[nextMon.getMonth()].slice(0,3)} 1</div></div>
   </div>`;
 }
 
