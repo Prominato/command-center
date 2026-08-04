@@ -371,6 +371,39 @@
   @media(max-width:760px){ .wxstrip{grid-template-columns:repeat(3,1fr)} .wxcol:nth-child(3){border-right:none} .wxcol:nth-child(-n+3){border-bottom:1px solid var(--line)} }
   @media(max-width:520px){ .gbigdate{font-size:1.85rem} .wxcond{font-size:.58rem} .wxcol{padding:9px 4px} .geyebrow{font-size:.56rem} }
 
+  /* ---- top bar, matched to the sample ---- */
+  .appbar{padding:13px 28px; gap:16px; height:auto; min-height:54px;}
+  .appbar .brand h1{font-family:'Fraunces',Georgia,serif; font-size:18px; font-weight:600; letter-spacing:.2px;}
+  .appbar .brand .loc,.appbar .loc{font-family:'Inter',system-ui,sans-serif; font-size:11.5px; color:var(--mut); letter-spacing:.23px;}
+  .celllink{font-family:'Inter',system-ui,sans-serif; font-size:11px; font-weight:600; letter-spacing:.88px; text-transform:uppercase; color:var(--mut); padding:2px 0;}
+  .datepill,.appbar select,.appbar .databtn>button,.syncpill{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1px; padding:6px 13px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--mut);}
+  .appbar .datepill{font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 13px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--mut); letter-spacing:.4px;}
+  .syncpill{border:none; padding:0; color:var(--sage);}
+
+  /* ---- This Week: colored dots + plain text, no chip borders ---- */
+  .dayline{align-items:baseline;}
+  .dayline .dn{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--mut); flex:0 0 62px; letter-spacing:.4px;}
+  .dayline .items{display:flex; flex-wrap:wrap; align-items:center; gap:2px 14px;}
+  .wkitem{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink); white-space:nowrap; background:none; border:none; padding:0;}
+  .wkdot{width:6px; height:6px; border-radius:50%; flex:0 0 auto; background:var(--mut);}
+  .wkitem.gym .wkdot{background:var(--gym);} .wkitem.work .wkdot{background:var(--brass);}
+  .wkitem.play .wkdot{background:var(--sage);} .wkitem.social .wkdot{background:var(--slate);}
+  .wkitem.rest .wkdot{background:var(--faint);}
+  .dayline.today{background:var(--todaybg); border-left:2px solid var(--brass);}
+
+  /* ---- list rows: native checkboxes drawn as the sample's ✓ / ○ glyphs ---- */
+  .items li input[type=checkbox],#dcList li input[type=checkbox]{
+    appearance:none; -webkit-appearance:none; width:14px; height:16px; border:none; background:none;
+    cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0;}
+  .items li input[type=checkbox]::before,#dcList li input[type=checkbox]::before{
+    content:'○'; color:var(--dim); font-size:12px; line-height:1;}
+  .items li input[type=checkbox]:checked::before,#dcList li input[type=checkbox]:checked::before{
+    content:'✓'; color:var(--sage);}
+  .items li .txt,#dcList li .txt{font-size:13.5px; color:var(--ink);}
+  .items li.done .txt,#dcList li.done .txt{color:var(--mut);}
+  .wcat-h,.mgroup-h,.trisec{font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut);}
+  .iconbtn.del{color:var(--red);}
+
   /* concept of the day — kept from the retired Daily Agenda */
   .conceptcard{border:1px solid var(--line); border-left:2px solid var(--brass); border-radius:8px; padding:11px 14px; margin-bottom:14px; background:var(--panel);}
   .conceptcard .clabel{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); margin-bottom:6px;}
@@ -958,17 +991,15 @@ let currentWeekStart=startOfWeek(TODAY);
 function loadWeek(s,ev){if(ev)ev.stopPropagation(); const[y,m,d]=s.split("-").map(Number); currentWeekStart=new Date(y,m-1,d); document.getElementById('weekDrop').open=true; renderWeek();}
 function thisWeek(){currentWeekStart=startOfWeek(TODAY); renderWeek();}
 function shiftWeek(n){currentWeekStart=addDays(currentWeekStart,n*7); renderWeek();}
+function stripEmoji(t){return String(t||'').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}]/gu,'').replace(/\s+/g,' ').trim();}
 function renderWeek(){const end=addDays(currentWeekStart,6), isThis=sameDay(currentWeekStart,startOfWeek(TODAY));
   document.getElementById('weekWhich').textContent=(isThis?"This week · ":"")+`${MON[currentWeekStart.getMonth()].slice(0,3)} ${currentWeekStart.getDate()} – ${MON[end.getMonth()].slice(0,3)} ${end.getDate()}, ${end.getFullYear()}`;
   let html="";
   for(let i=0;i<7;i++){const d=addDays(currentWeekStart,i),p=PATTERN[d.getDay()]; const evs=eventsOnISO(ymd(d));
     const evchips=evs.map(e=>{const ec=evColor(e);
-      return evKind(e)==='appt'
-        ? `<span class="chip ev" style="background:none;border-color:${hexToRgba(ec,.6)};color:${ec}">${escHtml(e.label)}</span>`
-        : `<span class="chip ev" style="background:${ec};border-color:${ec};color:#fff">📍 ${escHtml(e.label)}</span>`;}).join("");
+      return `<span class="wkitem"><i class="wkdot" style="background:${ec}"></i>${escHtml(stripEmoji(e.label))}</span>`;}).join("");
     const wknd=(d.getDay()===0||d.getDay()===6)?' wknd':'';
-    const evStyle=evs.length?` style="background:${hexToRgba(evColor(evs[0]),evKind(evs[0])==='appt'?0.05:0.10)};box-shadow:inset 4px 0 0 ${evColor(evs[0])}"`:'';
-    html+=`<div class="dayline${wknd}${evs.length?' evday':''}${sameDay(d,TODAY)?' today':''}"${evStyle}><span class="dn"><b>${DOW[d.getDay()]}</b> ${MON[d.getMonth()].slice(0,3)} ${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="chip ${c[0]}">${c[1]}</span>`).join("")}</span></div>`;}
+    html+=`<div class="dayline${wknd}${sameDay(d,TODAY)?' today':''}"><span class="dn">${DOW[d.getDay()].toUpperCase()} ${d.getMonth()+1}/${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="wkitem ${c[0]}"><i class="wkdot"></i>${escHtml(stripEmoji(c[1]))}</span>`).join("")}</span></div>`;}
   document.getElementById('weekBody').innerHTML=html; highlightSelectedWeek();}
 function highlightSelectedWeek(){document.querySelectorAll('tr.wk').forEach(tr=>tr.classList.toggle('selected',tr.dataset.wkstart===ymd(currentWeekStart)));}
 
