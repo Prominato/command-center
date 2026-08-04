@@ -523,15 +523,11 @@
   /* section panels — hairline frame + brass top rule */
   /* multi-column panel grid (the sample's layout): columns fill by width, wide
      sections span the full row, and the 3-month calendar always lands last. */
-  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; align-items:start; grid-auto-flow:row dense;}
+  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; align-items:start; grid-auto-flow:row;}
   #sections details.drop{margin-bottom:0;}
   #sections details.drop[data-sec="calendar"]{grid-column:1/-1;}
-  /* the two text-dense cards get a double column once there is room, so their
-     rows stop wrapping (a 330px column cuts "Prominato — searches, client calls" in half) */
-  @media(min-width:1240px){
-    #sections details.drop[data-sec="today"],
-    #sections details.drop[data-sec="lists"]{grid-column:span 2;}
-  }
+  /* every card is one equal column (the sample runs 4 x 347px); only the
+     3-month calendar spans the full row */
   #sections details.drop[data-sec="calendar"]{order:99;}
   @media(max-width:940px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
