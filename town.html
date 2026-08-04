@@ -158,7 +158,7 @@ button{font-family:inherit;}
 <body>
 
 <div class="appbar">
-  <a class="backlink" href="index.html">← Command Center</a>
+  <a class="backlink" href="index.html">← Max HQ</a>
   <a class="backlink" href="cell.html" title="Same data, cell skin">🧬 Cell</a>
   <h1>The Settlement</h1>
   <div class="spacer"></div>
@@ -235,7 +235,7 @@ button{font-family:inherit;}
   <div class="achgrid" id="achGrid"></div>
 </div>
 
-<div class="footer">The Settlement grows from the same data as your <a href="index.html">Command Center</a> — check things off in either place. Everything you build here is derived, never double-counted.</div>
+<div class="footer">The Settlement grows from the same data as your <a href="index.html">Max HQ</a> — check things off in either place. Everything you build here is derived, never double-counted.</div>
 </div>
 
 <div id="toasts"></div>
@@ -831,7 +831,7 @@ function renderMC(){
       <input type="checkbox" ${d?'checked':''} onchange="mcToggle(${i},this)">
       <span class="adot" style="background:${AREAS.life.hex}"></span>
       <span class="qtxt">${mc.U[lab]?'⚠ ':''}${escHtml(lab)}</span><span class="qxp">+${XP_MONTHLY}</span></div>`;
-  }).join(''):'<div class="emptymsg">No monthly constants yet — add them in the Command Center.</div>';
+  }).join(''):'<div class="emptymsg">No monthly constants yet — add them in Max HQ.</div>';
 }
 function mcToggle(i,el){
   const mc=loadMC(), mk=mcMonthKey(); const lab=mc.L[i]; if(lab===undefined)return;

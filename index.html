@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Max's Command Center</title>
+<title>Max HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -428,7 +428,7 @@
 <body>
 
 <div class="appbar">
-  <div class="brand"><h1>Command Center</h1><span class="loc">Royal Oak, MI</span></div>
+  <div class="brand"><h1>Max HQ</h1><span class="loc">Royal Oak, MI</span></div>
   <div class="spacer"></div>
   <a href="cell.html" title="The Cell — gamified agenda" class="celllink">The Cell</a>
   <a href="town.html" title="The Settlement — gamified agenda (ledger)" class="celllink">The Settlement</a>
@@ -607,7 +607,7 @@
 
   </div><!-- /#sections -->
 
-  <footer>Max's Command Center · live weather · data saved in this browser · use ⋯ Data to back up or restore · <span style="font-family:'IBM Plex Mono',monospace">v1.1</span></footer>
+  <footer>Max HQ · live weather · data saved in this browser · use ⋯ Data to back up or restore · <span style="font-family:'IBM Plex Mono',monospace">v1.1</span></footer>
 </div>
 
 <script>
@@ -1220,9 +1220,9 @@ function renderGlance(){
 /* ===== data backup ===== */
 function toggleMenu(e){e.stopPropagation(); document.getElementById('dataMenu').classList.toggle('open');}
 document.addEventListener('click',()=>document.getElementById('dataMenu').classList.remove('open'));
-function exportData(){const data={}; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); data[k]=localStorage.getItem(k);} const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='command-center-backup-'+ymd(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();}
+function exportData(){const data={}; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); data[k]=localStorage.getItem(k);} const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='max-hq-backup-'+ymd(new Date())+'.json'; document.body.appendChild(a); a.click(); a.remove();}
 function importData(input){const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{try{const d=JSON.parse(r.result); if(confirm('Restore this backup? It will overwrite current data on this device.')){Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,v)); location.reload();}}catch(e){alert('Could not read that backup file.');}}; r.readAsText(f); input.value="";}
-function resetData(){if(confirm('Reset ALL Command Center data on this device? This cannot be undone — consider exporting a backup first.')){const keys=[]; for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i)); keys.forEach(k=>localStorage.removeItem(k)); location.reload();}}
+function resetData(){if(confirm('Reset ALL Max HQ data on this device? This cannot be undone — consider exporting a backup first.')){const keys=[]; for(let i=0;i<localStorage.length;i++)keys.push(localStorage.key(i)); keys.forEach(k=>localStorage.removeItem(k)); location.reload();}}
 
 /* ===== init ===== */
 /* ===== one-time data seed (Max's backup · exported 2026-07-15) =====

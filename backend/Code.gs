@@ -1,5 +1,5 @@
 /**
- * Command Center — data backend (Google Apps Script Web App)
+ * Max HQ — data backend (Google Apps Script Web App)
  * ----------------------------------------------------------
  * Serves JSON to maxhq.netlify.app via fetch(): saved state (cross-device
  * sync) and Google Calendar events (read-only). Storage = the same
@@ -59,11 +59,11 @@ function doPost(e) {
 function authorizeMail() {
   MailApp.sendEmail({
     to: 'max@prominato.com',
-    subject: '✅ Command Center can now email you',
+    subject: '✅ Max HQ can now email you',
     body: 'Mail sending is authorized. Your scheduled tasks can now deliver real email to this inbox instead of leaving drafts.\n\nmaxhq.netlify.app',
-    name: 'Command Center'
+    name: 'Max HQ'
   });
-  saveBatch_([{ k: 'cc_last_mail', v: JSON.stringify({ to: 'max@prominato.com', subject: '✅ Command Center can now email you', at: Date.now() }), t: Date.now() }]);
+  saveBatch_([{ k: 'cc_last_mail', v: JSON.stringify({ to: 'max@prominato.com', subject: '✅ Max HQ can now email you', at: Date.now() }), t: Date.now() }]);
   return 'sent; quota left: ' + MailApp.getRemainingDailyQuota();
 }
 
@@ -74,7 +74,7 @@ function sendMail_(b) {
   var subj = String(b.subject || '(no subject)').slice(0, 250);
   var text = String(b.body || '');
   if (!text) return { ok: false, error: 'empty body' };
-  MailApp.sendEmail({ to: to, subject: subj, body: text, name: 'Command Center' });
+  MailApp.sendEmail({ to: to, subject: subj, body: text, name: 'Max HQ' });
   // Record the send in state. POST responses are unreadable through Apps Script's
   // redirect, so callers confirm success by GETting ?action=state and checking this.
   try {
