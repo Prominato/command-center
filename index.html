@@ -321,7 +321,7 @@
   .iconbtn.pristar{color:var(--ink-muted); border-color:transparent; font-size:.92rem; line-height:1; padding:2px 5px;}
   .iconbtn.pristar.on{color:var(--gold);}
   /* house tabs + for-sale */
-  .htabs{display:flex; gap:0; margin-bottom:14px; flex-wrap:nowrap; overflow-x:auto; border-bottom:1px solid var(--line); scrollbar-width:none; -ms-overflow-style:none;}
+  .htabs{display:flex; gap:0 11px; margin-bottom:14px; flex-wrap:wrap; border-bottom:1px solid var(--line);}
   .htabs::-webkit-scrollbar{display:none;}
   .tcount{display:none;}   /* sample tab row is plain labels — counts force a 2nd row */
   .htab{font-size:.82rem; font-weight:600; cursor:pointer; background:var(--bg2); color:var(--ink-muted); border:1px solid var(--divider); border-radius:9px; padding:7px 14px; font-family:inherit;}
@@ -371,6 +371,38 @@
   @media(max-width:760px){ .wxstrip{grid-template-columns:repeat(3,1fr)} .wxcol:nth-child(3){border-right:none} .wxcol:nth-child(-n+3){border-bottom:1px solid var(--line)} }
   @media(max-width:520px){ .gbigdate{font-size:1.85rem} .wxcond{font-size:.58rem} .wxcol{padding:9px 4px} .geyebrow{font-size:.56rem} }
 
+  /* concept of the day — kept from the retired Daily Agenda */
+  .conceptcard{border:1px solid var(--line); border-left:2px solid var(--brass); border-radius:8px; padding:14px 17px; margin-bottom:16px; background:var(--panel);}
+  .conceptcard .clabel{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); margin-bottom:6px;}
+  .conceptcard .ctitle{font-family:'Fraunces',Georgia,serif; font-size:1.02rem; font-weight:600; color:var(--ink); margin-bottom:5px;}
+  .conceptcard .cbody{font-size:.82rem; color:var(--mut); line-height:1.55;}
+  .conceptcard .cactions{margin-top:10px; display:flex; gap:14px;}
+  .conceptcard .cactions button,.conceptcard .cactions a{background:none; border:none; padding:0; cursor:pointer; color:var(--brass); font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; text-decoration:none;}
+
+  /* trips & events — read-only from Google */
+  .triprow{display:flex; align-items:baseline; gap:10px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .triprow:last-child{border-bottom:none;}
+  .tripdot{width:7px; height:7px; border-radius:50%; flex:0 0 auto;}
+  .tripname{flex:1 1 auto; font-size:.88rem;}
+  .tripwhen{font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--mut); white-space:nowrap;}
+  .tripaway{font-family:'IBM Plex Mono',monospace; font-size:.62rem; color:var(--faint); white-space:nowrap;}
+
+  /* card drag-to-reorder */
+  #sections details.drop>summary{cursor:grab; touch-action:none;}
+  body.reordering{user-select:none;}
+  details.drop.carddragging{opacity:.4;}
+  details.drop.cardover{box-shadow:inset 0 0 0 2px var(--brass);}
+
+  /* notes — simplified single column inside a grid card */
+  .notes-wrap{display:block;}
+  .nfolders{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; padding:0; border:none; background:none;}
+  .nfolders .addrow{width:100%; margin-bottom:6px;}
+  #nfList{display:flex; flex-wrap:wrap; gap:6px;}
+  .nfolder{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.9px; text-transform:uppercase; padding:4px 9px; border:1px solid var(--line); border-radius:5px; color:var(--mut); cursor:pointer; background:transparent;}
+  .nfolder.active{color:var(--brass); border-color:var(--brass); background:var(--tint);}
+  .ncard{padding:10px 12px; margin-bottom:8px;}
+  .ncard .nt{font-size:.9rem;}
+
   /* Today's Agenda timeline */
   .tahead{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px;}
   .tasub{font-size:.82rem; color:var(--mut);}
@@ -405,11 +437,9 @@
   /* section panels — hairline frame + brass top rule */
   /* multi-column panel grid (the sample's layout): columns fill by width, wide
      sections span the full row, and the 3-month calendar always lands last. */
-  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(390px,1fr)); gap:18px; align-items:start; grid-auto-flow:row dense;}
+  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; align-items:start; grid-auto-flow:row dense;}
   #sections details.drop{margin-bottom:0;}
-  #sections details.drop[data-sec="agenda"],
   #sections details.drop[data-sec="calendar"]{grid-column:1/-1;}
-  #sections details.drop[data-sec="agenda"]{order:98;}
   #sections details.drop[data-sec="calendar"]{order:99;}
   @media(max-width:940px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
@@ -419,15 +449,14 @@
   details.drop[data-sec="today"]{border-top-color:var(--amber);}
   details.drop[data-sec="lists"]{border-top-color:var(--brass);}
   details.drop[data-sec="week"]{border-top-color:var(--sage);}
-  details.drop[data-sec="agenda"]{border-top-color:var(--sage);}
   details.drop[data-sec="calendar"]{border-top-color:var(--brass);}
-  details.drop[data-sec="mc"]{border-top-color:var(--amber);}
+  details.drop[data-sec="trips"]{border-top-color:var(--sage);}
   details.drop[data-sec="notes"]{border-top-color:var(--slate);}
   details.drop[data-sec="goals"]{border-top-color:var(--slate);}
   .hint{color:var(--mut);}
 
   /* tabs */
-  .htab{background:transparent; border:none; border-bottom:1px solid transparent; border-radius:0; color:var(--mut); font-size:9.5px; font-weight:400; letter-spacing:.9px; text-transform:uppercase; padding:5px 0; margin-right:11px; white-space:nowrap;}
+  .htab{background:transparent; border:none; border-bottom:1px solid transparent; border-radius:0; color:var(--mut); font-size:9.5px; font-weight:400; letter-spacing:.9px; text-transform:uppercase; padding:5px 0; white-space:nowrap;}
   .htab.on{background:transparent; color:var(--brass); border-bottom-color:var(--brass);}
   .tcount{color:var(--faint);}
 
@@ -500,6 +529,7 @@
 <div class="wrap">
 
   <div id="glance"></div>
+  <div id="conceptTop"></div>
 
   <div id="sections">
 
@@ -583,59 +613,23 @@
     </div>
   </details>
 
-  <details class="drop" data-sec="agenda" open>
-    <summary><span class="arrow">▸</span> Daily Agenda — <span id="agendaRange">2 weeks</span></summary>
-    <div class="drop-body"><div id="days"></div></div>
+
+  <details class="drop" data-sec="trips" open>
+    <summary><span class="arrow">▸</span> Trips &amp; Events</summary>
+    <div class="drop-body">
+      <div class="hint">Live from max@prominato.com &amp; msteinberg115@gmail.com</div>
+      <div id="tripsList"></div>
+    </div>
   </details>
 
   <details class="drop" data-sec="calendar">
     <summary><span class="arrow">▸</span> 3-Month Calendar</summary>
     <div class="drop-body">
-      <details class="evmgr" open>
-        <summary><span class="arrow">▸</span> ✈️ Trips & Events</summary>
-        <div class="addrow">
-          <input id="evLabel" placeholder="Trip / event name…">
-          <input id="evLoc" list="geoList" placeholder="📍 City, State…" autocomplete="off">
-          <datalist id="geoList"></datalist>
-          <label class="fld">Start <input id="evStart" type="date"></label>
-          <label class="fld">End <input id="evEnd" type="date"></label>
-          <label class="fld">From <input id="evStartTime" type="time"></label>
-          <label class="fld">To <input id="evEndTime" type="time"></label>
-          <span class="tintdd">
-            <button type="button" class="tintbtn" onclick="evTintMenu(event)" title="Event color"><i id="evTintSwatch"></i><span class="caret">▾</span></button>
-            <div class="tintmenu" id="evTintList">
-              <button type="button" style="background:#B5483F" onclick="evTintPick('#B5483F')"></button>
-              <button type="button" style="background:#D98E3B" onclick="evTintPick('#D98E3B')"></button>
-              <button type="button" style="background:#3F7D4E" onclick="evTintPick('#3F7D4E')"></button>
-              <button type="button" style="background:#4A7FB5" onclick="evTintPick('#4A7FB5')"></button>
-              <button type="button" style="background:#7B6FD0" onclick="evTintPick('#7B6FD0')"></button>
-              <button type="button" style="background:#C15E86" onclick="evTintPick('#C15E86')"></button>
-            </div>
-            <button type="button" class="ghost tintundo" onclick="evTintClear()" title="Use the default color">↺</button>
-          </span>
-          <button id="evPickBtn" onclick="togglePick()">📅 Pick on calendar</button>
-          <button id="evAddBtn" onclick="addEvent()">Add</button>
-          <button id="evCancelBtn" class="ghost" style="display:none" onclick="cancelEdit()">Cancel</button>
-        </div>
-        <div class="hint" id="pickHint" style="display:none; color:var(--teal);">Pick mode on — click a <b>start day</b>, then an <b>end day</b> on any month below.</div>
-        <div class="hint" style="color:var(--accent);">📅 Your Google Calendar events flow in automatically — add manual trips &amp; events here too.</div>
-        <div id="evList"></div>
-      </details>
-      <div class="hint">Click a <b>month</b> to focus it, or any <b>week</b> to load it into This Week. <b>Solid bars</b> = trips &amp; all-day events · <b>outlined bars</b> = appointments &amp; meetings · your <b>Prominato calendar</b> gets its own color once connected.</div>
+      <div class="hint">Solid bars = trips &amp; all-day events · outlined = appointments · pulled from your Google Calendars</div>
       <div class="months" id="months"></div>
     </div>
   </details>
 
-  <details class="drop" data-sec="mc" open>
-    <summary><span class="arrow">▸</span> Monthly Constants</summary>
-    <div class="drop-body">
-      <div class="listcard">
-        <h3>🔁 Monthly Constants</h3><div class="lh">Recurring each month — checkmarks reset monthly · drag ⠿, edit ✎, ! for urgent</div>
-        <div class="addrow"><input id="mcInput" placeholder="Add a monthly constant…" onkeydown="if(event.key==='Enter')mcAdd()"><button onclick="mcAdd()">Add</button></div>
-        <ul class="items" id="mcList"></ul>
-      </div>
-    </div>
-  </details>
 
   <details class="drop" data-sec="notes" open>
     <summary><span class="arrow">▸</span> Notes</summary>
@@ -740,7 +734,7 @@ function applyCal(list){ try{
     start:ev.start, end:ev.end||ev.start, startTime:ev.startTime||'', endTime:ev.endTime||'',
     loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal', cal:ev.cal||'personal'}));
   EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
-  renderEvents(); renderMonths(); renderWeek(); renderGlance(); if(typeof renderToday==='function')renderToday();
+  renderEvents(); renderMonths(); renderWeek(); renderGlance(); if(typeof renderToday==='function')renderToday(); if(typeof renderTrips==='function')renderTrips();
 }catch(e){} }
 
 /* ===== data ===== */
@@ -906,7 +900,7 @@ function cellClick(ds,e){ if(!PICK) return; e.stopPropagation();
   if(PICK_STEP===0){PICK_START=ds; PICK_END=null; document.getElementById('evStart').value=ds; document.getElementById('evEnd').value=ds; PICK_STEP=1;}
   else{let s=PICK_START,en=ds; if(en<s){const t=s;s=en;en=t;} document.getElementById('evStart').value=s; document.getElementById('evEnd').value=en; PICK_START=s; PICK_END=en; PICK_STEP=0; PICK=false; document.body.classList.remove('pickmode'); document.getElementById('evPickBtn').classList.remove('active'); document.getElementById('evPickBtn').textContent="📅 Pick on calendar"; document.getElementById('pickHint').style.display="none";}
   renderMonths();}
-function renderEvents(){const host=document.getElementById('evList');
+function renderEvents(){const host=document.getElementById('evList'); if(!host)return;   // manual trip manager retired — Trips card is read-only from Google
   if(!EVENTS.length){host.innerHTML='<div class="empty">No trips or events yet — add one above.</div>'; refreshDayEvents(); return;}
   const fmt=iso=>{const d=new Date(iso+"T12:00:00"); return MON[d.getMonth()].slice(0,3)+" "+d.getDate();};
   host.innerHTML=[...EVENTS].sort((a,b)=>a.start<b.start?-1:1).map(e=>{const single=e.start===e.end; let when=single?fmt(e.start):(fmt(e.start)+" – "+fmt(e.end)); let tm=(e.startTime||e.endTime)?(" · "+to12(e.startTime)+(e.endTime?("–"+to12(e.endTime)):"")):""; const loc=e.loc?` · 📍 ${escHtml(e.loc)}`:"";
@@ -1121,7 +1115,8 @@ function mcEditStart(i){const sp=document.querySelector(`#mcList span[data-mcedi
   const fin=()=>{sp.contentEditable="false"; sp.classList.remove('editing'); const v=sp.textContent.trim(), old=MC_LABELS[i];
     if(v&&v!==old){Object.keys(MC_STATE).forEach(mk=>{if(MC_STATE[mk]&&MC_STATE[mk][old]!==undefined){MC_STATE[mk][v]=MC_STATE[mk][old]; delete MC_STATE[mk][old];}}); if(MC_URGENT[old]!==undefined){MC_URGENT[v]=MC_URGENT[old]; delete MC_URGENT[old];} MC_LABELS[i]=v;} mcsave(); renderMC();};
   sp.addEventListener('blur',fin,{once:true}); sp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();sp.blur();} if(ev.key==='Escape'){sp.textContent=MC_LABELS[i];sp.blur();}});}
-function renderMC(){const ul=document.getElementById('mcList'),mk=mcMonthKey(),st=MC_STATE[mk]||{};
+function renderMC(){const ul=document.getElementById('mcList'); if(!ul)return;   // Monthly Constants card retired into the Routinely tab
+  const mk=mcMonthKey(),st=MC_STATE[mk]||{};
   if(!MC_LABELS.length){ul.innerHTML='<div class="empty">No monthly constants — add one above.</div>'; updateCounts(); return;}
   ul.innerHTML=MC_LABELS.map((lab,i)=>`<li class="${st[lab]?'done ':''}${MC_URGENT[lab]?'urgent':''}" draggable="true" ondragstart="mcDragStart(${i},event)" ondragover="mcDragOver(this,event)" ondragleave="this.classList.remove('dragover')" ondrop="mcDrop(${i},event)">
     <span class="grip" title="Drag to reorder">⠿</span>
@@ -1206,8 +1201,8 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
   el.addEventListener('input',h); el.addEventListener('change',h);});}
 
 /* ===== sections ===== */
-const SEC_DEFAULT=['today','lists','week','agenda','calendar','mc','notes','goals'];
-const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',agenda:'Daily Agenda',calendar:'Calendar',mc:'Monthly Constants',notes:'Notes',goals:'Goals'};
+const SEC_DEFAULT=['today','lists','week','goals','notes','trips','calendar'];
+const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',goals:'Monthly Goals',notes:'Notes',trips:'Trips & Events',calendar:'3-Month Calendar'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
   SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){
     if(id==='today'){o.unshift(id); return;}                                        // Today's Agenda pins to the very top…
@@ -1215,7 +1210,7 @@ function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));
     const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // other new sections slot in after their default neighbor
     if(at>=0)o.splice(at+1,0,id); else o.push(id); }});
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
-function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
+function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav(); if(typeof initCardDrag==='function')initCardDrag();}
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function buildNav(){/* quick-nav chip row removed 2026-08-04 to match the sample's clean header */}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -1315,6 +1310,86 @@ function renderDC(){
       <span class="txt">${escHtml(it.text)}</span></li>`).join('');
   const c=document.getElementById('dcCount'); if(c)c.textContent=arr.filter(x=>st[x.id]).length+'/'+arr.length;
   if(typeof setCount==='function')setCount('today', arr.filter(x=>st[x.id]).length+'/'+arr.length+' daily');
+}
+
+
+/* ===== Concept of the day — kept from the retired Daily Agenda, now pinned under the hero ===== */
+function renderConcept(){
+  const host=document.getElementById('conceptTop'); if(!host)return;
+  const c=conceptFor(TODAY_ISO);
+  host.innerHTML=`<div class="conceptcard">
+    <div class="clabel">Concept of the day</div>
+    <div class="ctitle">${escHtml(c.t)}</div>
+    <div class="cbody">${escHtml(c.b)}</div>
+    <div class="cactions">
+      <button type="button" onclick="saveConcept('${TODAY_ISO}',this)">Save to favorites</button>
+      <a href="https://www.google.com/search?q=${encodeURIComponent(c.t)}" target="_blank" rel="noopener">Learn more ↗</a>
+    </div></div>`;
+}
+
+/* ===== Trips & Events — read-only, straight from the Google calendars ===== */
+function renderTrips(){
+  const host=document.getElementById('tripsList'); if(!host)return;
+  const f=iso=>new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const up=EVENTS.filter(e=>(e.end||e.start)>=TODAY_ISO).sort((a,b)=>a.start<b.start?-1:1).slice(0,14);
+  if(!up.length){host.innerHTML='<div class="empty">Nothing upcoming on either calendar.</div>'; return;}
+  host.innerHTML=up.map(e=>{
+    const multi=e.start!==e.end;
+    const when=multi?(f(e.start)+' – '+f(e.end)):(f(e.start)+(e.startTime?' · '+to12(e.startTime):''));
+    const days=Math.round((new Date(e.start+'T12:00:00')-TODAY)/86400000);
+    const away=days<=0?'now':(days===1?'tomorrow':'in '+days+'d');
+    return `<div class="triprow"><span class="tripdot" style="background:${evColor(e)}"></span>
+      <span class="tripname">${escHtml(e.label)}</span>
+      <span class="tripwhen">${when}</span><span class="tripaway">${away}</span></div>`;}).join('');
+}
+
+/* ===== drag any card to reorder the grid (pointer events → works on touch too) ===== */
+let cardDrag=null;
+function initCardDrag(){
+  document.querySelectorAll('#sections details.drop>summary').forEach(sum=>{
+    if(sum.dataset.dragWired)return; sum.dataset.dragWired='1';
+    sum.addEventListener('pointerdown',cardDown);
+  });
+}
+function cardDown(e){
+  if(e.button&&e.button!==0)return;
+  if(e.target.closest('button,a,input,select,textarea'))return;
+  const panel=e.currentTarget.closest('details.drop');
+  cardDrag={panel,id:panel.dataset.sec,x0:e.clientX,y0:e.clientY,active:false,target:null,sum:e.currentTarget};
+  try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}
+  e.currentTarget.addEventListener('pointermove',cardMove);
+  e.currentTarget.addEventListener('pointerup',cardUp);
+  e.currentTarget.addEventListener('pointercancel',cardUp);
+}
+function cardMove(e){
+  const d=cardDrag; if(!d)return;
+  if(!d.active){ if(Math.abs(e.clientX-d.x0)+Math.abs(e.clientY-d.y0)<10)return;
+    d.active=true; d.panel.classList.add('carddragging'); document.body.classList.add('reordering'); }
+  e.preventDefault();
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const over=el&&el.closest?el.closest('#sections details.drop'):null;
+  if(d.target&&d.target!==over)d.target.classList.remove('cardover');
+  if(over&&over!==d.panel){over.classList.add('cardover'); d.target=over;} else d.target=null;
+}
+function cardUp(e){
+  const d=cardDrag; if(!d)return;
+  d.sum.removeEventListener('pointermove',cardMove);
+  d.sum.removeEventListener('pointerup',cardUp);
+  d.sum.removeEventListener('pointercancel',cardUp);
+  try{d.sum.releasePointerCapture(e.pointerId);}catch(_){}
+  const was=d.active, from=d.id, tgt=d.target;
+  d.panel.classList.remove('carddragging');
+  document.body.classList.remove('reordering');
+  document.querySelectorAll('.cardover').forEach(c=>c.classList.remove('cardover'));
+  cardDrag=null;
+  if(!was)return;                    // plain click → let <details> toggle normally
+  e.preventDefault();
+  if(!tgt)return;
+  const order=secLoad(), i=order.indexOf(from), j=order.indexOf(tgt.dataset.sec);
+  if(i<0||j<0||i===j)return;
+  const[m]=order.splice(i,1); order.splice(j,0,m);
+  const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v);
+  applySectionOrder();
 }
 
 /* ===== counts + glance ===== */
@@ -1436,7 +1511,7 @@ if(!localStorage.getItem('cc_seed_v1')){
 
 document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODAY.getMonth()].slice(0,3)+" "+TODAY.getDate()+", "+TODAY.getFullYear();
 document.getElementById('monthName').textContent=MON[TODAY.getMonth()];
-document.getElementById('agendaRange').textContent=new Date(DAYS[0].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(DAYS[DAYS.length-1].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
 document.getElementById('evStart').value=TODAY_ISO; document.getElementById('evEnd').value=ymd(addDays(TODAY,2));
 document.getElementById('days').innerHTML=DAYS.map(renderDay).join("");
 renderThemeSelect();
@@ -1448,8 +1523,30 @@ if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
 }
-renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); renderMC(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
-renderToday(); renderDC(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
+
+/* one-time: fold the retired Monthly Constants card into the Routinely to-do tab.
+   Deferred 6s so SYNC.pull() has settled first — running it before the pull meant the
+   cloud copy overwrote the migrated list while the "done" flag stayed set. */
+function migrateMC(){
+  if(localStorage.getItem('cc_mig_mc2routine'))return;
+  try{
+    const labels=(typeof MC_LABELS!=='undefined'&&MC_LABELS.length)?MC_LABELS.slice():[];
+    if(!labels.length)return;                       // nothing loaded yet — retry next boot
+    LISTS.routine=LISTS.routine||[];
+    const have=new Set(LISTS.routine.map(x=>(x.text||'').trim()));
+    let added=0;
+    labels.forEach((lab,i)=>{ const t=String(lab||'').trim(); if(!t||have.has(t))return;
+      LISTS.routine.push({id:'mc'+Date.now()+i,text:t,done:false,urgent:false,pri:'secondary',src:'monthly'});
+      have.add(t); added++; });
+    if(added){ lsave(); renderList('routine'); renderMaster(); }
+    localStorage.setItem('cc_mig_mc2routine','1');
+    console.log('[Max HQ] moved '+added+' monthly constants into Routinely');
+  }catch(e){ console.warn('[Max HQ] MC migration deferred:',e.message); }
+}
+setTimeout(migrateMC,6000);
+
+renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
+renderToday(); renderDC(); renderConcept(); renderTrips(); initCardDrag(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
