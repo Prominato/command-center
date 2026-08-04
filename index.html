@@ -57,12 +57,6 @@
   .menu button.danger{color:var(--urgent);}
 
   /* ===== quick nav ===== */
-  .quicknav{position:sticky; top:55px; z-index:40; background:var(--bg); display:flex; gap:8px; flex-wrap:wrap; padding:12px 22px 6px;}
-  .quicknav button{background:var(--card); border:1px solid var(--divider); color:var(--ink-muted); font-size:.8rem; padding:6px 13px; border-radius:20px; cursor:pointer; font-family:inherit;}
-  .quicknav button:hover{color:var(--ink); border-color:var(--accent);}
-  .quicknav button.drag{cursor:grab; touch-action:none;}
-  .quicknav button.navdragging{opacity:.45; cursor:grabbing;}
-  .quicknav button.navover{color:var(--ink); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent);}
 
   .wrap{max-width:1440px; margin:0 auto; padding:26px 28px 70px;}
 
@@ -89,10 +83,6 @@
   details.drop[open]>summary{border-bottom:1px solid var(--divider);}
   .arrow{display:inline-block; transition:transform .15s; color:var(--accent); font-size:.85rem;}
   details[open]>summary .arrow{transform:rotate(90deg);}
-  .count{font-size:.72rem; font-weight:600; color:var(--ink-muted); background:var(--bg2); border-radius:20px; padding:2px 9px; font-family:'Inter';}
-  .secmove{margin-left:auto; display:inline-flex; gap:5px;}
-  .secmove button{background:var(--bg2); border:1px solid var(--divider); color:var(--ink-muted); border-radius:7px; font-size:.72rem; line-height:1; padding:4px 8px; cursor:pointer; font-family:inherit;}
-  .secmove button:hover{color:var(--ink); border-color:var(--accent);}
   .drop-body{padding:2px 22px 22px; overflow-y:auto; resize:vertical; min-height:44px;}
   #days{overflow-y:auto;}
   #evList{max-height:200px; overflow-y:auto; margin-top:6px;}
@@ -345,7 +335,7 @@
   /* ================== SKIN · LEDGER (option 7) ================== */
   /* ===== Agenda Book component styling ===== */
   h1,h2,h3,.stat .val,details.drop>summary,#glance .gh .greet,.month h3,.listcard h3,.day-date,.phead .which,.ncard .nt{font-family:'Fraunces',Georgia,serif;}
-  .stat .lbl,.trisec,.wcat-h,.mgroup-h,.quicknav button,.count,.htab,.wwhen,.fsprice,.dt-num,.chip,.syncpill{font-family:'IBM Plex Mono',monospace;}
+  .stat .lbl,.trisec,.wcat-h,.mgroup-h,.htab,.wwhen,.fsprice,.dt-num,.chip,.syncpill{font-family:'IBM Plex Mono',monospace;}
 
   /* app bar — sticky, translucent, hairline rule */
   .appbar{background:var(--barbg); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); box-shadow:none;}
@@ -355,10 +345,6 @@
   .menu{background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.35);}
 
   /* quick nav — small caps chips */
-  .quicknav{background:var(--bg);}
-  .quicknav button{background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--mut); text-transform:uppercase; font-size:.66rem; font-weight:600; letter-spacing:.1em; padding:6px 12px;}
-  .quicknav button:hover{color:var(--ink); border-color:var(--brass);}
-  .quicknav button.navover{color:var(--ink); border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass);}
 
   /* hero — big date headline + summary line (matches the Max HQ sample) */
   .ghero{padding:10px 2px 18px;}
@@ -418,6 +404,7 @@
   /* section panels — hairline frame + brass top rule */
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
   details.drop>summary{font-weight:600; font-size:18px; background:transparent; letter-spacing:-.01em; padding:22px 22px 12px;}
+  details.drop>summary .arrow{display:none;}
   details.drop[open]>summary{border-bottom:none;}
   details.drop[data-sec="today"]{border-top-color:var(--amber);}
   details.drop[data-sec="lists"]{border-top-color:var(--brass);}
@@ -427,8 +414,6 @@
   details.drop[data-sec="mc"]{border-top-color:var(--amber);}
   details.drop[data-sec="notes"]{border-top-color:var(--slate);}
   details.drop[data-sec="goals"]{border-top-color:var(--slate);}
-  .count{background:transparent; border:1px solid var(--line); border-radius:5px; color:var(--mut); font-size:.62rem; letter-spacing:.08em;}
-  .secmove button,.phead button,.iconbtn{border-radius:5px;}
   .hint{color:var(--mut);}
 
   /* tabs */
@@ -501,7 +486,6 @@
   </div>
 </div>
 
-<div class="quicknav" id="quicknav"></div>
 
 <div class="wrap">
 
@@ -510,7 +494,7 @@
   <div id="sections">
 
   <details class="drop" data-sec="today" open>
-    <summary><span class="arrow">▸</span> Today's Agenda<span class="secmove"><button onclick="moveSection(event,'today',-1)" title="Move up">▲</button><button onclick="moveSection(event,'today',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> Today's Agenda</summary>
     <div class="drop-body">
       <div class="tahead"><span class="tasub" id="taSub">—</span><span class="tabadge" id="taBadge">—</span></div>
       <div id="todayTimeline"></div>
@@ -522,7 +506,7 @@
   </details>
 
   <details class="drop" data-sec="lists" open>
-    <summary><span class="arrow">▸</span> To-Do Lists<span class="secmove"><button onclick="moveSection(event,'lists',-1)" title="Move up">▲</button><button onclick="moveSection(event,'lists',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> To-Do Lists</summary>
     <div class="drop-body">
       <div class="htabs" id="listTabs">
         <button class="htab on" data-tab="master" onclick="ccTab('master')">⭐ Master<span class="tcount"></span></button>
@@ -579,7 +563,7 @@
   </details>
 
   <details class="drop" id="weekDrop" data-sec="week">
-    <summary><span class="arrow">▸</span> This Week's Schedule<span class="secmove"><button onclick="moveSection(event,'week',-1)" title="Move up">▲</button><button onclick="moveSection(event,'week',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> This Week</summary>
     <div class="drop-body">
       <div class="phead">
         <span class="which" id="weekWhich">—</span>
@@ -590,12 +574,12 @@
   </details>
 
   <details class="drop" data-sec="agenda" open>
-    <summary><span class="arrow">▸</span> Daily Agenda — <span id="agendaRange">2 weeks</span><span class="secmove"><button onclick="moveSection(event,'agenda',-1)" title="Move up">▲</button><button onclick="moveSection(event,'agenda',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> Daily Agenda — <span id="agendaRange">2 weeks</span></summary>
     <div class="drop-body"><div id="days"></div></div>
   </details>
 
   <details class="drop" data-sec="calendar">
-    <summary><span class="arrow">▸</span> 3-Month Calendar &amp; Trips<span class="secmove"><button onclick="moveSection(event,'calendar',-1)" title="Move up">▲</button><button onclick="moveSection(event,'calendar',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> 3-Month Calendar</summary>
     <div class="drop-body">
       <details class="evmgr" open>
         <summary><span class="arrow">▸</span> ✈️ Trips & Events</summary>
@@ -633,7 +617,7 @@
   </details>
 
   <details class="drop" data-sec="mc" open>
-    <summary><span class="arrow">▸</span> Monthly Constants<span class="secmove"><button onclick="moveSection(event,'mc',-1)" title="Move up">▲</button><button onclick="moveSection(event,'mc',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> Monthly Constants</summary>
     <div class="drop-body">
       <div class="listcard">
         <h3>🔁 Monthly Constants</h3><div class="lh">Recurring each month — checkmarks reset monthly · drag ⠿, edit ✎, ! for urgent</div>
@@ -644,7 +628,7 @@
   </details>
 
   <details class="drop" data-sec="notes" open>
-    <summary><span class="arrow">▸</span> 📝 Notes<span class="secmove"><button onclick="moveSection(event,'notes',-1)" title="Move up">▲</button><button onclick="moveSection(event,'notes',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> Notes</summary>
     <div class="drop-body">
       <div class="notes-wrap">
         <aside class="nfolders">
@@ -661,7 +645,7 @@
   </details>
 
   <details class="drop" data-sec="goals" open>
-    <summary><span class="arrow">▸</span> Monthly Goals — <span id="monthName">June 2026</span><span class="secmove"><button onclick="moveSection(event,'goals',-1)" title="Move up">▲</button><button onclick="moveSection(event,'goals',1)" title="Move down">▼</button></span></summary>
+    <summary><span class="arrow">▸</span> Monthly Goals — <span id="monthName">June</span></summary>
     <div class="drop-body">
       <div class="listcard">
         <h3>🎯 Monthly Goals</h3><div class="lh">What matters this month · drag ⠿, edit ✎, ! for urgent</div>
@@ -1223,35 +1207,7 @@ function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
 function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav();}
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
-function buildNav(){const nav=document.getElementById('quicknav');
-  let html='<button class="navchip" onclick="jumpTo(\'today\')">Today</button>';
-  html+=secLoad().map(id=>`<button class="navchip drag" data-navid="${id}" title="Drag to reorder · tap to jump">${SEC_LABEL[id]}</button>`).join("");
-  nav.innerHTML=html;
-  nav.querySelectorAll('.navchip.drag').forEach(el=>el.addEventListener('pointerdown',navPointerDown));}
-/* Pointer-based drag reorder — works with mouse AND touch (phone). Tap = jump, drag = reorder. */
-let navDrag={id:null,el:null,active:false,x0:0,y0:0,target:null};
-function navPointerDown(e){ if(e.button&&e.button!==0)return; const el=e.currentTarget;
-  navDrag={id:el.dataset.navid, el:el, active:false, x0:e.clientX, y0:e.clientY, target:null};
-  try{el.setPointerCapture(e.pointerId);}catch(_){}
-  el.addEventListener('pointermove',navPointerMove); el.addEventListener('pointerup',navPointerUp); el.addEventListener('pointercancel',navPointerUp);}
-function navPointerMove(e){ const d=navDrag; if(!d.el)return;
-  if(!d.active){ if(Math.abs(e.clientX-d.x0)+Math.abs(e.clientY-d.y0)<8)return; d.active=true; d.el.classList.add('navdragging'); }
-  e.preventDefault();
-  const under=document.elementFromPoint(e.clientX,e.clientY);
-  const chip=(under&&under.closest)?under.closest('.navchip.drag'):null;
-  if(d.target&&d.target!==chip)d.target.classList.remove('navover');
-  if(chip&&chip!==d.el){chip.classList.add('navover'); d.target=chip;} else d.target=null;}
-function navPointerUp(e){ const d=navDrag; if(!d.el)return;
-  d.el.removeEventListener('pointermove',navPointerMove); d.el.removeEventListener('pointerup',navPointerUp); d.el.removeEventListener('pointercancel',navPointerUp);
-  try{d.el.releasePointerCapture(e.pointerId);}catch(_){}
-  const wasActive=d.active, dragId=d.id, tgt=d.target;
-  d.el.classList.remove('navdragging'); document.querySelectorAll('.navchip.navover').forEach(c=>c.classList.remove('navover'));
-  navDrag={id:null,el:null,active:false,x0:0,y0:0,target:null};
-  if(!wasActive){ jumpTo(dragId); return; }
-  if(!tgt||!tgt.dataset)return; const targetId=tgt.dataset.navid; if(!targetId||targetId===dragId)return;
-  const order=secLoad(); const from=order.indexOf(dragId), to=order.indexOf(targetId); if(from<0||to<0)return;
-  const[m]=order.splice(from,1); order.splice(to,0,m);
-  const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
+function buildNav(){/* quick-nav chip row removed 2026-08-04 to match the sample's clean header */}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 
 /* ===== Today's Agenda — timeline built from Max's real routine + today's timed calendar events =====
@@ -1362,7 +1318,7 @@ function updateCounts(){
   setCount('calendar', EVENTS.length+" events");
   setCount('agenda', null);
 }
-function setCount(sec,txt){const s=document.querySelector('[data-sec="'+sec+'"]>summary'); if(!s)return; let c=s.querySelector('.count'); if(txt===null){if(c)c.remove(); return;} if(!c){c=document.createElement('span'); c.className='count'; const mv=s.querySelector('.secmove'); s.insertBefore(c, mv);} c.textContent=txt;}
+function setCount(sec,txt){/* count pills removed 2026-08-04 — sample headings are plain */}
 function renderGlance(){
   const day=DAYS.find(d=>d.date===TODAY_ISO)||DAYS[0];
   const waterDone=[0,1,2,3].filter(n=>localStorage.getItem('water::'+TODAY_ISO+'::'+n)==='1').length;
@@ -1469,7 +1425,7 @@ if(!localStorage.getItem('cc_seed_v1')){
 }
 
 document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODAY.getMonth()].slice(0,3)+" "+TODAY.getDate()+", "+TODAY.getFullYear();
-document.getElementById('monthName').textContent=MON[TODAY.getMonth()]+" "+TODAY.getFullYear();
+document.getElementById('monthName').textContent=MON[TODAY.getMonth()];
 document.getElementById('agendaRange').textContent=new Date(DAYS[0].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(DAYS[DAYS.length-1].date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
 document.getElementById('evStart').value=TODAY_ISO; document.getElementById('evEnd').value=ymd(addDays(TODAY,2));
 document.getElementById('days').innerHTML=DAYS.map(renderDay).join("");
