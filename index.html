@@ -71,7 +71,7 @@
   #glance .gh{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
   #glance .gh .greet{font-family:'Fraunces',ui-serif,Georgia,Cambria,serif; font-size:1.35rem; font-weight:600;}
   #glance .gh .gdate{color:var(--ink-muted); font-size:.86rem;}
-  .gstats{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  .gstats{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
   @media(max-width:780px){.gstats{grid-template-columns:repeat(2,1fr);}}
   .stat{background:var(--card); border:1px solid var(--divider); border-radius:11px; padding:13px 14px; box-shadow:var(--shadow);}
   .stat .lbl{font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin-bottom:5px;}
@@ -366,13 +366,13 @@
   .gbigdate{font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:2.06rem; line-height:1.15; letter-spacing:-.02em; margin:0 0 9px; color:var(--ink);}
   .gsub{font-size:.86rem; color:var(--mut);}
   /* 6-day weather strip */
-  .wxstrip{display:grid; grid-template-columns:repeat(6,1fr); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:16px; background:var(--panel);}
-  .wxcol{padding:12px 10px; text-align:center; border-right:1px solid var(--line);}
+  .wxstrip{display:grid; grid-template-columns:repeat(6,1fr); gap:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:16px; background:transparent;}
+  .wxcol{padding:10px 15px; text-align:left; border-right:none;}
   .wxcol:last-child{border-right:none;}
-  .wxcol.is-today{background:var(--tint);}
-  .wxday{font-family:'IBM Plex Mono',monospace; font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600; margin-bottom:6px;}
-  .wxtemp{font-family:'IBM Plex Mono',monospace; font-size:1.05rem; color:var(--ink); font-weight:600;}
-  .wxlo{color:var(--faint); margin-left:7px; font-weight:500;}
+  .wxcol.is-today{background:var(--panel);}
+  .wxday{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--brass); font-weight:400; margin-bottom:6px;}
+  .wxtemp{font-family:'IBM Plex Mono',monospace; font-size:14px; color:var(--ink); font-weight:400;}
+  .wxlo{color:var(--mut); margin-left:7px; font-weight:400;}
   .wxcond{font-size:.66rem; color:var(--mut); margin-top:4px;}
   .wxcond .est{display:block; font-family:'IBM Plex Mono',monospace; font-size:.55rem; letter-spacing:.1em; color:var(--faint); margin-top:2px;}
   /* stat card extras */
@@ -409,15 +409,15 @@
   /* glance + stat cards */
   #glance{background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:none;}
   #glance .gh .greet{font-weight:600; letter-spacing:-.01em;}
-  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; box-shadow:none;}
-  .stat .lbl{font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mut); font-weight:600;}
+  .stat{background:var(--panel); border:none; border-radius:0; box-shadow:none; padding:14px 17px;}
+  .stat .lbl{font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); font-weight:400; margin-bottom:6px;}
   .stat .val{font-weight:600; letter-spacing:-.01em;}
   .progress{background:var(--inset); border-radius:2px; height:4px;}
   .progress>i{background:var(--brass);}
 
   /* section panels — hairline frame + brass top rule */
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
-  details.drop>summary{font-weight:600; font-size:1.22rem; background:transparent; letter-spacing:-.015em; padding:22px 22px 12px;}
+  details.drop>summary{font-weight:600; font-size:18px; background:transparent; letter-spacing:-.01em; padding:22px 22px 12px;}
   details.drop[open]>summary{border-bottom:none;}
   details.drop[data-sec="today"]{border-top-color:var(--amber);}
   details.drop[data-sec="lists"]{border-top-color:var(--brass);}
