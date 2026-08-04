@@ -733,7 +733,10 @@ function applyCal(list){ try{
     label:((ev.status==='INVITED'||ev.status==='MAYBE')?'⏳ ':'')+(ev.label||'(busy)'),
     start:ev.start, end:ev.end||ev.start, startTime:ev.startTime||'', endTime:ev.endTime||'',
     loc:ev.loc||'', lat:null, lon:null, color:EVCOLORS[i%EVCOLORS.length], src:'cal', cal:ev.cal||'personal'}));
-  EVENTS=EVENTS.filter(e=>e.src!=='cal').concat(cal);
+  // Google is the single source of truth for events (Max's call). The old manual
+  // list stays untouched in cc_events, it just isn't rendered while a feed exists —
+  // otherwise trips double up ("colin in town" vs "Colin Staying Over").
+  EVENTS = cal.length ? cal : EVENTS.filter(e=>e.src!=='cal');
   renderEvents(); renderMonths(); renderWeek(); renderGlance(); if(typeof renderToday==='function')renderToday(); if(typeof renderTrips==='function')renderTrips();
 }catch(e){} }
 
