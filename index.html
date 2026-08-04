@@ -129,8 +129,8 @@
   /* week schedule */
   .phead{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:8px;}
   .phead .which{font-family:'Fraunces',ui-serif,Georgia,Cambria,serif; font-size:1.02rem;}
-  .phead .nav{display:flex; gap:6px;}
-  .phead button{background:var(--bg2); border:1px solid var(--divider); color:var(--ink-muted); border-radius:8px; padding:4px 10px; cursor:pointer; font-size:.8rem;}
+  .phead .nav{display:flex; gap:5px; flex:0 0 auto;}
+  .phead button{background:transparent; border:1px solid var(--line); color:var(--mut); border-radius:5px; padding:3px 8px; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.9px; text-transform:uppercase; white-space:nowrap;}
   .phead button:hover{color:var(--ink); border-color:var(--accent);}
   .dayline{display:flex; gap:12px; padding:9px 8px; border-bottom:1px solid var(--divider); align-items:baseline; border-radius:6px;}
   .dayline.wknd{background:rgba(79,124,172,.06);}
@@ -321,8 +321,9 @@
   .iconbtn.pristar{color:var(--ink-muted); border-color:transparent; font-size:.92rem; line-height:1; padding:2px 5px;}
   .iconbtn.pristar.on{color:var(--gold);}
   /* house tabs + for-sale */
-  .htabs{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
-  .tcount{margin-left:5px; font-size:.72em; opacity:.65; font-weight:700;}
+  .htabs{display:flex; gap:0; margin-bottom:14px; flex-wrap:nowrap; overflow-x:auto; border-bottom:1px solid var(--line); scrollbar-width:none; -ms-overflow-style:none;}
+  .htabs::-webkit-scrollbar{display:none;}
+  .tcount{display:none;}   /* sample tab row is plain labels — counts force a 2nd row */
   .htab{font-size:.82rem; font-weight:600; cursor:pointer; background:var(--bg2); color:var(--ink-muted); border:1px solid var(--divider); border-radius:9px; padding:7px 14px; font-family:inherit;}
   .htab.on{background:var(--card); color:var(--ink); border-color:var(--accent);}
   .fsprice{font-family:'IBM Plex Mono',monospace; font-size:.78rem; color:var(--teal); font-weight:600; flex:0 0 auto;}
@@ -393,7 +394,7 @@
   @media(max-width:520px){ .tatime{flex-basis:96px; font-size:.7rem} .tadur{display:none} .talabel{font-size:.82rem} }
 
   /* glance + stat cards */
-  #glance{background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:none;}
+  #glance{background:transparent; border:none; border-radius:0; box-shadow:none; padding:0;}
   #glance .gh .greet{font-weight:600; letter-spacing:-.01em;}
   .stat{background:var(--panel); border:none; border-radius:0; box-shadow:none; padding:14px 17px;}
   .stat .lbl{font-size:9.5px; letter-spacing:1.14px; text-transform:uppercase; color:var(--mut); font-weight:400; margin-bottom:6px;}
@@ -426,8 +427,8 @@
   .hint{color:var(--mut);}
 
   /* tabs */
-  .htab{background:transparent; border:1px solid var(--line); border-radius:6px; color:var(--mut); font-size:.68rem; font-weight:600; letter-spacing:.09em; text-transform:uppercase; padding:7px 13px;}
-  .htab.on{background:var(--tint); color:var(--ink); border-color:var(--brass);}
+  .htab{background:transparent; border:none; border-bottom:1px solid transparent; border-radius:0; color:var(--mut); font-size:9.5px; font-weight:400; letter-spacing:.9px; text-transform:uppercase; padding:5px 0; margin-right:11px; white-space:nowrap;}
+  .htab.on{background:transparent; color:var(--brass); border-bottom-color:var(--brass);}
   .tcount{color:var(--faint);}
 
   /* list cards + rows */
@@ -518,16 +519,16 @@
     <summary><span class="arrow">▸</span> To-Do Lists</summary>
     <div class="drop-body">
       <div class="htabs" id="listTabs">
-        <button class="htab on" data-tab="master" onclick="ccTab('master')">⭐ Master<span class="tcount"></span></button>
-        <button class="htab" data-tab="todo" onclick="ccTab('todo')">✅ Personal<span class="tcount"></span></button>
-        <button class="htab" data-tab="routine" onclick="ccTab('routine')">🔁 Routinely<span class="tcount"></span></button>
-        <button class="htab" data-tab="prominato" onclick="ccTab('prominato')">💼 Prominato<span class="tcount"></span></button>
-        <button class="htab" data-tab="highmark" onclick="ccTab('highmark')">💼 Highmark<span class="tcount"></span></button>
-        <button class="htab" data-tab="ai" onclick="ccTab('ai')">💼 AI Creation<span class="tcount"></span></button>
-        <button class="htab" data-tab="house" onclick="ccTab('house')">🏠 Projects<span class="tcount"></span></button>
-        <button class="htab" data-tab="forsale" onclick="ccTab('forsale')">🏷️ For Sale<span class="tcount"></span></button>
+        <button class="htab on" data-tab="master" onclick="ccTab('master')">Master<span class="tcount"></span></button>
+        <button class="htab" data-tab="todo" onclick="ccTab('todo')">Personal<span class="tcount"></span></button>
+        <button class="htab" data-tab="routine" onclick="ccTab('routine')">Routinely<span class="tcount"></span></button>
+        <button class="htab" data-tab="prominato" onclick="ccTab('prominato')">Prominato<span class="tcount"></span></button>
+        <button class="htab" data-tab="highmark" onclick="ccTab('highmark')">Highmark<span class="tcount"></span></button>
+        <button class="htab" data-tab="ai" onclick="ccTab('ai')">AI Creation<span class="tcount"></span></button>
+        <button class="htab" data-tab="house" onclick="ccTab('house')">Projects<span class="tcount"></span></button>
+        <button class="htab" data-tab="forsale" onclick="ccTab('forsale')">For Sale<span class="tcount"></span></button>
       </div>
-      <div class="hint">Each list has <b>Primary</b> ★, <b>Secondary</b>, and <b>Completed</b> (auto-clears after 90 days). Tap <b>★</b> to move an item between Primary/Secondary — Primary items gather on your ⭐ Master tab.</div>
+      <div class="hint">★ = primary · primaries gather on Master · completed auto-clears after 90 days</div>
       <div id="listPanels">
         <div class="tabpanel" data-panel="master">
           <div id="masterList"></div>
@@ -571,12 +572,12 @@
     </div>
   </details>
 
-  <details class="drop" id="weekDrop" data-sec="week">
+  <details class="drop" id="weekDrop" data-sec="week" open>
     <summary><span class="arrow">▸</span> This Week</summary>
     <div class="drop-body">
       <div class="phead">
         <span class="which" id="weekWhich">—</span>
-        <span class="nav"><button onclick="shiftWeek(-1)">← Prev</button><button onclick="thisWeek()">This week</button><button onclick="shiftWeek(1)">Next →</button></span>
+        <span class="nav"><button onclick="shiftWeek(-1)">← Prev</button><button onclick="thisWeek()">This</button><button onclick="shiftWeek(1)">Next →</button></span>
       </div>
       <div id="weekBody"></div>
     </div>
