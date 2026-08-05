@@ -541,6 +541,7 @@
      Everything else groups to its right. The row span is set by layoutSections() since it
      depends on how many other cards there are. */
   #sections details.drop[data-sec="today"]{grid-column:1;}
+  #sections details.drop[data-sec="calendar"]{grid-column:1/-1; order:99;}
   @media(max-width:1180px){ #sections{grid-template-columns:repeat(2,1fr);} #sections details.drop[data-sec="today"]{grid-column:auto; grid-row:auto !important;} }
   @media(max-width:760px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
@@ -1336,7 +1337,8 @@ function applySectionOrder(){const cont=document.getElementById('sections'); sec
 function layoutSections(){
   const cont=document.getElementById('sections'); if(!cont)return;
   const today=cont.querySelector('[data-sec="today"]'); if(!today)return;
-  const others=[...cont.querySelectorAll('details.drop')].filter(p=>p!==today).length;
+  // the calendar takes its own full-width row underneath, so it doesn't sit beside Today's Agenda
+  const others=[...cont.querySelectorAll('details.drop')].filter(p=>p!==today && p.dataset.sec!=='calendar').length;
   const cols=Math.max(1,(getComputedStyle(cont).gridTemplateColumns.split(' ').length)-1);   // columns available to the right
   const rows=Math.max(1,Math.ceil(others/cols));
   today.style.gridRow='1 / span '+rows;
