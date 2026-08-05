@@ -1321,7 +1321,7 @@ function nfLoad(){try{NFOLDERS=JSON.parse(localStorage.getItem('cc_notefolders')
 function nfSave(){const v=JSON.stringify(NFOLDERS); localStorage.setItem('cc_notefolders',v); SYNC.queue('cc_notefolders',v);}
 function nAll(){const out=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(k.indexOf('note::')!==0)continue; try{const n=JSON.parse(localStorage.getItem(k)); if(n&&n.id&&!n.del)out.push(n);}catch(e){}} return out;}
 function nSaveNote(n){n.updated=Date.now(); const v=JSON.stringify(n); localStorage.setItem('note::'+n.id,v); SYNC.queue('note::'+n.id,v);}
-function nfAdd(){const inp=document.getElementById('nfName'),v=inp.value.trim(); if(!v)return; const f={id:'nf'+Date.now(),name:v}; NFOLDERS.push(f); inp.value=''; nfSave(); NACTIVE=f.id; NOPEN=null; nRender();}
+function nfAdd(){const inp=document.getElementById('nfName'); const v=(inp?inp.value:(prompt('New folder name:')||'')).trim(); if(!v)return; if(!inp){} const f={id:'nf'+Date.now(),name:v}; NFOLDERS.push(f); if(inp)inp.value=''; nfSave(); NACTIVE=f.id; NOPEN=null; nRender();}
 function nfDel(id){if(nAll().some(n=>n.folder===id)){alert('This folder still has notes — move or delete them first.');return;} if(NFOLDERS.length<=1){alert('Keep at least one folder.');return;} if(!confirm('Delete this folder?'))return; NFOLDERS=NFOLDERS.filter(f=>f.id!==id); if(NACTIVE===id)NACTIVE=NFOLDERS[0].id; nfSave(); nRender();}
 function nfRename(id){const f=NFOLDERS.find(x=>x.id===id); if(!f)return; const v=prompt('Folder name:',f.name); if(v&&v.trim()){f.name=v.trim(); nfSave(); nRender();}}
 function nfPick(id){NACTIVE=id; NOPEN=null; const s=document.getElementById('nSearch'); if(s)s.value=''; nRender();}
@@ -1678,7 +1678,8 @@ function chLoad(){try{CH=JSON.parse(localStorage.getItem('cc_challenge'))||{star
 function chSave(){const v=JSON.stringify(CH); localStorage.setItem('cc_challenge',v); if(typeof SYNC!=='undefined')SYNC.queue('cc_challenge',v);}
 function chDayIndex(){
   if(!CH.start||isNaN(new Date(CH.start+'T12:00:00'))){ CH.start=TODAY_ISO; }
-  const st=new Date(CH.start+'T12:00:00'); const n=Math.floor((TODAY-st)/DAY_MS);
+  const st=new Date(CH.start+'T00:00:00'); st.setHours(0,0,0,0);
+  const n=Math.round((TODAY-st)/DAY_MS);
   return isNaN(n)?0:n; }
 function chToggle(i,d){const k=i+'::'+d; if(CH.checks[k])delete CH.checks[k]; else CH.checks[k]=1; chSave(); renderChallenge();}
 function chReset(){ if(!confirm('Restart the 21-day challenge? All ticks are cleared.'))return; CH={start:TODAY_ISO,checks:{}}; chSave(); renderChallenge(); }
@@ -1833,7 +1834,6 @@ if(!localStorage.getItem('cc_seed_v1')){
 }
 
 document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODAY.getMonth()].slice(0,3)+" "+TODAY.getDate()+", "+TODAY.getFullYear();
-document.getElementById('monthName').textContent=MON[TODAY.getMonth()];
 
 renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
