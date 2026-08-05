@@ -32,6 +32,32 @@
     --ink:#2A251C; --amber:#A0722F; --rose:#A04A36; --gym:#6E5E93; --urgent:#A04A36;
     --wknd-hover:#F5F1E9;
   }
+  /* ---- Forest: deep green-black, antique gold ---- */
+  body.skin-forest{ color-scheme:dark;
+    --panel:#161E19; --inset:#0F1512; --line:#25322B;
+    --mut:#85947F; --faint:#5A6857; --dim:#2C3830;
+    --brass:#C2A24E; --sage:#7FB489; --slate:#8FA6B8; --onaccent:#0F1512;
+    --red:#C86F5E; --rest:#5A6857;
+    --tint:rgba(194,162,78,.05); --todaybg:rgba(194,162,78,.09); --barbg:rgba(15,21,18,.94);
+    --bg:#0F1512; --card-hover:#1C2620;
+    --ink:#E2EADF; --amber:#D89A4E; --rose:#C86F5E; --gym:#A88FC0; --urgent:#C86F5E;
+    --bg2:#0F1512; --card:#161E19; --divider:#25322B; --ink-muted:#85947F;
+    --gold:#C2A24E; --accent:#C2A24E; --teal:#7FB489; --dusk:#8FA6B8; --rain:#8FA6B8;
+    --wknd:#0F1512; --wknd-bd:#25322B; --wknd-hover:#1C2620;
+  }
+  /* ---- Midnight Ink: cool navy, steel-cyan ---- */
+  body.skin-midnight{ color-scheme:dark;
+    --panel:#161C26; --inset:#0E1219; --line:#233040;
+    --mut:#7E8CA0; --faint:#566274; --dim:#2C3543;
+    --brass:#63C6DB; --sage:#5FC3A6; --slate:#8FA4D8; --onaccent:#0E1219;
+    --red:#E2736B; --rest:#566274;
+    --tint:rgba(99,198,219,.05); --todaybg:rgba(99,198,219,.09); --barbg:rgba(14,18,25,.94);
+    --bg:#0E1219; --card-hover:#1C2431;
+    --ink:#DDE6F2; --amber:#E0B15C; --rose:#E2736B; --gym:#A98CE8; --urgent:#E2736B;
+    --bg2:#0E1219; --card:#161C26; --divider:#233040; --ink-muted:#7E8CA0;
+    --gold:#63C6DB; --accent:#63C6DB; --teal:#5FC3A6; --dusk:#8FA4D8; --rain:#8FA4D8;
+    --wknd:#0E1219; --wknd-bd:#233040; --wknd-hover:#1C2431;
+  }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-size:15.5px; font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
   ::selection{background:rgba(201,169,106,.25);}
@@ -827,10 +853,10 @@ const TODAY_ISO=TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).padStart(2,"0
 function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"T00:00:00";}
 
 /* ===== themes ===== */
-const SKINS={dark:{name:"◗ Dark"},light:{name:"◖ Light"}};
+const SKINS={dark:{name:"◗ Almanac"},light:{name:"◖ Parchment"},forest:{name:"◗ Forest"},midnight:{name:"◗ Midnight"}};
 function normSkin(v){ if(v==='ledger')return 'light'; if(v==='aurora')return 'dark'; return SKINS[v]?v:"dark"; }   // migrate old theme keys
 function applyTheme(key,fromUser){key=normSkin(key);
-  document.body.classList.remove("skin-dark","skin-light","skin-ledger","skin-aurora");
+  document.body.classList.remove("skin-dark","skin-light","skin-forest","skin-midnight","skin-ledger","skin-aurora");
   document.body.classList.add("skin-"+key);
   if(fromUser){localStorage.setItem("cc_theme",key); if(typeof SYNC!=="undefined")SYNC.queue("cc_theme",key);}
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
@@ -1011,9 +1037,11 @@ const EVCOLORS=['#5C6BA0','#3F8487','#4F7CAC','#9C6B5E','#6B7C99','#3E6E8E'];
    color for timed appointments (outlined, no fill). Second family = Prominato. */
 function evKind(e){ return (e.start===e.end && e.startTime) ? 'appt' : 'block'; }
 const EVC_DEFAULTS={
-  dark:{block:'#C9A96A', appt:'#D0A35C', blockP:'#6FA396', apptP:'#8B93BC'},     // brass · sage = Prominato
-  light:{block:'#8A6E3A', appt:'#A0722F', blockP:'#3E7A6C', apptP:'#54608F'}};   // deep brass · forest = Prominato
-function evSkin(){ return document.body.classList.contains('skin-light')?'light':'dark'; }
+  dark:{block:'#C9A96A', appt:'#D0A35C', blockP:'#6FA396', apptP:'#8B93BC'},       // brass · sage = Prominato
+  light:{block:'#8A6E3A', appt:'#A0722F', blockP:'#3E7A6C', apptP:'#54608F'},      // deep brass · forest
+  forest:{block:'#C2A24E', appt:'#D89A4E', blockP:'#7FB489', apptP:'#8FA6B8'},     // antique gold · moss
+  midnight:{block:'#63C6DB', appt:'#E0B15C', blockP:'#5FC3A6', apptP:'#8FA4D8'}};  // steel cyan · aqua
+function evSkin(){ const c=document.body.classList; for(const k of Object.keys(SKINS)) if(c.contains('skin-'+k)) return k; return 'dark'; }
 function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
 function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
   const p=evPalette(), pro=(e.cal==='prominato');
