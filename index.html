@@ -71,6 +71,32 @@
     --gold:#16687C; --accent:#16687C; --teal:#1D6350; --dusk:#3F5480; --rain:#3F5480;
     --wknd:#F0F2F5; --wknd-bd:#DADEE5; --wknd-hover:#F6F8FA;
   }
+  /* ---- Ember: charcoal, hot orange, teal for 'done' ---- */
+  body.skin-ember{ color-scheme:dark;
+    --panel:#1D1715; --inset:#14100E; --line:#33251F;
+    --mut:#9C8578; --faint:#6B564C; --dim:#3A2A24;
+    --brass:#FF6B35; --sage:#4ECDC4; --slate:#A78BFA; --onaccent:#14100E;
+    --red:#E01E37; --rest:#6B564C;
+    --tint:rgba(255,107,53,.06); --todaybg:rgba(255,107,53,.10); --barbg:rgba(20,16,14,.94);
+    --bg:#14100E; --card-hover:#251D1A;
+    --ink:#F2E7E0; --amber:#FFA630; --rose:#E01E37; --gym:#C77DFF; --urgent:#E01E37;
+    --bg2:#14100E; --card:#1D1715; --divider:#33251F; --ink-muted:#9C8578;
+    --gold:#FF6B35; --accent:#FF6B35; --teal:#4ECDC4; --dusk:#A78BFA; --rain:#A78BFA;
+    --wknd:#14100E; --wknd-bd:#33251F; --wknd-hover:#251D1A;
+  }
+  /* ---- Citrus: warm white paper, vivid orange ---- */
+  body.skin-citrus{ color-scheme:light;
+    --panel:#FFFFFF; --inset:#FFF6EE; --line:#F0DCC8;
+    --mut:#7A5A44; --faint:#B0917A; --dim:#F2E0CE;
+    --brass:#E85D04; --sage:#0B7A5E; --slate:#4A5FBF; --onaccent:#FFFFFF;
+    --red:#C1121F; --rest:#B0917A;
+    --tint:rgba(232,93,4,.05); --todaybg:rgba(232,93,4,.09); --barbg:rgba(255,246,238,.94);
+    --bg:#FFF6EE; --card-hover:#FFFBF7;
+    --ink:#26160C; --amber:#F48C06; --rose:#C1121F; --gym:#7B2CBF; --urgent:#C1121F;
+    --bg2:#FFF6EE; --card:#FFFFFF; --divider:#F0DCC8; --ink-muted:#7A5A44;
+    --gold:#E85D04; --accent:#E85D04; --teal:#0B7A5E; --dusk:#4A5FBF; --rain:#4A5FBF;
+    --wknd:#FFF6EE; --wknd-bd:#F0DCC8; --wknd-hover:#FFFBF7;
+  }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-size:15.5px; font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
   ::selection{background:rgba(201,169,106,.25);}
@@ -866,10 +892,10 @@ const TODAY_ISO=TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).padStart(2,"0
 function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"T00:00:00";}
 
 /* ===== themes ===== */
-const SKINS={dark:{name:"◗ Almanac"},light:{name:"◖ Parchment"},forest:{name:"◗ Forest"},midnight:{name:"◗ Midnight"},steel:{name:"◖ Steel"}};
+const SKINS={dark:{name:"◗ Almanac"},light:{name:"◖ Parchment"},forest:{name:"◗ Forest"},midnight:{name:"◗ Midnight"},steel:{name:"◖ Steel"},ember:{name:"◗ Ember"},citrus:{name:"◖ Citrus"}};
 function normSkin(v){ if(v==='ledger')return 'light'; if(v==='aurora')return 'dark'; return SKINS[v]?v:"dark"; }   // migrate old theme keys
 function applyTheme(key,fromUser){key=normSkin(key);
-  document.body.classList.remove("skin-dark","skin-light","skin-forest","skin-midnight","skin-steel","skin-ledger","skin-aurora");
+  document.body.classList.remove("skin-dark","skin-light","skin-forest","skin-midnight","skin-steel","skin-ember","skin-citrus","skin-ledger","skin-aurora");
   document.body.classList.add("skin-"+key);
   if(fromUser){localStorage.setItem("cc_theme",key); if(typeof SYNC!=="undefined")SYNC.queue("cc_theme",key);}
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
@@ -1054,7 +1080,9 @@ const EVC_DEFAULTS={
   light:{block:'#8A6E3A', appt:'#A0722F', blockP:'#3E7A6C', apptP:'#54608F'},      // deep brass · forest
   forest:{block:'#C2A24E', appt:'#D89A4E', blockP:'#7FB489', apptP:'#8FA6B8'},     // antique gold · moss
   midnight:{block:'#63C6DB', appt:'#E0B15C', blockP:'#5FC3A6', apptP:'#8FA4D8'},   // steel cyan · aqua
-  steel:{block:'#16687C', appt:'#7E5E1E', blockP:'#1D6350', apptP:'#3F5480'}};      // deep teal · forest
+  steel:{block:'#16687C', appt:'#7E5E1E', blockP:'#1D6350', apptP:'#3F5480'},        // deep teal · forest
+  ember:{block:'#FF6B35', appt:'#FFA630', blockP:'#4ECDC4', apptP:'#A78BFA'},       // hot orange · teal
+  citrus:{block:'#E85D04', appt:'#F48C06', blockP:'#0B7A5E', apptP:'#4A5FBF'}};     // vivid orange · forest
 function evSkin(){ const c=document.body.classList; for(const k of Object.keys(SKINS)) if(c.contains('skin-'+k)) return k; return 'dark'; }
 function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
 function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
