@@ -535,14 +535,17 @@
   /* section panels — hairline frame + brass top rule */
   /* multi-column panel grid (the sample's layout): columns fill by width, wide
      sections span the full row, and the 3-month calendar always lands last. */
-  #sections{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; align-items:start; grid-auto-flow:row;}
+  #sections{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; align-items:stretch; grid-auto-rows:min-content;}
   #sections details.drop{margin-bottom:0;}
-  #sections details.drop[data-sec="calendar"]{grid-column:1/-1;}
-  /* every card is one equal column (the sample runs 4 x 347px); only the
-     3-month calendar spans the full row */
-  #sections details.drop[data-sec="calendar"]{order:99;}
-  @media(max-width:940px){ #sections{grid-template-columns:1fr;} }
+  /* Today's Agenda is the only full-length card: it holds column 1 and spans every row.
+     Everything else groups to its right. The row span is set by layoutSections() since it
+     depends on how many other cards there are. */
+  #sections details.drop[data-sec="today"]{grid-column:1;}
+  @media(max-width:1180px){ #sections{grid-template-columns:repeat(2,1fr);} #sections details.drop[data-sec="today"]{grid-column:auto; grid-row:auto !important;} }
+  @media(max-width:760px){ #sections{grid-template-columns:1fr;} }
   details.drop{background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass); border-radius:10px; box-shadow:none; overflow:hidden;}
+  #sections details.drop[open]{display:flex; flex-direction:column;}
+  #sections details.drop[open] .drop-body{flex:1 1 auto;}
   details.drop>summary{font-weight:600; font-size:16.5px; background:transparent; letter-spacing:-.01em; padding:16px 18px 8px;}
   details.drop>summary .arrow{display:none;}
   details.drop[open]>summary{border-bottom:none;}
@@ -602,6 +605,7 @@
   .ncard{background:var(--panel); border:1px solid var(--line); border-radius:8px;}
   .ncard .nt{font-weight:600;}
   .nfolder.active{background:var(--tint); border-color:var(--brass); color:var(--ink);}
+  .wktime{font-family:'IBM Plex Mono',monospace; font-size:9.5px; font-weight:400; color:var(--faint); margin-left:5px;}
   .wklegend{display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; padding-top:8px; border-top:1px solid var(--line);}
   .wklegend .wkitem{color:var(--mut); font-size:10.5px;}
 </style>
@@ -639,7 +643,7 @@
   <details class="drop" data-sec="today" open>
     <summary><span class="arrow">▸</span> Today's Agenda</summary>
     <div class="drop-body">
-      <div class="tahead"><span class="tasub" id="taSub">—</span><span class="tabadge" id="taBadge">—</span></div>
+      <div class="tahead"><span class="tabadge" id="taBadge">—</span></div>
       <div id="todayTimeline"></div>
       <div class="dcwrap">
         <div class="trisec">Daily Constants <span class="wcount" id="dcCount"></span></div>
@@ -1044,13 +1048,13 @@ function focusMonth(mi){activeMonth=mi; renderMonths();}
 
 /* ===== week panel ===== */
 const PATTERN={
-  0:{chips:[["rest","Rest"],["work","Errands"],["work","Meal prep"]]},
-  1:{chips:[["gym","Gym pull"],["work","Work"],["play","Run"],["social","Class"]]},
-  2:{chips:[["gym","Gym push"],["work","Work"],["play","Tennis"],["social","Class"]]},
-  3:{chips:[["gym","Gym legs"],["work","Work"],["play","Pickleball"]]},
-  4:{chips:[["gym","Gym pull"],["work","Work"],["play","Ruck"],["social","Class"]]},
-  5:{chips:[["gym","Gym push"],["work","Work"],["play","Bike"],["social","Friends"]]},
-  6:{chips:[["gym","Gym legs"],["play","Golf"],["work","Optional"]]}};
+  0:{chips:[["rest","Rest — no gym"],["work","Market + meal prep"],["work","Laundry + plan week"]]},
+  1:{chips:[["gym","Pull + Core + cardio","5:40a"],["work","Deep work","8–4"],["play","Run (outside)"],["social","Class","7–8p"]]},
+  2:{chips:[["gym","Push + Core + cardio","5:40a"],["work","Deep work","8–4"],["play","Tennis (outside)"],["social","Class","7–8p"]]},
+  3:{chips:[["gym","Legs + Core + cardio","5:40a"],["work","Deep work","8–4"],["play","Pickleball","5–6:30p"]]},
+  4:{chips:[["gym","Pull + Core + cardio","5:40a"],["work","Deep work","8–4"],["play","Ruck (outside)"],["social","Class","7–8p"]]},
+  5:{chips:[["gym","Push + Core + cardio","5:40a"],["work","Deep work","8–4"],["play","Bike ride (outside)"],["social","Call a friend","7p"]]},
+  6:{chips:[["gym","Legs + Core + cardio","5:40a"],["play","Golf","7:15–11:15a"],["work","Optional work"]]}};
 let currentWeekStart=startOfWeek(TODAY);
 function loadWeek(s,ev){if(ev)ev.stopPropagation(); const[y,m,d]=s.split("-").map(Number); currentWeekStart=new Date(y,m-1,d); document.getElementById('weekDrop').open=true; renderWeek();}
 function thisWeek(){currentWeekStart=startOfWeek(TODAY); renderWeek();}
@@ -1064,7 +1068,7 @@ function renderWeek(){const end=addDays(currentWeekStart,6), isThis=sameDay(curr
     const evchips=evs.map(e=>{const ec=evColor(e);
       return `<span class="wkitem"><i class="wkdot" style="background:${ec}"></i>${escHtml(stripEmoji(e.label))}</span>`;}).join("");
     const wknd=(d.getDay()===0||d.getDay()===6)?' wknd':'';
-    html+=`<div class="dayline${wknd}${sameDay(d,TODAY)?' today':''}"><span class="dn">${DOW[d.getDay()].toUpperCase()} ${d.getMonth()+1}/${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="wkitem ${c[0]}"><i class="wkdot"></i>${escHtml(stripEmoji(c[1]))}</span>`).join("")}</span></div>`;}
+    html+=`<div class="dayline${wknd}${sameDay(d,TODAY)?' today':''}"><span class="dn">${DOW[d.getDay()].toUpperCase()} ${d.getMonth()+1}/${d.getDate()}</span><span class="items">${evchips}${p.chips.map(c=>`<span class="wkitem ${c[0]}"><i class="wkdot"></i>${escHtml(stripEmoji(c[1]))}${c[2]?`<b class="wktime">${escHtml(c[2])}</b>`:''}</span>`).join("")}</span></div>`;}
   const LEG=[['gym','Training'],['work','Work'],['play','Recreation'],['social','Social'],['rest','Rest']];
   html+=`<div class="wklegend">${LEG.map(l=>`<span class="wkitem ${l[0]}"><i class="wkdot"></i>${l[1]}</span>`).join('')}</div>`;
   document.getElementById('weekBody').innerHTML=html; highlightSelectedWeek();}
@@ -1326,7 +1330,18 @@ function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));
     const prev=SEC_DEFAULT[idx-1], at=prev?o.indexOf(prev):-1;  // other new sections slot in after their default neighbor
     if(at>=0)o.splice(at+1,0,id); else o.push(id); }});
   return o.filter(id=>SEC_DEFAULT.indexOf(id)>=0);}
-function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav(); if(typeof initCardDrag==='function')initCardDrag();}
+function applySectionOrder(){const cont=document.getElementById('sections'); secLoad().forEach(id=>{const el=cont.querySelector('[data-sec="'+id+'"]'); if(el)cont.appendChild(el);}); buildNav(); if(typeof initCardDrag==='function')initCardDrag(); layoutSections();}
+/* Today's Agenda occupies column 1 for the full height of the grid; the remaining cards
+   flow through columns 2-4. The span has to match how many rows those cards need. */
+function layoutSections(){
+  const cont=document.getElementById('sections'); if(!cont)return;
+  const today=cont.querySelector('[data-sec="today"]'); if(!today)return;
+  const others=[...cont.querySelectorAll('details.drop')].filter(p=>p!==today).length;
+  const cols=Math.max(1,(getComputedStyle(cont).gridTemplateColumns.split(' ').length)-1);   // columns available to the right
+  const rows=Math.max(1,Math.ceil(others/cols));
+  today.style.gridRow='1 / span '+rows;
+}
+window.addEventListener('resize',()=>{ if(typeof layoutSections==='function')layoutSections(); });
 function moveSection(e,id,dir){e.preventDefault(); e.stopPropagation(); const order=secLoad(); const i=order.indexOf(id), j=i+dir; if(i<0||j<0||j>=order.length)return; const t=order[i]; order[i]=order[j]; order[j]=t; const v=JSON.stringify(order); localStorage.setItem('cc_secorder',v); SYNC.queue('cc_secorder',v); applySectionOrder();}
 function buildNav(){/* quick-nav chip row removed 2026-08-04 to match the sample's clean header */}
 function jumpTo(id){let el; if(id==='today'){el=document.getElementById('glance');} else {el=document.querySelector('[data-sec="'+id+'"]'); if(el)el.open=true;} if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -1393,8 +1408,7 @@ function renderToday(){
       </div>`;});
   });
   host.innerHTML=html;
-  const sub=document.getElementById('taSub'), badge=document.getElementById('taBadge');
-  if(sub)sub.textContent=DOWFULL[TODAY.getDay()]+', '+MON[TODAY.getMonth()]+' '+TODAY.getDate()+' · '+(day.type==='rest'?'rest day':(day.type==='golf'?'golf day':(day.gym||'')+' day'));
+  const badge=document.getElementById('taBadge');
   // conflict check — any two timed items overlapping
   const sorted=all.slice().sort((a,b)=>a.s-b.s); let clash=0;
   for(let i=1;i<sorted.length;i++) if(sorted[i].s < sorted[i-1].e) clash++;
@@ -1559,6 +1573,11 @@ function renderGlance(){
     return {label:t.label, when:f(t.start)+' – '+f(t.end).replace(/^[A-Za-z]+ /,''),
       away:days<=0?'happening now':(days===1?'tomorrow':'in '+days+' days')}; })();
   const waterPips=[0,1,2,3].map(n=>`<i class="${n<waterDone?'on':''}"></i>`).join('');
+  // today's workout group + plan (replaces the monthly-constants stat)
+  const gymChip=((PATTERN[TODAY.getDay()]||{chips:[]}).chips||[]).find(c=>c[0]==='gym');
+  const wkoutTitle = day.type==='rest' ? 'Rest day' : (day.gym ? day.gym+' day' : 'Training');
+  const wkoutPlan = day.type==='rest' ? 'recovery · long walk'
+    : (gymChip ? gymChip[1]+(gymChip[2]?' · '+gymChip[2]:'') : '5:40a gym');
   g.innerHTML=`<div class="herorow">
     <div class="ghero">
       <div class="geyebrow">${DOW[TODAY.getDay()].toUpperCase()} · ${MON[TODAY.getMonth()].slice(0,3).toUpperCase()} ${String(TODAY.getDate()).padStart(2,'0')} · ${TODAY.getFullYear()}</div>
@@ -1572,7 +1591,7 @@ function renderGlance(){
     <div class="stat"><div class="lbl">${MON[TODAY.getMonth()]} goals</div><div class="val">${goalsDone} / ${goalsTot||0}</div><div class="progress"><span style="width:${goalsTot?Math.round(goalsDone/goalsTot*100):0}%"></span></div></div>
     <div class="stat"><div class="lbl">Water today</div><div class="val">${waterDone} / 4</div><div class="pips">${waterPips}</div></div>
     <div class="stat"><div class="lbl">Next trip</div>${trip?`<div class="val val-sm">${escHtml(trip.label)}</div><div class="sub">${trip.when} · ${trip.away}</div>`:`<div class="val val-sm">—</div><div class="sub">nothing booked</div>`}</div>
-    <div class="stat"><div class="lbl">Monthly constants</div><div class="val">${dcDone} / ${dcTot}</div><div class="sub">resets ${MON[nextMon.getMonth()].slice(0,3)} 1</div></div>
+    <div class="stat"><div class="lbl">Today's workout</div><div class="val val-sm">${wkoutTitle}</div><div class="sub">${escHtml(wkoutPlan)}</div></div>
   </div>`;
 }
 
