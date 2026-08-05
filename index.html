@@ -409,6 +409,17 @@
   .wcat-h,.mgroup-h,.trisec{font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--mut);}
   .iconbtn.del{color:var(--red);}
 
+  /* ---- dashboard alignment: cap card bodies so no single card dominates a row
+         and the grid reads as one screen. Long cards scroll inside themselves. ---- */
+  #sections details.drop[open] .drop-body{max-height:430px;}
+  #sections details.drop[data-sec="calendar"] .drop-body{max-height:none;}
+  .drop-body::-webkit-scrollbar{width:7px;}
+  .drop-body::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .drop-body::-webkit-scrollbar-track{background:transparent;}
+  .drop-body{scrollbar-width:thin; scrollbar-color:var(--line) transparent;}
+  /* weather emoji */
+  .wxico{margin-right:6px; font-size:13px; line-height:1;}
+
   /* ---- to-do rows, matched to the sample element-for-element ---- */
   .items li{display:flex; align-items:center; gap:10px !important; padding:7px 2px; border-bottom:1px solid var(--line); background:transparent; border-radius:0;}
   #dcList li{gap:8px !important; padding:2px 2px;}
@@ -644,7 +655,7 @@
         <button class="htab" data-tab="prominato" onclick="ccTab('prominato')">Prominato<span class="tcount"></span></button>
         <button class="htab" data-tab="highmark" onclick="ccTab('highmark')">Highmark<span class="tcount"></span></button>
         <button class="htab" data-tab="ai" onclick="ccTab('ai')">AI Creation<span class="tcount"></span></button>
-        <button class="htab" data-tab="house" onclick="ccTab('house')">Projects<span class="tcount"></span></button>
+        <button class="htab" data-tab="house" onclick="ccTab('house')">House<span class="tcount"></span></button>
         <button class="htab" data-tab="forsale" onclick="ccTab('forsale')">For Sale<span class="tcount"></span></button>
       </div>
       <div class="hint">★ = primary · primaries gather on Master · completed auto-clears after 90 days</div>
@@ -737,11 +748,9 @@
   <details class="drop" data-sec="goals" open>
     <summary><span class="arrow">▸</span> Monthly Goals — <span id="monthName">June</span></summary>
     <div class="drop-body">
-      <div class="listcard">
-        <h3>🎯 Monthly Goals</h3><div class="lh">What matters this month · drag ⠿, edit ✎, ! for urgent</div>
-        <div class="addrow"><input id="goalsInput" placeholder="Add a monthly goal…" onkeydown="if(event.key==='Enter')addItem('goals')"><button onclick="addItem('goals')">Add</button></div>
-        <ul class="items" id="goalsList"></ul>
-      </div>
+      <div class="hint">What matters this month · click to check off</div>
+      <div class="addrow"><input id="goalsInput" placeholder="Add a monthly goal…" onkeydown="if(event.key==='Enter')addItem('goals')"><button onclick="addItem('goals')">Add</button></div>
+      <ul class="items" id="goalsList"></ul>
     </div>
   </details>
 
@@ -1070,7 +1079,8 @@ function seedDC(){return CONSTANTS.map((t,i)=>({id:'dc'+i,text:t,done:false,urge
 function lload(){let o={}; try{o=JSON.parse(localStorage.getItem('cc_lists'))||{};}catch(e){o={};}
   LISTS.todo=o.todo||[]; LISTS.work=o.work||[]; LISTS.house=o.house||[]; LISTS.goals=o.goals||[]; LISTS.forsale=o.forsale||[]; LISTS.routine=o.routine||[]; LISTS.dconst=(o.dconst&&o.dconst.length)?o.dconst:seedDC();
   localStorage.setItem('cc_lists',JSON.stringify(LISTS));}  // local persist only — boot must never push to cloud (stale boots would clobber good data)
-function pruneOld(){const now=Date.now(), MS=90*24*3600*1000; ['todo','work','house','goals','forsale','routine'].forEach(w=>{ if(!LISTS[w])return;
+// NOTE: 'house' is deliberately excluded — Max wants the complete history of house projects kept forever.
+function pruneOld(){const now=Date.now(), MS=90*24*3600*1000; ['todo','work','goals','forsale','routine'].forEach(w=>{ if(!LISTS[w])return;
   LISTS[w]=LISTS[w].filter(x=>{ const ts=x.doneAt||x.archivedAt||x.soldAt||0; return !((x.done||x.sold)&&ts&&(now-ts)>=MS); }); });}
 function lsave(){pruneOld(); const v=JSON.stringify(LISTS); localStorage.setItem('cc_lists',v); SYNC.queue('cc_lists',v);}
 function addItem(w){const inp=document.getElementById(w+'Input'),t=inp.value.trim(); if(!t)return;
@@ -1109,10 +1119,11 @@ function completedRow(w,it){const ts=it.doneAt||it.archivedAt; return `<li class
 function triSections(w,items){const now=Date.now();
   const pri=items.filter(x=>!x.done&&x.pri!=='secondary');
   const sec=items.filter(x=>!x.done&&x.pri==='secondary');
-  const done=items.filter(x=>x.done&&!((x.doneAt||x.archivedAt)&&now-(x.doneAt||x.archivedAt)>=PRUNE_MS)).sort((a,b)=>((b.doneAt||b.archivedAt||0)-(a.doneAt||a.archivedAt||0)));
+  const keepAll=(w==='house');   // house keeps every completed project, however old
+  const done=items.filter(x=>x.done&&(keepAll||!((x.doneAt||x.archivedAt)&&now-(x.doneAt||x.archivedAt)>=PRUNE_MS))).sort((a,b)=>((b.doneAt||b.archivedAt||0)-(a.doneAt||a.archivedAt||0)));
   let h=`<div class="trisec pri-h">Primary <span class="wcount">${pri.length}</span></div>`+(pri.length?pri.map(x=>taskRow(w,x)).join(''):'<div class="empty" style="padding:1px 0 5px">—</div>');
   if(sec.length)h+=`<div class="trisec sec-h">Secondary <span class="wcount">${sec.length}</span></div>`+sec.map(x=>taskRow(w,x)).join('');
-  if(done.length)h+=`<details class="warch"><summary>✅ Completed <span class="wcount">${done.length}</span> · auto-clears after ${PRUNE_DAYS} days</summary>`+done.map(x=>completedRow(w,x)).join('')+'</details>';
+  if(done.length)h+=`<details class="warch"><summary>✅ Completed <span class="wcount">${done.length}</span>${keepAll?' · full history kept':' · auto-clears after '+PRUNE_DAYS+' days'}</summary>`+done.map(x=>completedRow(w,x)).join('')+'</details>';
   return h;}
 
 /* ===== professional to-do: company blocks, each with Primary/Secondary/Completed ===== */
@@ -1524,7 +1535,7 @@ function renderGlance(){
     const lbl=i===0?'Today':new Date(d.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'});
     const hi=(w.hi!=null)?w.hi+'°':'—', lo=(w.lo!=null)?w.lo+'°':'';
     const cond=[w.label||'', (w.pop!=null&&w.pop>0)?w.pop+'%':''].filter(Boolean).join(' · ');
-    return `<div class="wxcol${i===0?' is-today':''}"><div class="wxday">${lbl}</div><div class="wxtemp">${hi}${lo?`<span class="wxlo">${lo}</span>`:''}</div><div class="wxcond">${escHtml(cond)}${w.est?'<span class="est">Est.</span>':''}</div></div>`;}).join('');
+    return `<div class="wxcol${i===0?' is-today':''}"><div class="wxday">${lbl}</div><div class="wxtemp"><span class="wxico">${w.i||''}</span>${hi}${lo?`<span class="wxlo">${lo}</span>`:''}</div><div class="wxcond">${escHtml(cond)}${w.est?'<span class="est">Est.</span>':''}</div></div>`;}).join('');
   // stat cards — same five as the sample
   const goalsDone=(LISTS.goals||[]).filter(x=>x.done).length, goalsTot=(LISTS.goals||[]).length;
   const urgentPri=['todo','work','house','routine'].reduce((n,w)=>n+(LISTS[w]||[]).filter(x=>!x.done&&x.urgent).length,0);
