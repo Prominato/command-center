@@ -1,0 +1,335 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Max HQ — funky</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"><style>
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a0c;color:#e8e8ea;font-family:'Inter',system-ui,sans-serif;padding:26px 22px 70px}
+.page{max-width:1180px;margin:0 auto}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+.lede{color:#9a9aa2;font-size:13px;margin-bottom:26px;max-width:620px;line-height:1.5}
+.samp{margin-bottom:34px;border-radius:12px;overflow:hidden;border:1px solid #24242a}
+.samphead{padding:12px 16px;background:#141418;border-bottom:1px solid #24242a;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sampnum{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#6a6a74;margin-right:9px;letter-spacing:1.2px}
+.sampname{font-family:'Fraunces',Georgia,serif;font-size:17px;font-weight:600}
+.sampdesc{color:#8a8a94;font-size:12px;flex:1 1 240px}
+.swatches{display:flex;gap:3px}
+.swatches i{width:15px;height:15px;border-radius:3px;display:block;border:1px solid rgba(255,255,255,.10)}
+
+/* ---- the app preview, driven entirely by the palette tokens ---- */
+.app{background:var(--bg);color:var(--ink);padding:0 0 18px;font-size:15.5px}
+.bar{display:flex;align-items:baseline;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line)}
+.brand{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:600}
+.loc{font-size:11.5px;color:var(--mut)}
+.spacer{flex:1 1 auto}
+.nav{font-size:11px;font-weight:600;letter-spacing:.88px;color:var(--mut)}
+.sync{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--sage)}
+.pill{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:4px 11px}
+.herorow{display:flex;justify-content:space-between;align-items:flex-start;gap:22px;padding:16px 20px 0}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--brass);margin-bottom:8px}
+.bigdate{font-family:'Fraunces',Georgia,serif;font-size:31px;font-weight:600;line-height:1.1;margin:0 0 7px;letter-spacing:-.02em}
+.sub{font-size:12.5px;color:var(--mut)}
+.wx{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.wxc{padding:9px 14px;min-width:98px}
+.wxc.t{background:var(--panel)}
+.wxd{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;color:var(--brass);margin-bottom:5px}
+.wxt{font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--ink)}
+.wxt span{color:var(--mut);margin-left:6px}
+.wxo{font-size:10px;color:var(--mut);margin-top:3px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:16px 20px}
+.st{background:var(--panel);padding:12px 15px}
+.stl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;color:var(--mut);margin-bottom:5px}
+.stv{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:600;line-height:1.15}
+.stv.sm{font-size:13.5px}
+.sts{font-size:11px;color:var(--mut);margin-top:2px}
+.sts.u{color:var(--red);font-weight:600}
+.bar2{height:3px;background:var(--dim);border-radius:2px;margin-top:7px;overflow:hidden}
+.bar2 i{display:block;height:100%;background:var(--brass)}
+.pips{display:flex;gap:4px;margin-top:7px}
+.pips i{flex:1;height:3px;border-radius:2px;background:var(--dim)}
+.pips i.on{background:var(--sage)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--brass);border-radius:10px;padding:14px 16px}
+.ch{font-family:'Fraunces',Georgia,serif;font-size:16px;font-weight:600;margin-bottom:9px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:var(--sage);font-weight:600}
+.grp{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1.3px;color:var(--mut);margin:10px 0 3px;padding-left:8px;border-left:2px solid var(--brass)}
+.tr{display:flex;gap:8px;align-items:baseline;padding:3px 0 3px 8px;border-left:2px solid var(--line);font-size:12.5px}
+.tr.now{border-left-color:var(--brass);background:var(--panel);filter:brightness(1.08)}
+.tt{font-family:'IBM Plex Mono',monospace;font-size:11px;flex:0 0 94px}
+.td{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--faint);flex:0 0 36px}
+.tl{flex:1 1 auto}
+.tabs{display:flex;gap:10px;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:4px}
+.tabs b,.tabs span{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.9px;font-weight:400;color:var(--mut)}
+.tabs b{color:var(--brass);border-bottom:1px solid var(--brass);padding-bottom:4px;margin-bottom:-6px}
+.li{display:flex;align-items:center;gap:9px;padding:7px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.cb{width:13px;height:13px;border:1px solid var(--faint);border-radius:3px;flex:0 0 auto;display:inline-block}
+.cb.on{background:var(--sage);border-color:var(--sage)}
+.star{color:var(--brass);font-size:12px}
+.lt{flex:1 1 auto}
+.lt.done{color:var(--mut);text-decoration:line-through}
+.up{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.9px;color:var(--red);border:1px solid var(--red);border-radius:4px;padding:1px 5px}
+.x{color:var(--faint);font-size:11px}
+.dl{display:flex;gap:11px;align-items:baseline;padding:7px 5px;border-bottom:1px solid var(--line)}
+.dl.tod{background:var(--panel);border-left:2px solid var(--brass);filter:brightness(1.06)}
+.dn{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--mut);flex:0 0 62px}
+.di{display:flex;flex-wrap:wrap;gap:3px 11px}
+.w{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;white-space:nowrap}
+.w i{width:6px;height:6px;border-radius:50%;background:var(--mut);display:inline-block}
+.w b{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:400;color:var(--faint);margin-left:4px}
+.w.gym i{background:var(--gym)}.w.work i{background:var(--brass)}
+.w.play i{background:var(--sage)}.w.soc i{background:var(--slate)}
+.leg{display:flex;gap:11px;flex-wrap:wrap;margin-top:9px;padding-top:7px;border-top:1px solid var(--line)}
+.leg .w{color:var(--mut);font-size:10px}
+@media(max-width:900px){.cards{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.herorow{flex-direction:column}}
+
+.chrow{display:flex;align-items:center;gap:7px;margin:3px 0}
+.chlbl{flex:0 0 78px;font-size:10.5px;color:var(--ink);white-space:nowrap}
+.chc{display:flex;gap:1px}
+.chc b{width:9px;height:9px;border:1px solid var(--line);border-radius:2px;display:block}
+.chc b.on{background:var(--sage);border-color:var(--sage)}
+.chc b.tod{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.chc b.fut{opacity:.45}
+.goal{margin-top:5px}
+.gr{display:flex;align-items:center;gap:8px}
+.hz{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.gb{height:3px;background:var(--dim);border-radius:2px;margin:5px 0 3px;overflow:hidden}
+.gb i{display:block;height:100%;background:var(--amber)}
+.gm{display:flex;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--faint)}
+.gl{color:var(--amber)} .gy{margin-left:auto}
+</style></head><body><div class="page"><h1>Max HQ — loud palettes</h1><div class="lede">Bright orange/red directions. One rule I kept: the accent can be as loud as you like, but <b>done</b> (the tick) and <b>urgent</b> (the pill) must stay tellable apart — so where the accent goes red, completed shifts to teal/aqua rather than green, or the two would read the same at a glance.</div>
+<section class="samp" style="--bg:#14100E;--panel:#1D1715;--line:#33251F;--ink:#F2E7E0;--mut:#9C8578;--faint:#6B564C;--dim:#3A2A24;--brass:#FF6B35;--amber:#FFA630;--sage:#4ECDC4;--slate:#A78BFA;--red:#FF3B30;--gym:#C77DFF;">
+  <div class="samphead"><div><span class="sampnum">01</span><span class="sampname">Ember</span></div>
+  <div class="sampdesc">Charcoal with a hot orange accent and teal for balance. Bold but still readable.</div><div class="swatches"><i style="background:#FF6B35" title="brass #FF6B35"></i><i style="background:#FFA630" title="amber #FFA630"></i><i style="background:#4ECDC4" title="sage #4ECDC4"></i><i style="background:#A78BFA" title="slate #A78BFA"></i><i style="background:#FF3B30" title="red #FF3B30"></i><i style="background:#C77DFF" title="gym #C77DFF"></i><i style="background:#F2E7E0" title="ink #F2E7E0"></i><i style="background:#9C8578" title="mut #9C8578"></i><i style="background:#33251F" title="line #33251F"></i><i style="background:#1D1715" title="panel #1D1715"></i><i style="background:#14100E" title="bg #14100E"></i></div></div>
+  <div class="app">
+    <div class="bar"><span class="brand">Max HQ</span><span class="loc">Royal Oak, MI</span><span class="spacer"></span>
+      <a class="nav">THE CELL</a><a class="nav">THE SETTLEMENT</a><span class="sync">● SYNCED</span><span class="pill">WED · AUG 05 · 2026</span></div>
+    <div class="herorow"><div>
+      <div class="eyebrow">WED · AUG 05 · 2026</div><h2 class="bigdate">Wednesday, August 5</h2>
+      <div class="sub">Week 32 · 14 primary items open · Koloff · Aug 6</div></div><div class="wx"><div class="wxc t"><div class="wxd">TODAY</div><div class="wxt">☀️ 87°<span>58°</span></div><div class="wxo">Clear</div></div><div class="wxc"><div class="wxd">THU</div><div class="wxt">🌤️ 89°<span>60°</span></div><div class="wxo">Pt cloudy</div></div><div class="wxc"><div class="wxd">FRI</div><div class="wxt">🌧️ 81°<span>69°</span></div><div class="wxo">Drizzle · 46%</div></div><div class="wxc"><div class="wxd">SAT</div><div class="wxt">⛈️ 89°<span>70°</span></div><div class="wxo">Storms · 33%</div></div></div></div>
+    <div class="stats">
+      <div class="st"><div class="stl">PRIMARY TO-DOS</div><div class="stv">14 open</div><div class="sts u">3 urgent</div></div>
+      <div class="st"><div class="stl">GOALS 30/60/90</div><div class="stv">1 / 4</div><div class="bar2"><i style="width:32%"></i></div></div>
+      <div class="st"><div class="stl">WATER TODAY</div><div class="stv">2 / 4</div><div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="st"><div class="stl">NEXT TRIP</div><div class="stv sm">Mom &amp; Dad Staying Over</div><div class="sts">Aug 7 – 9 · in 2 days</div></div>
+      <div class="st"><div class="stl">TODAY'S WORKOUT</div><div class="stv sm">Legs day</div><div class="sts">Legs + Core · 5:40a</div></div></div>
+    <div class="cards">
+      <div class="card" style="border-top-color:var(--amber)">
+        <div class="ch">Today's Agenda <span class="badge">no conflicts</span></div>
+        <div class="grp">MORNING</div>
+        <div class="tr"><span class="tt">4:45a – 5:05a</span><span class="td">20m</span><span class="tl">Wake, hydrate, stretch</span></div>
+        <div class="tr"><span class="tt">5:40a – 7:00a</span><span class="td">1h 20m</span><span class="tl">Gym — Legs day</span></div>
+        <div class="grp">WORK DAY</div>
+        <div class="tr now"><span class="tt">8:15a – 12:00p</span><span class="td">3h 45m</span><span class="tl">Prominato — searches</span></div>
+        <div class="grp">DAILY CONSTANTS</div>
+        <div class="li"><i class="cb on"></i><span class="lt">1 gallon water</span></div>
+        <div class="li"><i class="cb"></i><span class="lt">10 min Babbel</span></div></div>
+      <div class="card" style="border-top-color:var(--brass)">
+        <div class="ch">To-Do Lists</div>
+        <div class="tabs"><b>MASTER</b><span>PERSONAL</span><span>ROUTINELY</span><span>HOUSE</span></div>
+        <div class="grp">PERSONAL</div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Call mom back</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Renew car registration</span><span class="up">URGENT</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb on"></i><span class="star">★</span><span class="lt done">Prep candidate profiles</span><span class="x">✕</span></div>
+        <div class="grp">21-DAY CHALLENGE</div>
+        <div class="chrow"><span class="chlbl">Gym</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="on"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div>
+        <div class="chrow"><span class="chlbl">Read 10 pages</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="fut"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div></div>
+      <div class="card" style="border-top-color:var(--sage)">
+        <div class="ch">This Week <span class="badge">Aug 3 – Aug 9</span></div>
+        <div class="dl"><span class="dn">MON 8/3</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="dl tod"><span class="dn">WED 8/5</span><span class="di"><span class="w gym"><i></i>Legs + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w play"><i></i>Pickleball</span></span></div>
+        <div class="dl"><span class="dn">THU 8/6</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="leg"><span class="w gym"><i></i>Training</span><span class="w work"><i></i>Work</span><span class="w play"><i></i>Recreation</span><span class="w soc"><i></i>Social</span></div>
+        <div class="grp">GOALS 30/60/90</div>
+        <div class="goal"><div class="gr"><i class="cb"></i><span class="lt">Finish Prominato portal</span><span class="hz">30d</span></div>
+          <div class="gb"><i style="width:62%"></i></div><div class="gm"><span class="gl">11d left</span><span class="gy">by Aug 31</span></div></div></div>
+    </div>
+  </div>
+</section>
+<section class="samp" style="--bg:#120E0A;--panel:#1C1611;--line:#35271A;--ink:#FFF3E4;--mut:#A8907A;--faint:#74604E;--dim:#3D2E20;--brass:#FF8C00;--amber:#FFD23F;--sage:#06D6A0;--slate:#8AB6FF;--red:#EF476F;--gym:#B47AFF;">
+  <div class="samphead"><div><span class="sampnum">02</span><span class="sampname">Solar Flare</span></div>
+  <div class="sampdesc">Warm black, orange-to-yellow heat, acid green for done. Loudest of the darks.</div><div class="swatches"><i style="background:#FF8C00" title="brass #FF8C00"></i><i style="background:#FFD23F" title="amber #FFD23F"></i><i style="background:#06D6A0" title="sage #06D6A0"></i><i style="background:#8AB6FF" title="slate #8AB6FF"></i><i style="background:#EF476F" title="red #EF476F"></i><i style="background:#B47AFF" title="gym #B47AFF"></i><i style="background:#FFF3E4" title="ink #FFF3E4"></i><i style="background:#A8907A" title="mut #A8907A"></i><i style="background:#35271A" title="line #35271A"></i><i style="background:#1C1611" title="panel #1C1611"></i><i style="background:#120E0A" title="bg #120E0A"></i></div></div>
+  <div class="app">
+    <div class="bar"><span class="brand">Max HQ</span><span class="loc">Royal Oak, MI</span><span class="spacer"></span>
+      <a class="nav">THE CELL</a><a class="nav">THE SETTLEMENT</a><span class="sync">● SYNCED</span><span class="pill">WED · AUG 05 · 2026</span></div>
+    <div class="herorow"><div>
+      <div class="eyebrow">WED · AUG 05 · 2026</div><h2 class="bigdate">Wednesday, August 5</h2>
+      <div class="sub">Week 32 · 14 primary items open · Koloff · Aug 6</div></div><div class="wx"><div class="wxc t"><div class="wxd">TODAY</div><div class="wxt">☀️ 87°<span>58°</span></div><div class="wxo">Clear</div></div><div class="wxc"><div class="wxd">THU</div><div class="wxt">🌤️ 89°<span>60°</span></div><div class="wxo">Pt cloudy</div></div><div class="wxc"><div class="wxd">FRI</div><div class="wxt">🌧️ 81°<span>69°</span></div><div class="wxo">Drizzle · 46%</div></div><div class="wxc"><div class="wxd">SAT</div><div class="wxt">⛈️ 89°<span>70°</span></div><div class="wxo">Storms · 33%</div></div></div></div>
+    <div class="stats">
+      <div class="st"><div class="stl">PRIMARY TO-DOS</div><div class="stv">14 open</div><div class="sts u">3 urgent</div></div>
+      <div class="st"><div class="stl">GOALS 30/60/90</div><div class="stv">1 / 4</div><div class="bar2"><i style="width:32%"></i></div></div>
+      <div class="st"><div class="stl">WATER TODAY</div><div class="stv">2 / 4</div><div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="st"><div class="stl">NEXT TRIP</div><div class="stv sm">Mom &amp; Dad Staying Over</div><div class="sts">Aug 7 – 9 · in 2 days</div></div>
+      <div class="st"><div class="stl">TODAY'S WORKOUT</div><div class="stv sm">Legs day</div><div class="sts">Legs + Core · 5:40a</div></div></div>
+    <div class="cards">
+      <div class="card" style="border-top-color:var(--amber)">
+        <div class="ch">Today's Agenda <span class="badge">no conflicts</span></div>
+        <div class="grp">MORNING</div>
+        <div class="tr"><span class="tt">4:45a – 5:05a</span><span class="td">20m</span><span class="tl">Wake, hydrate, stretch</span></div>
+        <div class="tr"><span class="tt">5:40a – 7:00a</span><span class="td">1h 20m</span><span class="tl">Gym — Legs day</span></div>
+        <div class="grp">WORK DAY</div>
+        <div class="tr now"><span class="tt">8:15a – 12:00p</span><span class="td">3h 45m</span><span class="tl">Prominato — searches</span></div>
+        <div class="grp">DAILY CONSTANTS</div>
+        <div class="li"><i class="cb on"></i><span class="lt">1 gallon water</span></div>
+        <div class="li"><i class="cb"></i><span class="lt">10 min Babbel</span></div></div>
+      <div class="card" style="border-top-color:var(--brass)">
+        <div class="ch">To-Do Lists</div>
+        <div class="tabs"><b>MASTER</b><span>PERSONAL</span><span>ROUTINELY</span><span>HOUSE</span></div>
+        <div class="grp">PERSONAL</div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Call mom back</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Renew car registration</span><span class="up">URGENT</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb on"></i><span class="star">★</span><span class="lt done">Prep candidate profiles</span><span class="x">✕</span></div>
+        <div class="grp">21-DAY CHALLENGE</div>
+        <div class="chrow"><span class="chlbl">Gym</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="on"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div>
+        <div class="chrow"><span class="chlbl">Read 10 pages</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="fut"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div></div>
+      <div class="card" style="border-top-color:var(--sage)">
+        <div class="ch">This Week <span class="badge">Aug 3 – Aug 9</span></div>
+        <div class="dl"><span class="dn">MON 8/3</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="dl tod"><span class="dn">WED 8/5</span><span class="di"><span class="w gym"><i></i>Legs + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w play"><i></i>Pickleball</span></span></div>
+        <div class="dl"><span class="dn">THU 8/6</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="leg"><span class="w gym"><i></i>Training</span><span class="w work"><i></i>Work</span><span class="w play"><i></i>Recreation</span><span class="w soc"><i></i>Social</span></div>
+        <div class="grp">GOALS 30/60/90</div>
+        <div class="goal"><div class="gr"><i class="cb"></i><span class="lt">Finish Prominato portal</span><span class="hz">30d</span></div>
+          <div class="gb"><i style="width:62%"></i></div><div class="gm"><span class="gl">11d left</span><span class="gy">by Aug 31</span></div></div></div>
+    </div>
+  </div>
+</section>
+<section class="samp" style="--bg:#120B14;--panel:#1B121E;--line:#2F1F33;--ink:#F6E9F5;--mut:#A38BA8;--faint:#6F5A73;--dim:#382642;--brass:#FF5E5B;--amber:#FFB03A;--sage:#00E5C0;--slate:#9D8DF1;--red:#FF2E63;--gym:#E056FD;">
+  <div class="samphead"><div><span class="sampnum">03</span><span class="sampname">Neon Sunset</span></div>
+  <div class="sampdesc">Aubergine base, coral-red accent, magenta and aqua. Most 'synthwave'.</div><div class="swatches"><i style="background:#FF5E5B" title="brass #FF5E5B"></i><i style="background:#FFB03A" title="amber #FFB03A"></i><i style="background:#00E5C0" title="sage #00E5C0"></i><i style="background:#9D8DF1" title="slate #9D8DF1"></i><i style="background:#FF2E63" title="red #FF2E63"></i><i style="background:#E056FD" title="gym #E056FD"></i><i style="background:#F6E9F5" title="ink #F6E9F5"></i><i style="background:#A38BA8" title="mut #A38BA8"></i><i style="background:#2F1F33" title="line #2F1F33"></i><i style="background:#1B121E" title="panel #1B121E"></i><i style="background:#120B14" title="bg #120B14"></i></div></div>
+  <div class="app">
+    <div class="bar"><span class="brand">Max HQ</span><span class="loc">Royal Oak, MI</span><span class="spacer"></span>
+      <a class="nav">THE CELL</a><a class="nav">THE SETTLEMENT</a><span class="sync">● SYNCED</span><span class="pill">WED · AUG 05 · 2026</span></div>
+    <div class="herorow"><div>
+      <div class="eyebrow">WED · AUG 05 · 2026</div><h2 class="bigdate">Wednesday, August 5</h2>
+      <div class="sub">Week 32 · 14 primary items open · Koloff · Aug 6</div></div><div class="wx"><div class="wxc t"><div class="wxd">TODAY</div><div class="wxt">☀️ 87°<span>58°</span></div><div class="wxo">Clear</div></div><div class="wxc"><div class="wxd">THU</div><div class="wxt">🌤️ 89°<span>60°</span></div><div class="wxo">Pt cloudy</div></div><div class="wxc"><div class="wxd">FRI</div><div class="wxt">🌧️ 81°<span>69°</span></div><div class="wxo">Drizzle · 46%</div></div><div class="wxc"><div class="wxd">SAT</div><div class="wxt">⛈️ 89°<span>70°</span></div><div class="wxo">Storms · 33%</div></div></div></div>
+    <div class="stats">
+      <div class="st"><div class="stl">PRIMARY TO-DOS</div><div class="stv">14 open</div><div class="sts u">3 urgent</div></div>
+      <div class="st"><div class="stl">GOALS 30/60/90</div><div class="stv">1 / 4</div><div class="bar2"><i style="width:32%"></i></div></div>
+      <div class="st"><div class="stl">WATER TODAY</div><div class="stv">2 / 4</div><div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="st"><div class="stl">NEXT TRIP</div><div class="stv sm">Mom &amp; Dad Staying Over</div><div class="sts">Aug 7 – 9 · in 2 days</div></div>
+      <div class="st"><div class="stl">TODAY'S WORKOUT</div><div class="stv sm">Legs day</div><div class="sts">Legs + Core · 5:40a</div></div></div>
+    <div class="cards">
+      <div class="card" style="border-top-color:var(--amber)">
+        <div class="ch">Today's Agenda <span class="badge">no conflicts</span></div>
+        <div class="grp">MORNING</div>
+        <div class="tr"><span class="tt">4:45a – 5:05a</span><span class="td">20m</span><span class="tl">Wake, hydrate, stretch</span></div>
+        <div class="tr"><span class="tt">5:40a – 7:00a</span><span class="td">1h 20m</span><span class="tl">Gym — Legs day</span></div>
+        <div class="grp">WORK DAY</div>
+        <div class="tr now"><span class="tt">8:15a – 12:00p</span><span class="td">3h 45m</span><span class="tl">Prominato — searches</span></div>
+        <div class="grp">DAILY CONSTANTS</div>
+        <div class="li"><i class="cb on"></i><span class="lt">1 gallon water</span></div>
+        <div class="li"><i class="cb"></i><span class="lt">10 min Babbel</span></div></div>
+      <div class="card" style="border-top-color:var(--brass)">
+        <div class="ch">To-Do Lists</div>
+        <div class="tabs"><b>MASTER</b><span>PERSONAL</span><span>ROUTINELY</span><span>HOUSE</span></div>
+        <div class="grp">PERSONAL</div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Call mom back</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Renew car registration</span><span class="up">URGENT</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb on"></i><span class="star">★</span><span class="lt done">Prep candidate profiles</span><span class="x">✕</span></div>
+        <div class="grp">21-DAY CHALLENGE</div>
+        <div class="chrow"><span class="chlbl">Gym</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="on"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div>
+        <div class="chrow"><span class="chlbl">Read 10 pages</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="fut"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div></div>
+      <div class="card" style="border-top-color:var(--sage)">
+        <div class="ch">This Week <span class="badge">Aug 3 – Aug 9</span></div>
+        <div class="dl"><span class="dn">MON 8/3</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="dl tod"><span class="dn">WED 8/5</span><span class="di"><span class="w gym"><i></i>Legs + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w play"><i></i>Pickleball</span></span></div>
+        <div class="dl"><span class="dn">THU 8/6</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="leg"><span class="w gym"><i></i>Training</span><span class="w work"><i></i>Work</span><span class="w play"><i></i>Recreation</span><span class="w soc"><i></i>Social</span></div>
+        <div class="grp">GOALS 30/60/90</div>
+        <div class="goal"><div class="gr"><i class="cb"></i><span class="lt">Finish Prominato portal</span><span class="hz">30d</span></div>
+          <div class="gb"><i style="width:62%"></i></div><div class="gm"><span class="gl">11d left</span><span class="gy">by Aug 31</span></div></div></div>
+    </div>
+  </div>
+</section>
+<section class="samp" style="--bg:#0F0D0D;--panel:#171414;--line:#2C1E1E;--ink:#F0E6E6;--mut:#9A8383;--faint:#6A5252;--dim:#362424;--brass:#FF3B30;--amber:#FF9F1C;--sage:#2EC4B6;--slate:#9BA9FF;--red:#FF1E1E;--gym:#C77DFF;">
+  <div class="samphead"><div><span class="sampnum">04</span><span class="sampname">Redline</span></div>
+  <div class="sampdesc">Near-black with pure red. Aggressive, high-alert. Teal keeps 'done' distinct from 'urgent'.</div><div class="swatches"><i style="background:#FF3B30" title="brass #FF3B30"></i><i style="background:#FF9F1C" title="amber #FF9F1C"></i><i style="background:#2EC4B6" title="sage #2EC4B6"></i><i style="background:#9BA9FF" title="slate #9BA9FF"></i><i style="background:#FF1E1E" title="red #FF1E1E"></i><i style="background:#C77DFF" title="gym #C77DFF"></i><i style="background:#F0E6E6" title="ink #F0E6E6"></i><i style="background:#9A8383" title="mut #9A8383"></i><i style="background:#2C1E1E" title="line #2C1E1E"></i><i style="background:#171414" title="panel #171414"></i><i style="background:#0F0D0D" title="bg #0F0D0D"></i></div></div>
+  <div class="app">
+    <div class="bar"><span class="brand">Max HQ</span><span class="loc">Royal Oak, MI</span><span class="spacer"></span>
+      <a class="nav">THE CELL</a><a class="nav">THE SETTLEMENT</a><span class="sync">● SYNCED</span><span class="pill">WED · AUG 05 · 2026</span></div>
+    <div class="herorow"><div>
+      <div class="eyebrow">WED · AUG 05 · 2026</div><h2 class="bigdate">Wednesday, August 5</h2>
+      <div class="sub">Week 32 · 14 primary items open · Koloff · Aug 6</div></div><div class="wx"><div class="wxc t"><div class="wxd">TODAY</div><div class="wxt">☀️ 87°<span>58°</span></div><div class="wxo">Clear</div></div><div class="wxc"><div class="wxd">THU</div><div class="wxt">🌤️ 89°<span>60°</span></div><div class="wxo">Pt cloudy</div></div><div class="wxc"><div class="wxd">FRI</div><div class="wxt">🌧️ 81°<span>69°</span></div><div class="wxo">Drizzle · 46%</div></div><div class="wxc"><div class="wxd">SAT</div><div class="wxt">⛈️ 89°<span>70°</span></div><div class="wxo">Storms · 33%</div></div></div></div>
+    <div class="stats">
+      <div class="st"><div class="stl">PRIMARY TO-DOS</div><div class="stv">14 open</div><div class="sts u">3 urgent</div></div>
+      <div class="st"><div class="stl">GOALS 30/60/90</div><div class="stv">1 / 4</div><div class="bar2"><i style="width:32%"></i></div></div>
+      <div class="st"><div class="stl">WATER TODAY</div><div class="stv">2 / 4</div><div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="st"><div class="stl">NEXT TRIP</div><div class="stv sm">Mom &amp; Dad Staying Over</div><div class="sts">Aug 7 – 9 · in 2 days</div></div>
+      <div class="st"><div class="stl">TODAY'S WORKOUT</div><div class="stv sm">Legs day</div><div class="sts">Legs + Core · 5:40a</div></div></div>
+    <div class="cards">
+      <div class="card" style="border-top-color:var(--amber)">
+        <div class="ch">Today's Agenda <span class="badge">no conflicts</span></div>
+        <div class="grp">MORNING</div>
+        <div class="tr"><span class="tt">4:45a – 5:05a</span><span class="td">20m</span><span class="tl">Wake, hydrate, stretch</span></div>
+        <div class="tr"><span class="tt">5:40a – 7:00a</span><span class="td">1h 20m</span><span class="tl">Gym — Legs day</span></div>
+        <div class="grp">WORK DAY</div>
+        <div class="tr now"><span class="tt">8:15a – 12:00p</span><span class="td">3h 45m</span><span class="tl">Prominato — searches</span></div>
+        <div class="grp">DAILY CONSTANTS</div>
+        <div class="li"><i class="cb on"></i><span class="lt">1 gallon water</span></div>
+        <div class="li"><i class="cb"></i><span class="lt">10 min Babbel</span></div></div>
+      <div class="card" style="border-top-color:var(--brass)">
+        <div class="ch">To-Do Lists</div>
+        <div class="tabs"><b>MASTER</b><span>PERSONAL</span><span>ROUTINELY</span><span>HOUSE</span></div>
+        <div class="grp">PERSONAL</div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Call mom back</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Renew car registration</span><span class="up">URGENT</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb on"></i><span class="star">★</span><span class="lt done">Prep candidate profiles</span><span class="x">✕</span></div>
+        <div class="grp">21-DAY CHALLENGE</div>
+        <div class="chrow"><span class="chlbl">Gym</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="on"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div>
+        <div class="chrow"><span class="chlbl">Read 10 pages</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="fut"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div></div>
+      <div class="card" style="border-top-color:var(--sage)">
+        <div class="ch">This Week <span class="badge">Aug 3 – Aug 9</span></div>
+        <div class="dl"><span class="dn">MON 8/3</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="dl tod"><span class="dn">WED 8/5</span><span class="di"><span class="w gym"><i></i>Legs + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w play"><i></i>Pickleball</span></span></div>
+        <div class="dl"><span class="dn">THU 8/6</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="leg"><span class="w gym"><i></i>Training</span><span class="w work"><i></i>Work</span><span class="w play"><i></i>Recreation</span><span class="w soc"><i></i>Social</span></div>
+        <div class="grp">GOALS 30/60/90</div>
+        <div class="goal"><div class="gr"><i class="cb"></i><span class="lt">Finish Prominato portal</span><span class="hz">30d</span></div>
+          <div class="gb"><i style="width:62%"></i></div><div class="gm"><span class="gl">11d left</span><span class="gy">by Aug 31</span></div></div></div>
+    </div>
+  </div>
+</section>
+<section class="samp" style="--bg:#FFF6EE;--panel:#FFFFFF;--line:#F0DCC8;--ink:#26160C;--mut:#7A5A44;--faint:#B0917A;--dim:#F2E0CE;--brass:#E85D04;--amber:#F48C06;--sage:#0B7A5E;--slate:#4A5FBF;--red:#D00000;--gym:#7B2CBF;">
+  <div class="samphead"><div><span class="sampnum">05</span><span class="sampname">Citrus</span></div>
+  <div class="sampdesc">Light: warm white paper, vivid orange accent. Punchy in daylight.</div><div class="swatches"><i style="background:#E85D04" title="brass #E85D04"></i><i style="background:#F48C06" title="amber #F48C06"></i><i style="background:#0B7A5E" title="sage #0B7A5E"></i><i style="background:#4A5FBF" title="slate #4A5FBF"></i><i style="background:#D00000" title="red #D00000"></i><i style="background:#7B2CBF" title="gym #7B2CBF"></i><i style="background:#26160C" title="ink #26160C"></i><i style="background:#7A5A44" title="mut #7A5A44"></i><i style="background:#F0DCC8" title="line #F0DCC8"></i><i style="background:#FFFFFF" title="panel #FFFFFF"></i><i style="background:#FFF6EE" title="bg #FFF6EE"></i></div></div>
+  <div class="app">
+    <div class="bar"><span class="brand">Max HQ</span><span class="loc">Royal Oak, MI</span><span class="spacer"></span>
+      <a class="nav">THE CELL</a><a class="nav">THE SETTLEMENT</a><span class="sync">● SYNCED</span><span class="pill">WED · AUG 05 · 2026</span></div>
+    <div class="herorow"><div>
+      <div class="eyebrow">WED · AUG 05 · 2026</div><h2 class="bigdate">Wednesday, August 5</h2>
+      <div class="sub">Week 32 · 14 primary items open · Koloff · Aug 6</div></div><div class="wx"><div class="wxc t"><div class="wxd">TODAY</div><div class="wxt">☀️ 87°<span>58°</span></div><div class="wxo">Clear</div></div><div class="wxc"><div class="wxd">THU</div><div class="wxt">🌤️ 89°<span>60°</span></div><div class="wxo">Pt cloudy</div></div><div class="wxc"><div class="wxd">FRI</div><div class="wxt">🌧️ 81°<span>69°</span></div><div class="wxo">Drizzle · 46%</div></div><div class="wxc"><div class="wxd">SAT</div><div class="wxt">⛈️ 89°<span>70°</span></div><div class="wxo">Storms · 33%</div></div></div></div>
+    <div class="stats">
+      <div class="st"><div class="stl">PRIMARY TO-DOS</div><div class="stv">14 open</div><div class="sts u">3 urgent</div></div>
+      <div class="st"><div class="stl">GOALS 30/60/90</div><div class="stv">1 / 4</div><div class="bar2"><i style="width:32%"></i></div></div>
+      <div class="st"><div class="stl">WATER TODAY</div><div class="stv">2 / 4</div><div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="st"><div class="stl">NEXT TRIP</div><div class="stv sm">Mom &amp; Dad Staying Over</div><div class="sts">Aug 7 – 9 · in 2 days</div></div>
+      <div class="st"><div class="stl">TODAY'S WORKOUT</div><div class="stv sm">Legs day</div><div class="sts">Legs + Core · 5:40a</div></div></div>
+    <div class="cards">
+      <div class="card" style="border-top-color:var(--amber)">
+        <div class="ch">Today's Agenda <span class="badge">no conflicts</span></div>
+        <div class="grp">MORNING</div>
+        <div class="tr"><span class="tt">4:45a – 5:05a</span><span class="td">20m</span><span class="tl">Wake, hydrate, stretch</span></div>
+        <div class="tr"><span class="tt">5:40a – 7:00a</span><span class="td">1h 20m</span><span class="tl">Gym — Legs day</span></div>
+        <div class="grp">WORK DAY</div>
+        <div class="tr now"><span class="tt">8:15a – 12:00p</span><span class="td">3h 45m</span><span class="tl">Prominato — searches</span></div>
+        <div class="grp">DAILY CONSTANTS</div>
+        <div class="li"><i class="cb on"></i><span class="lt">1 gallon water</span></div>
+        <div class="li"><i class="cb"></i><span class="lt">10 min Babbel</span></div></div>
+      <div class="card" style="border-top-color:var(--brass)">
+        <div class="ch">To-Do Lists</div>
+        <div class="tabs"><b>MASTER</b><span>PERSONAL</span><span>ROUTINELY</span><span>HOUSE</span></div>
+        <div class="grp">PERSONAL</div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Call mom back</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb"></i><span class="star">★</span><span class="lt">Renew car registration</span><span class="up">URGENT</span><span class="x">✕</span></div>
+        <div class="li"><i class="cb on"></i><span class="star">★</span><span class="lt done">Prep candidate profiles</span><span class="x">✕</span></div>
+        <div class="grp">21-DAY CHALLENGE</div>
+        <div class="chrow"><span class="chlbl">Gym</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="on"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div>
+        <div class="chrow"><span class="chlbl">Read 10 pages</span><span class="chc"><b class="on"></b><b class="on"></b><b class="on"></b><b class="fut"></b><b class="tod"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b><b class="fut"></b></span></div></div>
+      <div class="card" style="border-top-color:var(--sage)">
+        <div class="ch">This Week <span class="badge">Aug 3 – Aug 9</span></div>
+        <div class="dl"><span class="dn">MON 8/3</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="dl tod"><span class="dn">WED 8/5</span><span class="di"><span class="w gym"><i></i>Legs + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w play"><i></i>Pickleball</span></span></div>
+        <div class="dl"><span class="dn">THU 8/6</span><span class="di"><span class="w gym"><i></i>Pull + Core</span><span class="w work"><i></i>Deep work<b>8–4</b></span><span class="w soc"><i></i>Class<b>7–8p</b></span></span></div>
+        <div class="leg"><span class="w gym"><i></i>Training</span><span class="w work"><i></i>Work</span><span class="w play"><i></i>Recreation</span><span class="w soc"><i></i>Social</span></div>
+        <div class="grp">GOALS 30/60/90</div>
+        <div class="goal"><div class="gr"><i class="cb"></i><span class="lt">Finish Prominato portal</span><span class="hz">30d</span></div>
+          <div class="gb"><i style="width:62%"></i></div><div class="gm"><span class="gl">11d left</span><span class="gy">by Aug 31</span></div></div></div>
+    </div>
+  </div>
+</section></div></body></html>
