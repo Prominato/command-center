@@ -445,6 +445,45 @@
   .items li .iconbtn.del{color:var(--faint);} .items li .iconbtn.del:hover{color:var(--red);}
   .mgroup .items li{padding:8px 2px;}
 
+  /* ---- 30/60/90 goals ---- */
+  .gband{display:flex; align-items:center; gap:7px; margin:12px 0 5px; padding-top:7px; border-top:1px solid var(--line);}
+  .gband:first-child{margin-top:0; padding-top:0; border-top:none;}
+  .gbandh{font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--brass);}
+  .gbandn{font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--faint);}
+  .goal{margin-bottom:9px;}
+  .goalrow{display:flex; align-items:center; gap:9px;}
+  .goalrow .txt{flex:1 1 auto; min-width:0; font-size:12.5px;}
+  .ghz{font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.7px; color:var(--mut);
+    background:transparent; border:1px solid var(--line); border-radius:4px; padding:1px 5px; cursor:pointer; flex:0 0 auto;}
+  .ghz:hover{color:var(--ink); border-color:var(--brass);}
+  .goalbar{height:3px; border-radius:2px; background:var(--dim); margin:5px 0 3px; overflow:hidden;}
+  .goalbar>i{display:block; height:100%; background:var(--sage);}
+  .goal.warm .goalbar>i{background:var(--amber);}
+  .goal.hot .goalbar>i,.goal.over .goalbar>i{background:var(--red);}
+  .goalmeta{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:var(--faint);}
+  .gleft{color:var(--sage);} .goal.warm .gleft{color:var(--amber);} .goal.hot .gleft,.goal.over .gleft{color:var(--red);}
+  .gby{margin-left:auto;}
+  .grestart{background:none; border:none; color:var(--faint); cursor:pointer; padding:0 2px; font-size:10px;}
+  .grestart:hover{color:var(--brass);}
+
+  /* ---- 21-day challenge matrix ---- */
+  .chhead{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:9px;}
+  .chday{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--brass);}
+  .chscore{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--mut);}
+  .chcat{font-family:'IBM Plex Mono',monospace; font-size:8.5px; font-weight:600; letter-spacing:1.3px; text-transform:uppercase; color:var(--mut); margin:8px 0 3px;}
+  .chrow{display:flex; align-items:center; gap:6px; margin-bottom:3px;}
+  .chlbl{flex:0 0 84px; font-size:11px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .chcells{display:flex; align-items:center; gap:1px; flex:1 1 auto;}
+  .chgap{width:3px; flex:0 0 auto;}
+  .chcell{width:9px; height:9px; flex:0 0 auto; padding:0; cursor:pointer;
+    border:1px solid var(--line); border-radius:2px; background:transparent;}
+  .chcell:hover{border-color:var(--brass);}
+  .chcell.on{background:var(--sage); border-color:var(--sage);}
+  .chcell.today{border-color:var(--brass); box-shadow:0 0 0 1px var(--brass);}
+  .chcell.future{opacity:.45;}
+  .chfoot{display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:8px; border-top:1px solid var(--line);}
+  .chtot{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--faint);}
+
   /* ---- Notes, matched to the sample ---- */
   .nhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
   .nrecent{font-family:'Inter',system-ui,sans-serif; font-size:11.5px; color:var(--mut);}
@@ -653,6 +692,18 @@
     </div>
   </details>
 
+  <details class="drop" data-sec="challenge" open>
+    <summary><span class="arrow">▸</span> 21-Day Challenge</summary>
+    <div class="drop-body">
+      <div class="chhead">
+        <span class="chday" id="chDay">—</span>
+        <span class="chscore" id="chScore">—</span>
+      </div>
+      <div id="chMatrix"></div>
+      <div class="chfoot"><button class="nnew" onclick="chReset()">RESTART</button><span class="chtot" id="chTotal"></span></div>
+    </div>
+  </details>
+
   <details class="drop" data-sec="lists" open>
     <summary><span class="arrow">▸</span> To-Do Lists</summary>
     <div class="drop-body">
@@ -754,11 +805,11 @@
   </details>
 
   <details class="drop" data-sec="goals" open>
-    <summary><span class="arrow">▸</span> Monthly Goals — <span id="monthName">June</span></summary>
+    <summary><span class="arrow">▸</span> Goals — 30/60/90</summary>
     <div class="drop-body">
-      <div class="hint">What matters this month · click to check off</div>
-      <div class="addrow"><input id="goalsInput" placeholder="Add a monthly goal…" onkeydown="if(event.key==='Enter')addItem('goals')"><button onclick="addItem('goals')">Add</button></div>
-      <ul class="items" id="goalsList"></ul>
+      <div class="hint">30 / 60 / 90-day horizons · bar shows time used, not progress</div>
+      <div class="addrow"><input id="goalsInput" placeholder="Add a goal…" onkeydown="if(event.key==='Enter')addGoal()"><select id="goalHorizon"><option value="30">30d</option><option value="60">60d</option><option value="90">90d</option></select><button onclick="addGoal()">Add</button></div>
+      <div id="goalsList"></div>
     </div>
   </details>
 
@@ -785,7 +836,8 @@ function applyTheme(key,fromUser){key=normSkin(key);
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
   ["--bg","--bg2","--card","--card-hover","--ink","--ink-muted","--amber","--gold","--teal","--dusk","--rain","--rose","--gym","--urgent","--divider","--wknd","--wknd-bd","--wknd-hover","--accent"]
     .forEach(p=>document.documentElement.style.removeProperty(p));   // clear inline vars from the old theme system
-  try{ renderEvents(); renderMonths(); renderWeek(); if(!EDIT_ID)evTintReset(); }catch(e){}   // default colors are skin-derived — repaint on toggle (no-op at boot)
+  try{ renderEvents(); renderMonths(); renderWeek(); if(!EDIT_ID)evTintReset();
+window.__ccBooted=true; }catch(e){}   // default colors are skin-derived — repaint on toggle (no-op at boot)
 }
 function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.innerHTML=Object.entries(SKINS).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
 
@@ -813,7 +865,17 @@ const SYNC=(function(){
       const r=await fetch(SYNC_URL+'?action=all'); const j=await r.json(); if(!j.ok)throw new Error('bad response');
       let changed=false;
       Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
-        if(o.t>=lt){ if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
+        if(o.t>=lt){
+          // Guard: a cc_lists payload that is drastically SMALLER than what this device
+          // already holds is almost always an accident (a reseeded/cleared browser pushing
+          // CC_SEED up). Keep the local copy and send it back up instead of losing items.
+          if(k==='cc_lists'){ const n=s=>{try{const o2=JSON.parse(s||'{}');return Object.values(o2).reduce((t,v)=>t+(Array.isArray(v)?v.length:0),0);}catch(e){return -1;}};
+            const incoming=n(o.v), local=n(localStorage.getItem(k));
+            if(local>4 && incoming>=0 && incoming < local*0.7){
+              console.warn('[Max HQ] refused a shrinking cc_lists from sync ('+incoming+' items vs '+local+' local) — keeping local and re-publishing');
+              queue(k, localStorage.getItem(k)); meta[k]=Date.now(); return;
+            } }
+          if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
       saveMeta();
       if(!localStorage.getItem('cc_sync_init')){  // first sync from this browser: send up anything the cloud doesn't have yet
         Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return; if(!(j.state&&j.state[k])) queue(k,localStorage.getItem(k)); });
@@ -999,6 +1061,7 @@ function editEvent(id){ if(!document.getElementById('evLabel'))return;   // manu
 function cancelEdit(){EDIT_ID=null; if(!document.getElementById('evLabel'))return;
   document.getElementById('evLabel').value=""; document.getElementById('evLoc').value=""; document.getElementById('evStartTime').value=""; document.getElementById('evEndTime').value="";
   evTintReset();
+window.__ccBooted=true;
   document.getElementById('evAddBtn').textContent="Add"; document.getElementById('evCancelBtn').style.display="none"; if(PICK)togglePick();}
 function delEvent(id){EVENTS=EVENTS.filter(e=>e.id!==id); if(EDIT_ID===id)cancelEdit(); evsave(); renderEvents(); renderMonths(); renderWeek(); renderGlance();}
 function togglePick(){ if(!document.getElementById('evPickBtn'))return;   // calendar pick-mode retired with the manual editor
@@ -1165,6 +1228,7 @@ function renderWork(){WORKCATS.forEach(c=>renderWorkCat(c[0])); updateCounts(); 
 function renderList(w){
   if(w==='work'){renderWork(); return;}
   if(w==='forsale'){renderForSale(); return;}
+  if(w==='goals'){renderGoals(); return;}
   const ul=document.getElementById(w+'List'); const arr=LISTS[w]||[];
   if(w==='todo'||w==='house'||w==='routine')tabCount(w,arr.filter(x=>!x.done).length);
   if(w==='goals'){ if(!arr.length){ul.innerHTML='<div class="empty">Nothing yet — add something above.</div>';}
@@ -1323,7 +1387,7 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
 
 /* ===== sections ===== */
 const SEC_DEFAULT=['today','lists','week','goals','notes','trips','calendar'];
-const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',goals:'Monthly Goals',notes:'Notes',trips:'Trips & Events',calendar:'3-Month Calendar'};
+const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',goals:'Goals 30/60/90',notes:'Notes',trips:'Trips & Events',challenge:'21-Day Challenge',calendar:'3-Month Calendar'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
   SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){
     if(id==='today'){o.unshift(id); return;}                                        // Today's Agenda pins to the very top…
@@ -1530,6 +1594,121 @@ function cardUp(e){
   applySectionOrder();
 }
 
+
+/* ===== Goals on 30/60/90-day horizons =====================================
+   Each goal carries a horizon (30|60|90) and a startAt. The bar shows how much
+   of the window has ELAPSED (not task progress), so a goal visibly runs out of
+   runway; colour shifts sage -> amber -> red as the deadline closes in. */
+const GOAL_HORIZONS=[30,60,90];
+const DAY_MS=86400000;
+function goalMeta(it){
+  const horizon=GOAL_HORIZONS.indexOf(Number(it.horizon))>=0?Number(it.horizon):30;
+  const start=Number(it.startAt)||Date.now();
+  const end=start+horizon*DAY_MS;
+  const left=Math.ceil((end-Date.now())/DAY_MS);
+  const used=Math.min(100,Math.max(0,Math.round(((Date.now()-start)/(horizon*DAY_MS))*100)));
+  return {horizon,start,end,left,used};
+}
+function goalTone(left){ return left<0?'over' : left<=7?'hot' : left<=14?'warm' : 'ok'; }
+function addGoal(){
+  const inp=document.getElementById('goalsInput'); const t=(inp.value||'').trim(); if(!t)return;
+  const sel=document.getElementById('goalHorizon');
+  const horizon=Number(sel&&sel.value)||30;
+  LISTS.goals.unshift({id:String(Date.now())+Math.floor(Math.random()*1000),text:t,done:false,urgent:false,
+    pri:'primary',horizon:horizon,startAt:Date.now()});
+  inp.value=''; lsave(); renderGoals();
+}
+function goalCycle(id){   // click the horizon chip to move a goal 30 -> 60 -> 90 -> 30
+  const it=LISTS.goals.find(x=>x.id===id); if(!it)return;
+  const cur=GOAL_HORIZONS.indexOf(Number(it.horizon)||30);
+  it.horizon=GOAL_HORIZONS[(cur+1)%GOAL_HORIZONS.length];
+  if(!it.startAt)it.startAt=Date.now();
+  lsave(); renderGoals();
+}
+function goalRestart(id){ const it=LISTS.goals.find(x=>x.id===id); if(it){it.startAt=Date.now(); lsave(); renderGoals();} }
+function renderGoals(){
+  const host=document.getElementById('goalsList'); if(!host)return;
+  const arr=(LISTS.goals||[]);
+  // one-time: give legacy goals a horizon + start date
+  let migrated=false;
+  arr.forEach(it=>{ if(!it.horizon){it.horizon=30; migrated=true;}
+    if(!it.startAt){const d=new Date(); it.startAt=new Date(d.getFullYear(),d.getMonth(),1).getTime(); migrated=true;} });
+  // deliberately NOT saving here — writing during boot (before SYNC.pull settles) can push a
+  // partial list to the cloud. The defaults are harmless in memory and persist on the next real edit.
+  if(migrated && window.__ccBooted){try{lsave();}catch(e){}}
+  const open=arr.filter(x=>!x.done), done=arr.filter(x=>x.done);
+  let html='';
+  GOAL_HORIZONS.forEach(h=>{
+    const items=open.filter(x=>Number(x.horizon)===h);
+    if(!items.length)return;
+    const by=new Date(Date.now()+0); // header shows each goal's own date, so just label the band
+    html+=`<div class="gband"><span class="gbandh">${h} day</span><span class="gbandn">${items.length}</span></div>`;
+    html+=items.map(it=>{const m=goalMeta(it), tone=goalTone(m.left);
+      const endTxt=new Date(m.end).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return `<div class="goal ${tone}">
+        <div class="goalrow">
+          <input type="checkbox" onchange="toggleDone('goals','${it.id}')">
+          <span class="txt" data-edit="goals::${it.id}">${escHtml(it.text)}</span>
+          <button class="ghz" title="Switch horizon" onclick="goalCycle('${it.id}')">${m.horizon}d</button>
+          <button class="iconbtn del" title="Delete" onclick="delItem('goals','${it.id}')">✕</button>
+        </div>
+        <div class="goalbar"><i style="width:${m.used}%"></i></div>
+        <div class="goalmeta"><span class="gleft">${m.left<0?Math.abs(m.left)+'d over':m.left+'d left'}</span><span class="gby">by ${endTxt}</span><button class="grestart" title="Restart this window" onclick="goalRestart('${it.id}')">↺</button></div>
+      </div>`;}).join('');
+  });
+  if(!open.length)html+='<div class="empty">No goals yet — add one above.</div>';
+  if(done.length)html+=`<details class="warch"><summary>✅ Completed <span class="wcount">${done.length}</span></summary>`+
+    done.map(it=>`<li class="done"><input type="checkbox" checked onchange="toggleDone('goals','${it.id}')"><span class="txt">${escHtml(it.text)}</span><button class="iconbtn del" onclick="delItem('goals','${it.id}')">✕</button></li>`).join('')+'</details>';
+  host.innerHTML=html;
+  if(typeof updateCounts==='function')updateCounts();
+}
+
+/* ===== 21-Day Challenge — 8 habits x 21 days, cumulative score ============ */
+const CH_ITEMS=[
+  ['fit','Gym'],['fit','Home workout'],['fit','Stretching'],
+  ['know','2 podcasts'],['know','Read 10 pages'],['know','Spanish 10 min'],
+  ['diet','1 gal water'],
+  ['mind','Outdoor walk']
+];
+const CH_CATS={fit:'Fitness',know:'Knowledge',diet:'Diet',mind:'Mindset'};
+let CH={start:null,checks:{}};
+function chLoad(){try{CH=JSON.parse(localStorage.getItem('cc_challenge'))||{start:null,checks:{}};}catch(e){CH={start:null,checks:{}};}
+  if(!CH.checks)CH.checks={};
+  if(!CH.start||isNaN(new Date(CH.start+'T12:00:00'))){CH.start=TODAY_ISO; chSave();}}
+function chSave(){const v=JSON.stringify(CH); localStorage.setItem('cc_challenge',v); if(typeof SYNC!=='undefined')SYNC.queue('cc_challenge',v);}
+function chDayIndex(){
+  if(!CH.start||isNaN(new Date(CH.start+'T12:00:00'))){ CH.start=TODAY_ISO; }
+  const st=new Date(CH.start+'T12:00:00'); const n=Math.floor((TODAY-st)/DAY_MS);
+  return isNaN(n)?0:n; }
+function chToggle(i,d){const k=i+'::'+d; if(CH.checks[k])delete CH.checks[k]; else CH.checks[k]=1; chSave(); renderChallenge();}
+function chReset(){ if(!confirm('Restart the 21-day challenge? All ticks are cleared.'))return; CH={start:TODAY_ISO,checks:{}}; chSave(); renderChallenge(); }
+function renderChallenge(){
+  const host=document.getElementById('chMatrix'); if(!host)return;
+  const di=chDayIndex();
+  let html='', lastCat='';
+  CH_ITEMS.forEach((it,i)=>{
+    if(it[0]!==lastCat){ lastCat=it[0]; html+=`<div class="chcat">${CH_CATS[it[0]]}</div>`; }
+    let cells='';
+    for(let d=0;d<21;d++){
+      const on=!!CH.checks[i+'::'+d];
+      const cls=['chcell']; if(on)cls.push('on'); if(d===di)cls.push('today'); if(d>di)cls.push('future');
+      if(d%7===0&&d>0)cells+='<span class="chgap"></span>';
+      cells+=`<button class="${cls.join(' ')}" title="Day ${d+1}" onclick="chToggle(${i},${d})"></button>`;
+    }
+    html+=`<div class="chrow"><span class="chlbl">${it[1]}</span><span class="chcells">${cells}</span></div>`;
+  });
+  host.innerHTML=html;
+  // scores
+  const todayDone=CH_ITEMS.filter((_,i)=>CH.checks[i+'::'+di]).length;
+  const total=Object.keys(CH.checks).length;
+  const possible=Math.max(1,(Math.min(di,20)+1)*CH_ITEMS.length);
+  const pct=Math.round(total/possible*100);
+  const dEl=document.getElementById('chDay'), sEl=document.getElementById('chScore'), tEl=document.getElementById('chTotal');
+  if(dEl)dEl.textContent=(di<0?'starts '+CH.start:(di>20?'complete':'Day '+(di+1)+' of 21'));
+  if(sEl)sEl.textContent='today '+todayDone+'/'+CH_ITEMS.length;
+  if(tEl)tEl.textContent=total+'/'+possible+' · '+pct+'%';
+}
+
 /* ===== counts + glance ===== */
 function updateCounts(){
   setCount('week', null);
@@ -1659,7 +1838,7 @@ document.getElementById('monthName').textContent=MON[TODAY.getMonth()];
 renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
 try{ const __g=localStorage.getItem('cc_gcal'); if(__g){ const __a=JSON.parse(__g); if(Array.isArray(__a)&&__a.length) applyCal(__a); } }catch(_){}   // instant calendar from last synced feed
-lload(); mcload(); reLoad(); dcLoad();
+lload(); mcload(); reLoad(); dcLoad(); chLoad();
 if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
@@ -1687,13 +1866,14 @@ function migrateMC(){
 setTimeout(migrateMC,6000);
 
 renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
-renderToday(); renderDC(); renderConcept(); renderTrips(); initCardDrag(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
+renderToday(); renderDC(); renderConcept(); renderTrips(); renderGoals(); renderChallenge(); initCardDrag(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
 renderGlance();
 applyTheme(normSkin(localStorage.getItem('cc_theme')));
 evTintReset();
+window.__ccBooted=true;
 SYNC.start();
 </script>
 </body>
