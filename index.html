@@ -58,6 +58,19 @@
     --gold:#63C6DB; --accent:#63C6DB; --teal:#5FC3A6; --dusk:#8FA4D8; --rain:#8FA4D8;
     --wknd:#0E1219; --wknd-bd:#233040; --wknd-hover:#1C2431;
   }
+  /* ---- Steel: neutral grey paper on white, deep teal-cyan (light counterpart to Midnight) ---- */
+  body.skin-steel{ color-scheme:light;
+    --panel:#FFFFFF; --inset:#F0F2F5; --line:#DADEE5;
+    --mut:#5C6570; --faint:#8E97A3; --dim:#CBD1D9;
+    --brass:#16687C; --sage:#1D6350; --slate:#3F5480; --onaccent:#FFFFFF;
+    --red:#943E34; --rest:#8E97A3;
+    --tint:rgba(22,104,124,.05); --todaybg:rgba(22,104,124,.09); --barbg:rgba(240,242,245,.94);
+    --bg:#F0F2F5; --card-hover:#F6F8FA;
+    --ink:#171C23; --amber:#7E5E1E; --rose:#943E34; --gym:#554677; --urgent:#943E34;
+    --bg2:#F0F2F5; --card:#FFFFFF; --divider:#DADEE5; --ink-muted:#5C6570;
+    --gold:#16687C; --accent:#16687C; --teal:#1D6350; --dusk:#3F5480; --rain:#3F5480;
+    --wknd:#F0F2F5; --wknd-bd:#DADEE5; --wknd-hover:#F6F8FA;
+  }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-size:15.5px; font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
   ::selection{background:rgba(201,169,106,.25);}
@@ -853,10 +866,10 @@ const TODAY_ISO=TODAY.getFullYear()+"-"+String(TODAY.getMonth()+1).padStart(2,"0
 function isoLocal(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"T00:00:00";}
 
 /* ===== themes ===== */
-const SKINS={dark:{name:"◗ Almanac"},light:{name:"◖ Parchment"},forest:{name:"◗ Forest"},midnight:{name:"◗ Midnight"}};
+const SKINS={dark:{name:"◗ Almanac"},light:{name:"◖ Parchment"},forest:{name:"◗ Forest"},midnight:{name:"◗ Midnight"},steel:{name:"◖ Steel"}};
 function normSkin(v){ if(v==='ledger')return 'light'; if(v==='aurora')return 'dark'; return SKINS[v]?v:"dark"; }   // migrate old theme keys
 function applyTheme(key,fromUser){key=normSkin(key);
-  document.body.classList.remove("skin-dark","skin-light","skin-forest","skin-midnight","skin-ledger","skin-aurora");
+  document.body.classList.remove("skin-dark","skin-light","skin-forest","skin-midnight","skin-steel","skin-ledger","skin-aurora");
   document.body.classList.add("skin-"+key);
   if(fromUser){localStorage.setItem("cc_theme",key); if(typeof SYNC!=="undefined")SYNC.queue("cc_theme",key);}
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
@@ -1040,7 +1053,8 @@ const EVC_DEFAULTS={
   dark:{block:'#C9A96A', appt:'#D0A35C', blockP:'#6FA396', apptP:'#8B93BC'},       // brass · sage = Prominato
   light:{block:'#8A6E3A', appt:'#A0722F', blockP:'#3E7A6C', apptP:'#54608F'},      // deep brass · forest
   forest:{block:'#C2A24E', appt:'#D89A4E', blockP:'#7FB489', apptP:'#8FA6B8'},     // antique gold · moss
-  midnight:{block:'#63C6DB', appt:'#E0B15C', blockP:'#5FC3A6', apptP:'#8FA4D8'}};  // steel cyan · aqua
+  midnight:{block:'#63C6DB', appt:'#E0B15C', blockP:'#5FC3A6', apptP:'#8FA4D8'},   // steel cyan · aqua
+  steel:{block:'#16687C', appt:'#7E5E1E', blockP:'#1D6350', apptP:'#3F5480'}};      // deep teal · forest
 function evSkin(){ const c=document.body.classList; for(const k of Object.keys(SKINS)) if(c.contains('skin-'+k)) return k; return 'dark'; }
 function evPalette(){ return EVC_DEFAULTS[evSkin()]; }
 function evColor(e){ if(e.tint) return e.tint;                       // per-event custom color wins
