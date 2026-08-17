@@ -62,22 +62,22 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 <h2>What each size shows</h2>
 <table>
 <tr><th>Slot</th><th>Shows</th></tr>
-<tr><td><b>Circular</b> (lock screen)</td><td>Ring = % of the 21-day challenge banked; centre = today\u2019s habits, e.g. <code>5/8</code>, plus the day number</td></tr>
+<tr><td><b>Circular</b> (lock screen)</td><td>Ring = % of the 21-day challenge banked; centre = today&rsquo;s habits, e.g. <code>5/8</code>, plus the day number</td></tr>
 <tr><td><b>Rectangular</b> (lock screen)</td><td>Day n/21 · habits today · daily constants · progress bar · primary + urgent + water</td></tr>
-<tr><td><b>Inline</b> (above the clock)</td><td><code>\u2301 5/8 \u00b7 14 open \u00b7 3!</code></td></tr>
+<tr><td><b>Inline</b> (above the clock)</td><td><code>&#8961; 5/8 &middot; 14 open &middot; 3!</code></td></tr>
 <tr><td><b>Small / Medium</b> (home screen)</td><td>Full colour: big habit count, progress bar, and Primary / Urgent / Daily / Water</td></tr>
 </table>
 
-<div class="note">Tapping the widget opens the dashboard. It refreshes roughly every 15 minutes \u2014 iOS decides the exact cadence, so treat it as \u201cfresh within the hour\u201d, not live.</div>
+<div class="note">Tapping the widget opens the dashboard. It refreshes roughly every 15 minutes &mdash; iOS decides the exact cadence, so treat it as &ldquo;fresh within the hour&rdquo;, not live.</div>
 <div class="note warn">Lock screen widgets are rendered <b>monochrome</b> by iOS, so the lock screen versions are deliberately drawn in white/opacity rather than colour. The home screen versions keep the Almanac palette.</div>
 
 <h2>Android</h2>
-<p style="color:#8F8471;font-size:13.5px">Android 12+ dropped true lock-screen widgets. The equivalents are a home-screen widget via <b>KWGT</b> (it can pull the same JSON URL), or <b>Tasker</b> + AutoNotification for a persistent notification. Say the word and I\u2019ll write that config instead.</p>
+<p style="color:#8F8471;font-size:13.5px">Android 12+ dropped true lock-screen widgets. The equivalents are a home-screen widget via <b>KWGT</b> (it can pull the same JSON URL), or <b>Tasker</b> + AutoNotification for a persistent notification. Say the word and I&rsquo;ll write that config instead.</p>
 
 <h2>The code</h2>
 <pre id="code">// ── Max HQ · iOS lock-screen + home-screen widget ────────────────────────────
-// Runs in Scriptable (free, App Store). Reads the same Apps Script JSON API the
-// dashboard uses, so it needs no login and no extra backend.
+// Runs in Scriptable (free, App Store). Talks to the dashboard's Apps Script API
+// with a summary-only key: progress counts, never to-do text, notes or calendars.
 //
 // Supports: accessoryCircular, accessoryRectangular, accessoryInline (lock screen)
 //           small, medium (home screen)
@@ -242,7 +242,7 @@ Script.complete();
 </div>
 <script>
 /* The key is remembered on this device only (localStorage) and is never sent
-   anywhere \u2014 it is substituted into the clipboard text at copy time, so the
+   anywhere -- it is substituted into the clipboard text at copy time, so the
    published page and this repo stay free of secrets. */
 const KEYBOX=document.getElementById('wk');
 try{ KEYBOX.value=localStorage.getItem('maxhq_widget_key')||''; }catch(e){}

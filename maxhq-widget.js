@@ -1,6 +1,6 @@
 // ── Max HQ · iOS lock-screen + home-screen widget ────────────────────────────
-// Runs in Scriptable (free, App Store). Reads the same Apps Script JSON API the
-// dashboard uses, so it needs no login and no extra backend.
+// Runs in Scriptable (free, App Store). Talks to the dashboard's Apps Script API
+// with a summary-only key: progress counts, never to-do text, notes or calendars.
 //
 // Supports: accessoryCircular, accessoryRectangular, accessoryInline (lock screen)
 //           small, medium (home screen)
