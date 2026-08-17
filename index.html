@@ -108,6 +108,9 @@
   .agtitle{font-family:var(--fdisp); font-size:26px; font-weight:600; margin:0 0 8px; color:var(--ink); letter-spacing:-.02em;}
   .agsub{font-size:13px; color:var(--mut); margin:0 0 20px; line-height:1.5;}
   .agerr{color:var(--red); font-size:12.5px; margin-top:14px; min-height:18px;}
+  .agalt{display:inline-block; margin-top:2px; font-size:12px; color:var(--mut); text-decoration:none;
+         border-bottom:1px dotted var(--line);}
+  .agalt:hover{color:var(--brass); border-bottom-color:var(--brass);}
   body.locked .wrap,body.locked .appbar{filter:blur(7px); pointer-events:none; user-select:none;}
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-size:15.5px; font-family:var(--fbody); line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
@@ -777,6 +780,7 @@
     <p class="agsub">This dashboard is private. Sign in with the Google account that owns it.</p>
     <div id="gsiBtn"></div>
     <div class="agerr" id="agErr"></div>
+    <a href="#" id="agAlt" class="agalt">Button not working? Sign in the redirect way →</a>
   </div>
 </div>
 <div class="wrap">
@@ -986,10 +990,50 @@ const AUTH = (function(){
     if(resolveReady){resolveReady(token); resolveReady=null;}
     try{ SYNC.pull(); }catch(e){}
   }
+  /* ---- redirect fallback -------------------------------------------------
+     One Tap and the popup account chooser are the happy path, but both can be
+     blocked: iOS Safari with cross-site tracking prevention, strict popup
+     blockers, or a browser with third-party cookies off will leave the gate
+     stuck with nothing to click. So the gate also offers Google's classic
+     redirect flow, which needs no popup at all — the whole page goes to
+     accounts.google.com and comes back with #id_token=… in the fragment.
+     The token is still just a token: the backend re-verifies its signature,
+     audience, expiry and address before answering anything. ---------------- */
+  function nonce_(){
+    try{ const a=new Uint8Array(16); crypto.getRandomValues(a);
+      return Array.from(a,b=>b.toString(16).padStart(2,'0')).join(''); }
+    catch(e){ return String(Date.now())+'x'+String(performance.now()).replace('.',''); }
+  }
+  function redirectSignIn(){
+    const n=nonce_();
+    try{ sessionStorage.setItem('cc_auth_nonce',n); }catch(e){}
+    const p=new URLSearchParams({client_id:OAUTH_CLIENT_ID, response_type:'id_token',
+      scope:'openid email', redirect_uri:location.origin+'/', nonce:n, prompt:'select_account'});
+    location.assign('https://accounts.google.com/o/oauth2/v2/auth?'+p.toString());
+  }
+  function fromFragment(){                  // returns true if it signed us in
+    const h=location.hash||'';
+    if(h.indexOf('id_token=')<0) return false;
+    let tok=null;
+    try{ tok=new URLSearchParams(h.replace(/^#/,'')).get('id_token'); }catch(e){}
+    // strip it immediately — a token has no business sitting in the URL bar or history
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    if(!tok) return false;
+    let want=''; try{ want=sessionStorage.getItem('cc_auth_nonce')||''; sessionStorage.removeItem('cc_auth_nonce'); }catch(e){}
+    try{ const p=JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if(want && p.nonce!==want) return false;   // not the sign-in this tab started
+    }catch(e){ return false; }
+    onCredential({credential:tok});
+    return true;
+  }
   function init(){
     ready=new Promise(r=>{resolveReady=r;});
-    if(!window.google||!google.accounts||!google.accounts.id){ setTimeout(init,300); return; }
+    const link=document.getElementById('agAlt');
+    if(link && !link.dataset.wired){ link.dataset.wired='1';
+      link.addEventListener('click',function(ev){ ev.preventDefault(); redirectSignIn(); }); }
     if(OAUTH_CLIENT_ID.indexOf('__')===0){ lock('Sign-in is not configured yet (no client id).'); return; }
+    if(fromFragment()) return;              // came back from the redirect flow: already in
+    if(!window.google||!google.accounts||!google.accounts.id){ setTimeout(init,300); return; }
     google.accounts.id.initialize({client_id:OAUTH_CLIENT_ID, callback:onCredential, auto_select:true,
       cancel_on_tap_outside:false, use_fedcm_for_prompt:true});
     const host=document.getElementById('gsiBtn');
