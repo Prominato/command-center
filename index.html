@@ -965,6 +965,34 @@ const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_P
 const OAUTH_CLIENT_ID = '7822758915-ec27lo7r30nquu72gu54j7i3u5a5c37i.apps.googleusercontent.com';
 const AUTH = (function(){
   let token=null, exp=0, email=null, ready=null, resolveReady=null;
+  let prompting=false, lastPrompt=0, freshLogin=false;
+  /* One Tap is a `navigator.credentials.get()` under the hood and Chrome allows
+     exactly ONE outstanding call. The 5-minute sync timer used to fire prompt()
+     blindly, so a signed-out tab logged "FedCM get() rejects with NotAllowedError:
+     Only one navigator.credentials.get request may be outstanding" every 5 minutes
+     and wedged the chooser. Serialise it. */
+  function promptOnce(){
+    if(prompting || Date.now()-lastPrompt < 45000) return;
+    prompting=true; lastPrompt=Date.now();
+    setTimeout(function(){ prompting=false; },60000);     // safety: never latch shut
+    try{ google.accounts.id.prompt(function(){ prompting=false; }); }
+    catch(e){ prompting=false; }
+  }
+  /* The token lives in sessionStorage as well as memory, because pull() reloads the
+     page when the cloud has newer data — and a reload used to throw the session away
+     and drop you back on the gate (on the redirect path there is no fragment left to
+     re-auth with, so that was a loop). Per-tab, cleared on close, expires in ~1h, and
+     it is only a bearer for our own backend, which re-verifies it from scratch. */
+  function stash(){ try{ token ? sessionStorage.setItem('cc_auth_tok',token) : sessionStorage.removeItem('cc_auth_tok'); }catch(e){} }
+  function rehydrate(){
+    let t=''; try{ t=sessionStorage.getItem('cc_auth_tok')||''; }catch(e){}
+    if(!t) return false;
+    try{ const p=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if((p.exp||0)*1000 < Date.now()+120000) throw new Error('too close to expiry');
+    }catch(e){ try{ sessionStorage.removeItem('cc_auth_tok'); }catch(_){} return false; }
+    onCredential({credential:t});
+    return !!token;                                      // false if the allow-list rejected it
+  }
   function lock(msg){ document.body.classList.add('locked');
     const g=document.getElementById('authGate'); if(g)g.classList.add('show');
     const e=document.getElementById('agErr'); if(e&&msg)e.textContent=msg; }
@@ -979,11 +1007,12 @@ const AUTH = (function(){
     try{ const p=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       exp=(p.exp||0)*1000; email=p.email||null; }catch(e){ exp=Date.now()+55*60*1000; }
     if(email && ALLOWED.indexOf(String(email).toLowerCase())<0){
-      token=null; exp=0;
+      token=null; exp=0; stash();
       try{ google.accounts.id.disableAutoSelect(); }catch(e){}
       lock(email+' can’t open this dashboard. Use max@prominato.com or msteinberg115@gmail.com.');
       return;
     }
+    prompting=false; freshLogin=true; stash();
     unlock();
     const pill=document.getElementById('syncPill');
     if(pill&&email) pill.title='Signed in as '+email;
@@ -1033,23 +1062,28 @@ const AUTH = (function(){
       link.addEventListener('click',function(ev){ ev.preventDefault(); redirectSignIn(); }); }
     if(OAUTH_CLIENT_ID.indexOf('__')===0){ lock('Sign-in is not configured yet (no client id).'); return; }
     if(fromFragment()) return;              // came back from the redirect flow: already in
+    if(rehydrate()) return;                 // same tab, still-valid token: stay signed in
     if(!window.google||!google.accounts||!google.accounts.id){ setTimeout(init,300); return; }
     google.accounts.id.initialize({client_id:OAUTH_CLIENT_ID, callback:onCredential, auto_select:true,
       cancel_on_tap_outside:false, use_fedcm_for_prompt:true});
     const host=document.getElementById('gsiBtn');
     if(host) google.accounts.id.renderButton(host,{theme:'outline',size:'large',text:'signin_with',shape:'pill'});
-    google.accounts.id.prompt();
+    promptOnce();
     lock('');
   }
   function fresh(){                       // token good for at least another 3 min?
     if(token && Date.now() < exp-180000) return Promise.resolve(token);
     const had=!!token;                    // first load ≠ an expired session
+    if(had){ token=null; stash(); }       // a stale token is worse than none
     ready=new Promise(r=>{resolveReady=r;});
-    try{ google.accounts.id.prompt(); }catch(e){}
+    promptOnce();
     lock(had ? 'Session expired — sign in again.' : '');
     return ready;
   }
-  return {init, fresh, lock, unlock, get email(){return email;}, get token(){return token;}};
+  return {init, fresh, lock, unlock, get email(){return email;}, get token(){return token;},
+          // true once per interactive sign-in — lets pull() skip its reload so you don't
+          // see the page load twice the moment you get in
+          justSignedIn(){ const v=freshLogin; freshLogin=false; return v; }};
 })();
 async function apiPost(payload){
   const tok = await AUTH.fresh();
@@ -1099,7 +1133,10 @@ const SYNC=(function(){
       applyCal(__cal);
       pill('synced');
       const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
-      if(changed && !typing) location.reload();   // pick up remote changes; skipped while you're typing
+      // Pick up remote changes. Skipped while you're typing, and skipped on the first
+      // pull after signing in (the token survives a reload now, but loading the page
+      // twice in a row the instant you get in looks broken).
+      if(changed && !typing && !AUTH.justSignedIn()) location.reload();
     }catch(e){ pill('offline'); }}
   function start(){ pull(); setInterval(pull,5*60*1000);
     document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush();} else {pull();} });
