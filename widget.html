@@ -17,6 +17,12 @@ code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:#1E1A14;b
 .btn.ghost{background:transparent;color:#C9A96A;border:1px solid #C9A96A}
 pre{background:#1E1A14;border:1px solid #2E2820;border-top:2px solid #C9A96A;border-radius:9px;padding:14px;overflow:auto;
   font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5;max-height:340px;color:#C9C2B6}
+.keybox{background:#1E1A14;border:1px solid #2E2820;border-top:2px solid #6FA396;border-radius:9px;padding:14px;margin:16px 0 4px}
+.keybox label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1.3px;text-transform:uppercase;color:#8F8471;margin-bottom:7px}
+.keybox input{width:100%;box-sizing:border-box;background:#16130F;border:1px solid #2E2820;border-radius:6px;padding:11px 12px;
+  color:#E9E2D6;font-family:'IBM Plex Mono',monospace;font-size:13px}
+.keybox input:focus{outline:none;border-color:#C9A96A}
+.keybox .hint{color:#8F8471;font-size:12px;margin-top:8px}
 .note{border-left:2px solid #6FA396;padding:8px 0 8px 13px;color:#8F8471;font-size:13px;margin:14px 0}
 .warn{border-left-color:#C2705C}
 table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:13.5px}
@@ -25,7 +31,7 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 .ok{color:#6FA396}.no{color:#C2705C}
 </style></head><body><div class="wrap">
 <h1>Max HQ on your lock screen</h1>
-<div class="lede">Your dashboard already exposes a public JSON API, so a widget can read it with no login and no extra server. Below is a ready-made widget — copy it once, and it updates itself.</div>
+<div class="lede">The dashboard's backend is private — it answers nothing without a credential. The widget gets its own <b>summary-only key</b>: it can read progress <i>counts</i> and nothing else, so even if someone lifted it off your phone they'd learn that you did 5 of 8 habits, not a single word of your to-dos, notes or calendar. Copy the code once and it keeps itself updated.</div>
 
 <h2>Why this route</h2>
 <table>
@@ -39,12 +45,17 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 <h2>Setup</h2>
 <ol>
 <li>Install <b>Scriptable</b> from the App Store (free).</li>
-<li>Tap <b>Copy the widget code</b> below.</li>
-<li><b>Replace <code>PASTE_YOUR_WIDGET_KEY_HERE</code></b> with the widget key Max HQ gave you. It only unlocks progress counts — never your to-do text, notes or calendar.</li>
-<li>Open Scriptable → <b>+</b> (top right) → paste → tap the title and name it <code>Max HQ</code> → Done.</li>
-<li>Long-press your <b>Lock Screen</b> → <b>Customise</b> → tap the widget area under the clock → pick <b>Scriptable</b>.</li>
-<li>Tap the placed widget → <b>Script:</b> <code>Max HQ</code> → done.</li>
+<li>Paste your widget key in the box below, then tap <b>Copy the widget code</b> — the key gets baked into the copy so you never have to hunt for a line of code on a phone keyboard.</li>
+<li>Open Scriptable → <b>+</b> (top right) → paste → tap the title, name it <code>Max HQ</code> → <b>Done</b>.</li>
+<li>Still in Scriptable, tap <b>▶</b> once. You should see the widget preview. If it says <i>key rejected</i>, the key is wrong; <i>offline</i> means no network.</li>
+<li>Long-press your <b>Lock Screen</b> → <b>Customise</b> → <b>Lock Screen</b> → tap the widget strip under the clock → pick <b>Scriptable</b> (circular, rectangular or inline).</li>
+<li>Tap the widget you just placed → <b>Script: Max HQ</b> → <b>X</b> → <b>Done</b>.</li>
 </ol>
+<div class="keybox">
+  <label for="wk">Your widget key</label>
+  <input id="wk" type="text" placeholder="wid_…" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <div class="hint">Stays on this device. This page never sends it anywhere — it is only substituted into the text you copy.</div>
+</div>
 <button class="btn" onclick="copyCode(this)">Copy the widget code</button>
 <a class="btn ghost" href="maxhq-widget.js" download>Download .js</a>
 
@@ -230,9 +241,24 @@ Script.complete();
 </pre>
 </div>
 <script>
+/* The key is remembered on this device only (localStorage) and is never sent
+   anywhere \u2014 it is substituted into the clipboard text at copy time, so the
+   published page and this repo stay free of secrets. */
+const KEYBOX=document.getElementById('wk');
+try{ KEYBOX.value=localStorage.getItem('maxhq_widget_key')||''; }catch(e){}
+KEYBOX.addEventListener('input',()=>{ try{ localStorage.setItem('maxhq_widget_key',KEYBOX.value.trim()); }catch(e){} });
+
+function codeWithKey(){
+  const raw=document.getElementById('code').textContent;
+  const k=(KEYBOX.value||'').trim();
+  if(!k) return raw;
+  return raw.replace('PASTE_YOUR_WIDGET_KEY_HERE', k.replace(/["\\]/g,''));
+}
 function copyCode(btn){
-  const t=document.getElementById('code').textContent;
-  navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied \u2713'; setTimeout(()=>btn.textContent='Copy the widget code',1800);})
+  const t=codeWithKey();
+  const done=()=>{ btn.textContent = KEYBOX.value.trim() ? 'Copied \u2713 key included' : 'Copied \u2713 (no key yet)';
+                   setTimeout(()=>btn.textContent='Copy the widget code',2200); };
+  navigator.clipboard.writeText(t).then(done)
     .catch(()=>{const r=document.createRange(); r.selectNode(document.getElementById('code'));
       getSelection().removeAllRanges(); getSelection().addRange(r); btn.textContent='Selected \u2014 hit Copy';});
 }
