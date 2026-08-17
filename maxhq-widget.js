@@ -6,6 +6,9 @@
 //           small, medium (home screen)
 
 const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec";
+// Paste your widget key here (Max HQ → I gave it to you privately; it is NOT in this repo).
+// This key can ONLY fetch progress counts — never to-do text, notes or calendar titles.
+const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
 const CH_ITEMS = 8;                    // habits in the 21-day challenge
 const BRASS = new Color("#C9A96A");
 const SAGE  = new Color("#6FA396");
@@ -14,56 +17,16 @@ const MUT   = new Color("#8F8471");
 
 function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 
-async function getState(){
-  const req = new Request(SYNC + "?action=state");
+async function getSummary(){
+  const req = new Request(SYNC);
+  req.method = "POST";
+  req.headers = { "Content-Type": "text/plain;charset=utf-8" };   // simple type → no CORS preflight
+  req.body = JSON.stringify({ action: "summary", key: WIDGET_KEY });
   req.timeoutInterval = 20;
   const j = await req.loadJSON();
-  return (j && j.state) ? j.state : {};
-}
-function val(state, key, fallback){
-  try { return state[key] ? JSON.parse(state[key].v) : fallback; } catch(e){ return fallback; }
-}
-function raw(state, key){ return state[key] ? state[key].v : null; }
-
-function compute(state){
-  const today = iso(new Date());
-
-  // 21-day challenge
-  const ch = val(state, "cc_challenge", {start: today, checks: {}});
-  let dayIdx = 0;
-  if (ch.start){
-    const a = new Date(ch.start + "T00:00:00"), b = new Date(today + "T00:00:00");
-    dayIdx = Math.round((b - a) / 86400000);
-  }
-  const checks = ch.checks || {};
-  let todayDone = 0;
-  for (let i = 0; i < CH_ITEMS; i++) if (checks[i + "::" + dayIdx]) todayDone++;
-  const totalChecks = Object.keys(checks).length;
-  const possible = Math.max(1, (Math.min(Math.max(dayIdx,0), 20) + 1) * CH_ITEMS);
-  const chPct = Math.round(totalChecks / possible * 100);
-
-  // to-dos
-  const L = val(state, "cc_lists", {});
-  const buckets = ["todo","work","house","routine"];
-  let primary = 0, urgent = 0;
-  buckets.forEach(b => (L[b] || []).forEach(it => {
-    if (it.done) return;
-    if (it.pri !== "secondary") primary++;
-    if (it.urgent) urgent++;
-  }));
-
-  // daily constants
-  const dcAll = (L.dconst || []).length || 13;
-  const dcState = val(state, "cc_dc_state", {});
-  const dcToday = dcState[today] || {};
-  const dcDone = Object.keys(dcToday).filter(k => dcToday[k]).length;
-
-  // water (stored as individual water::<date>::<n> keys)
-  let water = 0;
-  for (let n = 0; n < 4; n++) if (raw(state, "water::" + today + "::" + n) === "1") water++;
-
-  return {dayIdx, todayDone, chPct, primary, urgent, dcDone, dcAll, water,
-          day: Math.min(Math.max(dayIdx,0) + 1, 21)};
+  if (!j || !j.ok) throw new Error(j && j.error ? j.error : "unauthorized");
+  return { dayIdx: j.day - 1, day: j.day, todayDone: j.todayDone, chPct: j.pct,
+           primary: j.primary, urgent: j.urgent, dcDone: j.dcDone, dcAll: j.dcAll, water: j.water };
 }
 
 // progress ring for the circular lock-screen widget
@@ -107,11 +70,12 @@ function bar(w, widget, pct, color){
 
 async function build(){
   let d;
-  try { d = compute(await getState()); }
+  try { d = await getSummary(); }
   catch (e) {
     const w = new ListWidget();
     w.addText("Max HQ").font = Font.boldSystemFont(12);
-    const t = w.addText("offline"); t.font = Font.systemFont(11); t.textColor = MUT;
+    const msg = String(e).indexOf("unauthorized") >= 0 ? "key rejected" : "offline";
+    const t = w.addText(msg); t.font = Font.systemFont(11); t.textColor = MUT;
     return w;
   }
 
@@ -154,10 +118,10 @@ async function build(){
   w.setPadding(14,14,14,14);
   const head = w.addStack(); head.centerAlignContent();
   const h = head.addText("MAX HQ");
-  h.font = new Font("Menlo-Bold", 10); h.textColor = BRASS;
+  h.font = Font.boldMonospacedSystemFont(10); h.textColor = BRASS;
   head.addSpacer();
   const dd = head.addText("DAY " + d.day + "/21");
-  dd.font = new Font("Menlo", 10); dd.textColor = MUT;
+  dd.font = Font.mediumMonospacedSystemFont(10); dd.textColor = MUT;
   w.addSpacer(8);
 
   const big = w.addText(d.todayDone + "/" + CH_ITEMS);
@@ -172,7 +136,7 @@ async function build(){
   const mk = (label, value, color) => {
     const s = row.addStack(); s.layoutVertically();
     const v = s.addText(String(value)); v.font = Font.boldSystemFont(15); v.textColor = color;
-    const l = s.addText(label); l.font = new Font("Menlo", 8); l.textColor = MUT;
+    const l = s.addText(label); l.font = Font.mediumMonospacedSystemFont(8); l.textColor = MUT;
     row.addSpacer();
   };
   mk("PRIMARY", d.primary, new Color("#E9E2D6"));
@@ -189,7 +153,11 @@ const widget = await build();
 if (config.runsInWidget) {
   Script.setWidget(widget);
 } else {
-  // previewing inside the Scriptable app
-  if (widget.presentMedium) await widget.presentMedium();
+  // previewing inside the Scriptable app — match the family you're testing
+  const fam = config.widgetFamily || "medium";
+  if (fam === "accessoryRectangular" && widget.presentAccessoryRectangular) await widget.presentAccessoryRectangular();
+  else if (fam === "accessoryCircular" && widget.presentAccessoryCircular) await widget.presentAccessoryCircular();
+  else if (fam === "accessoryInline" && widget.presentAccessoryInline) await widget.presentAccessoryInline();
+  else if (widget.presentMedium) await widget.presentMedium();
 }
 Script.complete();

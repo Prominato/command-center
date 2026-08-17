@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Max HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500;1,6..72,600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Syne:wght@600;700;800&family=Outfit:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* ===== Agenda Book design system — warm dark (default) + parchment light ===== */
@@ -98,6 +99,16 @@
     --gold:#E85D04; --accent:#E85D04; --teal:#0B7A5E; --dusk:#4A5FBF; --rain:#4A5FBF;
     --wknd:#FFF6EE; --wknd-bd:#F0DCC8; --wknd-hover:#FFFBF7;
   }
+  #authGate{position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center;
+    background:var(--bg); padding:24px;}
+  #authGate.show{display:flex;}
+  .agcard{max-width:420px; width:100%; background:var(--panel); border:1px solid var(--line); border-top:2px solid var(--brass);
+    border-radius:12px; padding:30px 28px; text-align:left;}
+  .ageyebrow{font-family:var(--fmono); font-size:9.5px; letter-spacing:2px; color:var(--brass); margin-bottom:12px;}
+  .agtitle{font-family:var(--fdisp); font-size:26px; font-weight:600; margin:0 0 8px; color:var(--ink); letter-spacing:-.02em;}
+  .agsub{font-size:13px; color:var(--mut); margin:0 0 20px; line-height:1.5;}
+  .agerr{color:var(--red); font-size:12.5px; margin-top:14px; min-height:18px;}
+  body.locked .wrap,body.locked .appbar{filter:blur(7px); pointer-events:none; user-select:none;}
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); background-image:none; color:var(--ink); font-size:15.5px; font-family:var(--fbody); line-height:1.32; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; transition:background .25s,color .25s;}
   ::selection{background:rgba(201,169,106,.25);}
@@ -759,6 +770,15 @@
 </div>
 
 
+<div id="authGate">
+  <div class="agcard">
+    <div class="ageyebrow">MAX HQ</div>
+    <h1 class="agtitle">Sign in to continue</h1>
+    <p class="agsub">This dashboard is private. Sign in with the Google account that owns it.</p>
+    <div id="gsiBtn"></div>
+    <div class="agerr" id="agErr"></div>
+  </div>
+</div>
 <div class="wrap">
 
   <div id="glance"></div>
@@ -931,6 +951,58 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
+/* ===== auth: Google Identity Services =====================================
+   The backend now rejects anonymous traffic. Every call carries a freshly
+   minted Google ID token, which the Apps Script verifies against Google and
+   checks against its own address allow-list. Tokens last ~1h, so we re-prompt
+   silently when one is close to expiring or a call comes back unauthorized. */
+// Public by design — a client id is not a secret. Project "Max HQ" (max-hq-505817),
+// owned by msteinberg115@gmail.com; only maxhq.netlify.app + localhost:4321 may use it.
+const OAUTH_CLIENT_ID = '7822758915-ec27lo7r30nquu72gu54j7i3u5a5c37i.apps.googleusercontent.com';
+const AUTH = (function(){
+  let token=null, exp=0, email=null, ready=null, resolveReady=null;
+  function lock(msg){ document.body.classList.add('locked');
+    const g=document.getElementById('authGate'); if(g)g.classList.add('show');
+    const e=document.getElementById('agErr'); if(e&&msg)e.textContent=msg; }
+  function unlock(){ document.body.classList.remove('locked');
+    const g=document.getElementById('authGate'); if(g)g.classList.remove('show'); }
+  function onCredential(resp){
+    if(!resp||!resp.credential){ lock('No credential returned. Try again.'); return; }
+    token=resp.credential;
+    try{ const p=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      exp=(p.exp||0)*1000; email=p.email||null; }catch(e){ exp=Date.now()+55*60*1000; }
+    unlock();
+    if(resolveReady){resolveReady(token); resolveReady=null;}
+    try{ SYNC.pull(); }catch(e){}
+  }
+  function init(){
+    ready=new Promise(r=>{resolveReady=r;});
+    if(!window.google||!google.accounts||!google.accounts.id){ setTimeout(init,300); return; }
+    if(OAUTH_CLIENT_ID.indexOf('__')===0){ lock('Sign-in is not configured yet (no client id).'); return; }
+    google.accounts.id.initialize({client_id:OAUTH_CLIENT_ID, callback:onCredential, auto_select:true,
+      cancel_on_tap_outside:false, use_fedcm_for_prompt:true});
+    const host=document.getElementById('gsiBtn');
+    if(host) google.accounts.id.renderButton(host,{theme:'outline',size:'large',text:'signin_with',shape:'pill'});
+    google.accounts.id.prompt();
+    lock('');
+  }
+  function fresh(){                       // token good for at least another 3 min?
+    if(token && Date.now() < exp-180000) return Promise.resolve(token);
+    ready=new Promise(r=>{resolveReady=r;});
+    try{ google.accounts.id.prompt(); }catch(e){}
+    lock('Session expired — sign in again.');
+    return ready;
+  }
+  return {init, fresh, lock, unlock, get email(){return email;}, get token(){return token;}};
+})();
+async function apiPost(payload){
+  const tok = await AUTH.fresh();
+  const r = await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(Object.assign({idToken:tok},payload))});
+  const j = await r.json();
+  if(j && j.error==='unauthorized'){ AUTH.lock('Not authorised for this account.'); throw new Error('unauthorized'); }
+  return j;
+}
 const SYNC=(function(){
   const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen'];  // cell_seen is per-device (powers The Cell's "while you were away" toasts)
   let q={}, timer=null, meta={};
@@ -942,13 +1014,12 @@ const SYNC=(function(){
   function queue(k,v){if(!SYNC_URL||SKIP.indexOf(k)>=0)return; const t=Date.now(); meta[k]=t; saveMeta(); q[k]={k:k,v:v,t:t}; pill('saving'); clearTimeout(timer); timer=setTimeout(flush,800);}
   async function flush(){const items=Object.values(q); if(!items.length)return; q={};
     try{
-      const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({items:items})});
-      const j=await r.json(); if(!j.ok)throw new Error('save failed');
+      const j=await apiPost({action:'save',items:items}); if(!j.ok)throw new Error('save failed');
       pill('synced');
     }catch(e){ items.forEach(it=>{ if(!q[it.k]) q[it.k]=it; }); pill('offline'); setTimeout(flush,8000); }}
   async function pull(){if(!SYNC_URL){pill('local');return;} pill('syncing');
     try{
-      const r=await fetch(SYNC_URL+'?action=all'); const j=await r.json(); if(!j.ok)throw new Error('bad response');
+      const j=await apiPost({action:'all'}); if(!j.ok)throw new Error('bad response');
       let changed=false;
       Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
         if(o.t>=lt){
@@ -1966,6 +2037,7 @@ renderGlance();
 applyTheme(normSkin(localStorage.getItem('cc_theme')));
 evTintReset();
 window.__ccBooted=true;
+AUTH.init();
 SYNC.start();
 </script>
 </body>
