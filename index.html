@@ -978,18 +978,21 @@ const AUTH = (function(){
     try{ google.accounts.id.prompt(function(){ prompting=false; }); }
     catch(e){ prompting=false; }
   }
-  /* The token lives in sessionStorage as well as memory, because pull() reloads the
-     page when the cloud has newer data — and a reload used to throw the session away
-     and drop you back on the gate (on the redirect path there is no fragment left to
-     re-auth with, so that was a loop). Per-tab, cleared on close, expires in ~1h, and
-     it is only a bearer for our own backend, which re-verifies it from scratch. */
-  function stash(){ try{ token ? sessionStorage.setItem('cc_auth_tok',token) : sessionStorage.removeItem('cc_auth_tok'); }catch(e){} }
+  /* The token is kept alongside memory in localStorage — NOT sessionStorage.
+     sessionStorage is per-tab, and mobile Safari discards tabs constantly, so every
+     return to the dashboard demanded a fresh sign-in; it also does not survive the
+     redirect flow when iOS hands the return trip to a different Safari context, which
+     silently broke that path. localStorage is same-origin, the token still expires in
+     ~1h, and the backend re-verifies signature, audience, expiry and address on every
+     single call regardless of where the string was parked. */
+  const TOK_KEY='cc_auth_tok';
+  function stash(){ try{ token ? localStorage.setItem(TOK_KEY,token) : localStorage.removeItem(TOK_KEY); }catch(e){} }
   function rehydrate(){
-    let t=''; try{ t=sessionStorage.getItem('cc_auth_tok')||''; }catch(e){}
+    let t=''; try{ t=localStorage.getItem(TOK_KEY)||''; }catch(e){}
     if(!t) return false;
     try{ const p=JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       if((p.exp||0)*1000 < Date.now()+120000) throw new Error('too close to expiry');
-    }catch(e){ try{ sessionStorage.removeItem('cc_auth_tok'); }catch(_){} return false; }
+    }catch(e){ try{ localStorage.removeItem(TOK_KEY); }catch(_){} return false; }
     onCredential({credential:t});
     return !!token;                                      // false if the allow-list rejected it
   }
@@ -1035,7 +1038,10 @@ const AUTH = (function(){
   }
   function redirectSignIn(){
     const n=nonce_();
-    try{ sessionStorage.setItem('cc_auth_nonce',n); }catch(e){}
+    // localStorage, not sessionStorage: an iOS home-screen web app hands the trip to
+    // accounts.google.com to a separate Safari context, so a per-tab nonce came back
+    // missing and the return was thrown away with no visible error.
+    try{ localStorage.setItem('cc_auth_nonce',n); }catch(e){}
     const p=new URLSearchParams({client_id:OAUTH_CLIENT_ID, response_type:'id_token',
       scope:'openid email', redirect_uri:location.origin+'/', nonce:n, prompt:'select_account'});
     location.assign('https://accounts.google.com/o/oauth2/v2/auth?'+p.toString());
@@ -1048,7 +1054,7 @@ const AUTH = (function(){
     // strip it immediately — a token has no business sitting in the URL bar or history
     try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
     if(!tok) return false;
-    let want=''; try{ want=sessionStorage.getItem('cc_auth_nonce')||''; sessionStorage.removeItem('cc_auth_nonce'); }catch(e){}
+    let want=''; try{ want=localStorage.getItem('cc_auth_nonce')||''; localStorage.removeItem('cc_auth_nonce'); }catch(e){}
     try{ const p=JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       if(want && p.nonce!==want) return false;   // not the sign-in this tab started
     }catch(e){ return false; }
@@ -1085,63 +1091,98 @@ const AUTH = (function(){
           // see the page load twice the moment you get in
           justSignedIn(){ const v=freshLogin; freshLogin=false; return v; }};
 })();
-async function apiPost(payload){
+async function apiPost(payload,opts){
   const tok = await AUTH.fresh();
-  const r = await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(Object.assign({idToken:tok},payload))});
+  const r = await fetch(SYNC_URL,Object.assign({method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(Object.assign({idToken:tok},payload))},opts||{}));
   const j = await r.json();
   if(j && j.error==='unauthorized'){ AUTH.lock('Not authorised for this account.'); throw new Error('unauthorized'); }
   return j;
 }
 const SYNC=(function(){
-  const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen'];  // cell_seen is per-device (powers The Cell's "while you were away" toasts)
+  /* Per-device, never synced. The last four matter for more than tidiness: the ID
+     token, its nonce and the widget key are secrets that happen to sit in localStorage
+     on this same origin (widget.html shares it), and the reconciliation below pushes
+     up anything the cloud has not seen — so without this list they would be written
+     into the Sheet and handed to every other device. */
+  const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen',
+              'cc_lists_prev','cc_auth_tok','cc_auth_nonce','maxhq_widget_key'];
   let q={}, timer=null, meta={};
+  /* primed = this browser has merged the cloud at least once in this page load.
+     Nothing may be PUSHED before that. Every "my phone reverted to an old version"
+     bug traces back to a device publishing what it had at boot — a seeded or stale
+     localStorage — before it ever learned what the cloud held. */
+  let primed=false, pulling=false;
   try{meta=JSON.parse(localStorage.getItem('cc_sync_meta')||'{}');}catch(e){meta={};}
   function saveMeta(){try{localStorage.setItem('cc_sync_meta',JSON.stringify(meta));}catch(e){}}
   function pill(s){const el=document.getElementById('syncPill'); if(!el)return;
     const m={local:['● this device','var(--ink-muted)'],saving:['⟳ saving…','var(--rain)'],syncing:['⟳ syncing…','var(--rain)'],synced:['✓ synced','#2E9E5B'],offline:['⚠ offline — saved here','var(--urgent)']};
     const x=m[s]||m.local; el.textContent=x[0]; el.style.color=x[1];}
   function queue(k,v){if(!SYNC_URL||SKIP.indexOf(k)>=0)return; const t=Date.now(); meta[k]=t; saveMeta(); q[k]={k:k,v:v,t:t}; pill('saving'); clearTimeout(timer); timer=setTimeout(flush,800);}
-  async function flush(){const items=Object.values(q); if(!items.length)return; q={};
+  async function flush(opts){
+    if(!primed){                       // hold everything until we know what the cloud has
+      clearTimeout(timer); timer=setTimeout(flush,1500); return; }
+    const items=Object.values(q); if(!items.length)return; q={};
     try{
-      const j=await apiPost({action:'save',items:items}); if(!j.ok)throw new Error('save failed');
+      const j=await apiPost({action:'save',items:items},opts); if(!j.ok)throw new Error('save failed');
       pill('synced');
     }catch(e){ items.forEach(it=>{ if(!q[it.k]) q[it.k]=it; }); pill('offline'); setTimeout(flush,8000); }}
-  async function pull(){if(!SYNC_URL){pill('local');return;} pill('syncing');
+  /* Never silently lose a big list: if an incoming cc_lists is far smaller than what
+     this device holds, keep the outgoing copy in cc_lists_prev (device-local, never
+     synced) before overwriting. The old code REFUSED the shrink and republished local
+     instead — which is precisely how a legitimate deletion made on the laptop came
+     back from the dead a minute later. Newest write wins now; this is just a net. */
+  function backupIfShrinking(incoming){
+    try{
+      const n=s=>{const o=JSON.parse(s||'{}');return Object.values(o).reduce((t,v)=>t+(Array.isArray(v)?v.length:0),0);};
+      const local=localStorage.getItem('cc_lists'); if(!local) return;
+      const a=n(local), b=n(incoming);
+      if(a>4 && b<a*0.7){ localStorage.setItem('cc_lists_prev',local);
+        console.warn('[Max HQ] cc_lists shrank '+a+' -> '+b+' items; the previous copy is in cc_lists_prev (ccRestoreLists() to put it back)'); }
+    }catch(e){}
+  }
+  async function pull(){
+    if(!SYNC_URL){pill('local');return;}
+    if(pulling)return; pulling=true; pill('syncing');
     try{
       const j=await apiPost({action:'all'}); if(!j.ok)throw new Error('bad response');
-      let changed=false;
-      Object.entries(j.state||{}).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return; const lt=meta[k]||0;
-        if(o.t>=lt){
-          // Guard: a cc_lists payload that is drastically SMALLER than what this device
-          // already holds is almost always an accident (a reseeded/cleared browser pushing
-          // CC_SEED up). Keep the local copy and send it back up instead of losing items.
-          if(k==='cc_lists'){ const n=s=>{try{const o2=JSON.parse(s||'{}');return Object.values(o2).reduce((t,v)=>t+(Array.isArray(v)?v.length:0),0);}catch(e){return -1;}};
-            const incoming=n(o.v), local=n(localStorage.getItem(k));
-            if(local>4 && incoming>=0 && incoming < local*0.7){
-              console.warn('[Max HQ] refused a shrinking cc_lists from sync ('+incoming+' items vs '+local+' local) — keeping local and re-publishing');
-              queue(k, localStorage.getItem(k)); meta[k]=Date.now(); return;
-            } }
-          if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; } meta[k]=o.t; } });
+      const cloud=j.state||{}; let changed=false; const took=[];
+      // ---- cloud -> local: newest timestamp wins, per key ----
+      Object.entries(cloud).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return;
+        if(o.t < (meta[k]||0)) return;                       // ours is newer: keep it, republish below
+        if(k==='cc_lists' && localStorage.getItem(k)!==o.v) backupIfShrinking(o.v);
+        if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; took.push(k); }
+        meta[k]=o.t; });
+      // Anything queued before this first merge was based on pre-cloud state. If the
+      // merge overwrote that key, the queued copy is stale — drop it instead of
+      // pushing it back over the top.
+      if(!primed) took.forEach(k=>{ delete q[k]; });
+      // ---- local -> cloud: keys it has never seen, and our own edits that never landed ----
+      Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return;
+        const c=cloud[k], v=localStorage.getItem(k);
+        if(!c){ queue(k,v); return; }                        // cloud never had this key
+        if((meta[k]||0)>c.t && v!==c.v) queue(k,v); });       // we edited it and the write was lost
+      localStorage.setItem('cc_sync_init','1');
       saveMeta();
-      if(!localStorage.getItem('cc_sync_init')){  // first sync from this browser: send up anything the cloud doesn't have yet
-        Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return; if(!(j.state&&j.state[k])) queue(k,localStorage.getItem(k)); });
-        localStorage.setItem('cc_sync_init','1');
-      }
+      primed=true;                                           // pushing is allowed from here on
       let __cal=j.events||[];   // prefer the cc_gcal feed (both calendars, kept fresh by the daily job) when present
-      try{ const g=(j.state&&j.state['cc_gcal']&&j.state['cc_gcal'].v)||localStorage.getItem('cc_gcal'); if(g){ const a=JSON.parse(g); if(Array.isArray(a)&&a.length)__cal=a; } }catch(_){}
+      try{ const g=(cloud['cc_gcal']&&cloud['cc_gcal'].v)||localStorage.getItem('cc_gcal'); if(g){ const a=JSON.parse(g); if(Array.isArray(a)&&a.length)__cal=a; } }catch(_){}
       applyCal(__cal);
       pill('synced');
       const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
-      // Pick up remote changes. Skipped while you're typing, and skipped on the first
-      // pull after signing in (the token survives a reload now, but loading the page
-      // twice in a row the instant you get in looks broken).
-      if(changed && !typing && !AUTH.justSignedIn()) location.reload();
-    }catch(e){ pill('offline'); }}
+      // Pick up remote changes. Skipped while you're typing, and on the first pull after
+      // signing in. Flush first: a reload used to discard whatever was still sitting in
+      // the 800ms debounce, so an edit made just before a reload never reached the cloud.
+      if(changed && !typing && !AUTH.justSignedIn()){ try{ await flush(); }catch(e){} location.reload(); }
+    }catch(e){ pill('offline'); }
+    finally{ pulling=false; }}
   function start(){ pull(); setInterval(pull,5*60*1000);
-    document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush();} else {pull();} });
-    window.addEventListener('pagehide',flush); }
-  return {queue:queue,flush:flush,pull:pull,start:start};
+    // keepalive lets the browser finish the request after the page is gone; without it
+    // iOS routinely killed the last save when you swiped away from Safari.
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush({keepalive:true});} else {pull();} });
+    window.addEventListener('pagehide',()=>flush({keepalive:true})); }
+  return {queue:queue,flush:flush,pull:pull,start:start,
+          get primed(){return primed;}, get pending(){return Object.keys(q).length;}};
 })();
 function applyCal(list){ try{
   const cal=(list||[]).map((ev,i)=>({id:ev.id||('cal-'+i),
@@ -2129,6 +2170,15 @@ applySectionOrder();
 renderGlance();
 applyTheme(normSkin(localStorage.getItem('cc_theme')));
 evTintReset();
+/* Recovery hatch for the one-deep cc_lists backup the sync layer keeps when a list
+   shrinks a lot. Console-only on purpose — it should be needed roughly never. */
+window.ccRestoreLists=function(){
+  const prev=localStorage.getItem('cc_lists_prev');
+  if(!prev){ console.warn('[Max HQ] no cc_lists_prev to restore'); return false; }
+  localStorage.setItem('cc_lists',prev); SYNC.queue('cc_lists',prev); SYNC.flush();
+  console.log('[Max HQ] restored the previous cc_lists and published it; reloading');
+  setTimeout(()=>location.reload(),1200); return true;
+};
 window.__ccBooted=true;
 AUTH.init();
 SYNC.start();
