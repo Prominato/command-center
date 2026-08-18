@@ -6,13 +6,58 @@
 //           small, medium (home screen)
 
 const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec";
-// Paste your widget key here (Max HQ → I gave it to you privately; it is NOT in this repo).
-// This key can ONLY fetch progress counts — never to-do text, notes or calendar titles.
+// LEAVE THIS LINE ALONE. Run the script once and it asks for the key, then keeps it
+// in this device's Keychain. Editing code on a phone is how a key ends up truncated,
+// autocapitalised, or - seen in the wild - replaced by the entire script, because a
+// single-line field eats a multi-line paste. The key only ever unlocks progress
+// counts: never to-do text, note bodies or calendar titles.
 const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
-// A key pasted on a phone picks up trailing spaces and newlines depressingly often,
-// so trim it rather than fail on something invisible.
-const KEY = String(WIDGET_KEY).trim();
-const NO_KEY = !KEY || KEY.indexOf("PASTE_") === 0;
+const KEY_STORE  = "maxhq_widget_key";
+
+// A key is 40-ish characters of url-safe base64. Anything else - a stray newline,
+// a smart quote, a whole file - is rejected before it can be stored or sent.
+// The placeholder has to be excluded by name: PASTE_YOUR_WIDGET_KEY_HERE is itself
+// 26 legal characters, so a shape check alone happily waves it through.
+function looksLikeKey(s){
+  s = String(s || "").trim();
+  if (s.indexOf("PASTE_") === 0) return false;
+  return /^[A-Za-z0-9_-]{20,80}$/.test(s);
+}
+
+/* Key resolution, best source first:
+     1. the widget's Parameter field, set when you add the widget (per-widget)
+     2. this device's Keychain, from the last time you entered one
+     3. the WIDGET_KEY constant above, if someone did edit it
+     4. ask, when the script is run by hand - the only place a prompt can appear
+   Whatever wins gets written back to the Keychain, so you enter it exactly once. */
+async function resolveKey(){
+  let k = "";
+  try { if (args.widgetParameter) k = String(args.widgetParameter).trim(); } catch (e) {}
+  if (!looksLikeKey(k)) { try { if (Keychain.contains(KEY_STORE)) k = Keychain.get(KEY_STORE).trim(); } catch (e) {} }
+  if (!looksLikeKey(k) && looksLikeKey(WIDGET_KEY)) k = String(WIDGET_KEY).trim();
+  if (!looksLikeKey(k) && !config.runsInWidget) {
+    const a = new Alert();
+    a.title = "Max HQ widget key";
+    a.message = "Paste the key from maxhq.netlify.app/widget.html.\n\nIt is kept in this device's Keychain, never in the code.";
+    a.addTextField("wid_...", "");
+    a.addAction("Save");
+    a.addCancelAction("Cancel");
+    if (await a.presentAlert() === 0) {
+      const typed = a.textFieldValue(0).trim();
+      if (looksLikeKey(typed)) k = typed;
+      else { await showAlert("That does not look like a key", typed.length + " characters. The key is about 40, and starts wid_."); }
+    }
+  }
+  if (looksLikeKey(k)) { try { Keychain.set(KEY_STORE, k); } catch (e) {} }
+  return looksLikeKey(k) ? k : "";
+}
+
+async function showAlert(title, msg){
+  const a = new Alert(); a.title = title; a.message = msg; a.addAction("OK");
+  await a.presentAlert();
+}
+
+let KEY = "";
 const CH_ITEMS = 8;                    // habits in the 21-day challenge
 const BRASS = new Color("#C9A96A");
 const SAGE  = new Color("#6FA396");
@@ -72,11 +117,9 @@ function bar(w, widget, pct, color){
   fill.backgroundColor = color;
 }
 
-/* "key rejected" on its own tells you nothing you can act on, so say which of the
-   three things went wrong and show the shape of the key it actually used: the first
-   four characters and the length give away every common mistake at a glance —
-   PAST… = the placeholder was never replaced, Wid_ = iOS autocapitalised it, a
-   length other than 42 = the paste was truncated. Four characters of a 42-character
+/* "key rejected" on its own tells you nothing you can act on, so name the failure
+   and show the shape of the key actually used: length plus the first four characters
+   gives away every common mistake at a glance. Four characters of a 42-character
    random key reveal nothing. Tapping the widget opens the install page. */
 function errWidget(head, detail){
   const w = new ListWidget();
@@ -88,13 +131,19 @@ function errWidget(head, detail){
 }
 
 async function build(){
-  if (NO_KEY) return errWidget("no key set", "tap here, then paste your key");
+  KEY = await resolveKey();
+  if (!KEY) return errWidget("no key yet", config.runsInWidget ? "open Scriptable, tap play" : "run again to enter it");
   let d;
   try { d = await getSummary(); }
   catch (e) {
     const s = String(e);
     const shape = KEY.length + " chars, starts " + KEY.slice(0, 4);
-    if (s.indexOf("unauthorized") >= 0) return errWidget("key rejected", shape);
+    if (s.indexOf("unauthorized") >= 0) {
+      // Definitive no from the server: forget it, so the next manual run asks again
+      // instead of failing forever against a stored dud.
+      try { Keychain.remove(KEY_STORE); } catch (e2) {}
+      return errWidget("key rejected", shape);
+    }
     if (s.indexOf("forbidden") >= 0)    return errWidget("wrong key type", "needs the widget key");
     return errWidget("offline", "no answer from the backend");
   }

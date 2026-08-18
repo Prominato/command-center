@@ -46,19 +46,21 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 </table>
 
 <h2>Setup</h2>
+<p style="color:#8F8471;font-size:13.5px;margin:0 0 10px">You never edit the code. Paste it exactly as it is; the script asks for your key the first time you run it and keeps it in the device Keychain.</p>
 <ol>
 <li>Install <b>Scriptable</b> from the App Store (free).</li>
-<li>Paste your widget key in the box below, then tap <b>Copy the widget code</b> — the key gets baked into the copy so you never have to hunt for a line of code on a phone keyboard.</li>
+<li>Tap <b>Copy the widget code</b> below. Don't change anything in it.</li>
 <li>Open Scriptable → <b>+</b> (top right) → paste → tap the title, name it <code>Max HQ</code> → <b>Done</b>.</li>
-<li>Still in Scriptable, tap <b>▶</b> once. You should see the widget preview. If it says <i>key rejected</i>, the key is wrong; <i>offline</i> means no network.</li>
+<li>Tap <b>▶</b>. It will ask for your widget key — paste it into that box and tap <b>Save</b>. You should then see the widget preview straight away.</li>
 <li>Long-press your <b>Lock Screen</b> → <b>Customise</b> → <b>Lock Screen</b> → tap the widget strip under the clock → pick <b>Scriptable</b> (circular, rectangular or inline).</li>
 <li>Tap the widget you just placed → <b>Script: Max HQ</b> → <b>X</b> → <b>Done</b>.</li>
 </ol>
+<div class="note">Replacing a widget that already went wrong? Delete the old Scriptable script first and start a fresh one, rather than editing it — a half-fixed script is hard to tell from a fixed one.</div>
 <div class="keybox">
-  <label for="wk">Your widget key</label>
-  <input id="wk" type="text" placeholder="wid_…" autocapitalize="off" autocorrect="off" spellcheck="false">
+  <label for="wk">Check a key (optional)</label>
+  <input id="wk" type="text" maxlength="80" placeholder="wid_…" autocapitalize="off" autocorrect="off" spellcheck="false">
   <button class="btn small" onclick="testKey(this)">Test this key</button>
-  <div class="hint" id="wkout">Saved in this browser only. It gets substituted into the code you copy; <b>Test</b> sends it to your own Max HQ backend to check it, and nowhere else.</div>
+  <div class="hint" id="wkout">Only for checking a key before you use it &mdash; the code below never needs it. Tapping <b>Test</b> asks your own Max HQ backend whether it works, and nothing is stored anywhere but this browser.</div>
 </div>
 <button class="btn" onclick="copyCode(this)">Copy the widget code</button>
 <a class="btn ghost" href="maxhq-widget.js" download>Download .js</a>
@@ -87,13 +89,58 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 //           small, medium (home screen)
 
 const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec";
-// Paste your widget key here (Max HQ → I gave it to you privately; it is NOT in this repo).
-// This key can ONLY fetch progress counts — never to-do text, notes or calendar titles.
+// LEAVE THIS LINE ALONE. Run the script once and it asks for the key, then keeps it
+// in this device's Keychain. Editing code on a phone is how a key ends up truncated,
+// autocapitalised, or - seen in the wild - replaced by the entire script, because a
+// single-line field eats a multi-line paste. The key only ever unlocks progress
+// counts: never to-do text, note bodies or calendar titles.
 const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
-// A key pasted on a phone picks up trailing spaces and newlines depressingly often,
-// so trim it rather than fail on something invisible.
-const KEY = String(WIDGET_KEY).trim();
-const NO_KEY = !KEY || KEY.indexOf("PASTE_") === 0;
+const KEY_STORE  = "maxhq_widget_key";
+
+// A key is 40-ish characters of url-safe base64. Anything else - a stray newline,
+// a smart quote, a whole file - is rejected before it can be stored or sent.
+// The placeholder has to be excluded by name: PASTE_YOUR_WIDGET_KEY_HERE is itself
+// 26 legal characters, so a shape check alone happily waves it through.
+function looksLikeKey(s){
+  s = String(s || "").trim();
+  if (s.indexOf("PASTE_") === 0) return false;
+  return /^[A-Za-z0-9_-]{20,80}$/.test(s);
+}
+
+/* Key resolution, best source first:
+     1. the widget's Parameter field, set when you add the widget (per-widget)
+     2. this device's Keychain, from the last time you entered one
+     3. the WIDGET_KEY constant above, if someone did edit it
+     4. ask, when the script is run by hand - the only place a prompt can appear
+   Whatever wins gets written back to the Keychain, so you enter it exactly once. */
+async function resolveKey(){
+  let k = "";
+  try { if (args.widgetParameter) k = String(args.widgetParameter).trim(); } catch (e) {}
+  if (!looksLikeKey(k)) { try { if (Keychain.contains(KEY_STORE)) k = Keychain.get(KEY_STORE).trim(); } catch (e) {} }
+  if (!looksLikeKey(k) &amp;&amp; looksLikeKey(WIDGET_KEY)) k = String(WIDGET_KEY).trim();
+  if (!looksLikeKey(k) &amp;&amp; !config.runsInWidget) {
+    const a = new Alert();
+    a.title = "Max HQ widget key";
+    a.message = "Paste the key from maxhq.netlify.app/widget.html.\n\nIt is kept in this device's Keychain, never in the code.";
+    a.addTextField("wid_...", "");
+    a.addAction("Save");
+    a.addCancelAction("Cancel");
+    if (await a.presentAlert() === 0) {
+      const typed = a.textFieldValue(0).trim();
+      if (looksLikeKey(typed)) k = typed;
+      else { await showAlert("That does not look like a key", typed.length + " characters. The key is about 40, and starts wid_."); }
+    }
+  }
+  if (looksLikeKey(k)) { try { Keychain.set(KEY_STORE, k); } catch (e) {} }
+  return looksLikeKey(k) ? k : "";
+}
+
+async function showAlert(title, msg){
+  const a = new Alert(); a.title = title; a.message = msg; a.addAction("OK");
+  await a.presentAlert();
+}
+
+let KEY = "";
 const CH_ITEMS = 8;                    // habits in the 21-day challenge
 const BRASS = new Color("#C9A96A");
 const SAGE  = new Color("#6FA396");
@@ -153,11 +200,9 @@ function bar(w, widget, pct, color){
   fill.backgroundColor = color;
 }
 
-/* "key rejected" on its own tells you nothing you can act on, so say which of the
-   three things went wrong and show the shape of the key it actually used: the first
-   four characters and the length give away every common mistake at a glance —
-   PAST… = the placeholder was never replaced, Wid_ = iOS autocapitalised it, a
-   length other than 42 = the paste was truncated. Four characters of a 42-character
+/* "key rejected" on its own tells you nothing you can act on, so name the failure
+   and show the shape of the key actually used: length plus the first four characters
+   gives away every common mistake at a glance. Four characters of a 42-character
    random key reveal nothing. Tapping the widget opens the install page. */
 function errWidget(head, detail){
   const w = new ListWidget();
@@ -169,13 +214,19 @@ function errWidget(head, detail){
 }
 
 async function build(){
-  if (NO_KEY) return errWidget("no key set", "tap here, then paste your key");
+  KEY = await resolveKey();
+  if (!KEY) return errWidget("no key yet", config.runsInWidget ? "open Scriptable, tap play" : "run again to enter it");
   let d;
   try { d = await getSummary(); }
   catch (e) {
     const s = String(e);
     const shape = KEY.length + " chars, starts " + KEY.slice(0, 4);
-    if (s.indexOf("unauthorized") &gt;= 0) return errWidget("key rejected", shape);
+    if (s.indexOf("unauthorized") &gt;= 0) {
+      // Definitive no from the server: forget it, so the next manual run asks again
+      // instead of failing forever against a stored dud.
+      try { Keychain.remove(KEY_STORE); } catch (e2) {}
+      return errWidget("key rejected", shape);
+    }
     if (s.indexOf("forbidden") &gt;= 0)    return errWidget("wrong key type", "needs the widget key");
     return errWidget("offline", "no answer from the backend");
   }
@@ -265,21 +316,23 @@ Script.complete();
 </pre>
 </div>
 <script>
-/* The key is remembered on this device only (localStorage) and is substituted into
-   the clipboard text at copy time, so the published page and this repo stay free of
-   secrets. The only place it is ever sent is Max HQ's own backend, and only when you
-   press Test. */
+/* The copy button used to substitute whatever sat in the key field into the code.
+   A single-line input silently swallows a multi-line paste, so pasting the CODE in
+   there produced a script whose key was the entire script - 20,504 characters of it.
+   The code is now copied verbatim and the key is entered in Scriptable instead, so
+   there is nothing to substitute and nothing to get wrong. The field below only
+   checks a key; it is validated to key shape before it is stored or sent anywhere. */
 const SYNC='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
 const KEYBOX=document.getElementById('wk');
-try{ KEYBOX.value=localStorage.getItem('maxhq_widget_key')||''; }catch(e){}
-KEYBOX.addEventListener('input',()=>{ try{ localStorage.setItem('maxhq_widget_key',KEYBOX.value.trim()); }catch(e){} });
-
-function codeWithKey(){
-  const raw=document.getElementById('code').textContent;
-  const k=(KEYBOX.value||'').trim();
-  if(!k) return raw;
-  return raw.replace('PASTE_YOUR_WIDGET_KEY_HERE', k.replace(/["\\]/g,''));
-}
+const KEYISH=/^[A-Za-z0-9_-]{20,80}$/;
+try{ const s=localStorage.getItem('maxhq_widget_key')||''; if(KEYISH.test(s)) KEYBOX.value=s; }catch(e){}
+KEYBOX.addEventListener('input',()=>{
+  // Kill anything that cannot be part of a key - newlines, spaces, quotes, code.
+  const clean=KEYBOX.value.replace(/[^A-Za-z0-9_-]/g,'').slice(0,80);
+  if(clean!==KEYBOX.value) KEYBOX.value=clean;
+  try{ KEYISH.test(clean) ? localStorage.setItem('maxhq_widget_key',clean)
+                          : localStorage.removeItem('maxhq_widget_key'); }catch(e){}
+});
 /* Answers the only question that matters when a widget says "key rejected":
    is the key wrong, or did the paste into Scriptable go wrong? */
 async function testKey(btn){
@@ -294,7 +347,7 @@ async function testKey(btn){
     const j=await r.json();
     if(j&&j.ok){
       say('&#10003; This key works. Day '+j.day+' of 21, '+j.todayDone+'/8 habits today, '+
-          j.primary+' primary open. Now tap <b>Copy the widget code</b> &mdash; the key goes in for you.','ok');
+          j.primary+' primary open. Paste this same key into Scriptable when it asks.','ok');
     }else{
       const why = k.length!==42 ? 'It is '+k.length+' characters; it should be 42, so something was cut off or doubled.'
                 : /^[A-Z]/.test(k) ? 'It starts with a capital &mdash; iOS autocapitalised it. The key begins with a lower-case w.'
@@ -305,8 +358,8 @@ async function testKey(btn){
   btn.disabled=false; btn.textContent='Test this key';
 }
 function copyCode(btn){
-  const t=codeWithKey();
-  const done=()=>{ btn.textContent = KEYBOX.value.trim() ? 'Copied \u2713 key included' : 'Copied \u2713 (no key yet)';
+  const t=document.getElementById('code').textContent;   // verbatim, always
+  const done=()=>{ btn.textContent='Copied \u2713 paste it as-is';
                    setTimeout(()=>btn.textContent='Copy the widget code',2200); };
   navigator.clipboard.writeText(t).then(done)
     .catch(()=>{const r=document.createRange(); r.selectNode(document.getElementById('code'));
