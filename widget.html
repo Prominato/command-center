@@ -23,6 +23,9 @@ pre{background:#1E1A14;border:1px solid #2E2820;border-top:2px solid #C9A96A;bor
   color:#E9E2D6;font-family:'IBM Plex Mono',monospace;font-size:13px}
 .keybox input:focus{outline:none;border-color:#C9A96A}
 .keybox .hint{color:#8F8471;font-size:12px;margin-top:8px}
+.keybox .hint.ok{color:#6FA396}
+.keybox .hint.no{color:#C2705C}
+.btn.small{font-size:11px;padding:8px 14px;margin:10px 0 0}
 .note{border-left:2px solid #6FA396;padding:8px 0 8px 13px;color:#8F8471;font-size:13px;margin:14px 0}
 .warn{border-left-color:#C2705C}
 table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:13.5px}
@@ -54,7 +57,8 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 <div class="keybox">
   <label for="wk">Your widget key</label>
   <input id="wk" type="text" placeholder="wid_…" autocapitalize="off" autocorrect="off" spellcheck="false">
-  <div class="hint">Stays on this device. This page never sends it anywhere — it is only substituted into the text you copy.</div>
+  <button class="btn small" onclick="testKey(this)">Test this key</button>
+  <div class="hint" id="wkout">Saved in this browser only. It gets substituted into the code you copy; <b>Test</b> sends it to your own Max HQ backend to check it, and nowhere else.</div>
 </div>
 <button class="btn" onclick="copyCode(this)">Copy the widget code</button>
 <a class="btn ghost" href="maxhq-widget.js" download>Download .js</a>
@@ -86,6 +90,10 @@ const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkD
 // Paste your widget key here (Max HQ → I gave it to you privately; it is NOT in this repo).
 // This key can ONLY fetch progress counts — never to-do text, notes or calendar titles.
 const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
+// A key pasted on a phone picks up trailing spaces and newlines depressingly often,
+// so trim it rather than fail on something invisible.
+const KEY = String(WIDGET_KEY).trim();
+const NO_KEY = !KEY || KEY.indexOf("PASTE_") === 0;
 const CH_ITEMS = 8;                    // habits in the 21-day challenge
 const BRASS = new Color("#C9A96A");
 const SAGE  = new Color("#6FA396");
@@ -98,7 +106,7 @@ async function getSummary(){
   const req = new Request(SYNC);
   req.method = "POST";
   req.headers = { "Content-Type": "text/plain;charset=utf-8" };   // simple type → no CORS preflight
-  req.body = JSON.stringify({ action: "summary", key: WIDGET_KEY });
+  req.body = JSON.stringify({ action: "summary", key: KEY });
   req.timeoutInterval = 20;
   const j = await req.loadJSON();
   if (!j || !j.ok) throw new Error(j &amp;&amp; j.error ? j.error : "unauthorized");
@@ -145,15 +153,31 @@ function bar(w, widget, pct, color){
   fill.backgroundColor = color;
 }
 
+/* "key rejected" on its own tells you nothing you can act on, so say which of the
+   three things went wrong and show the shape of the key it actually used: the first
+   four characters and the length give away every common mistake at a glance —
+   PAST… = the placeholder was never replaced, Wid_ = iOS autocapitalised it, a
+   length other than 42 = the paste was truncated. Four characters of a 42-character
+   random key reveal nothing. Tapping the widget opens the install page. */
+function errWidget(head, detail){
+  const w = new ListWidget();
+  w.url = "https://maxhq.netlify.app/widget.html";
+  const a = w.addText("MAX HQ"); a.font = Font.boldSystemFont(11); a.textOpacity = 0.7;
+  const b = w.addText(head); b.font = Font.boldSystemFont(13);
+  if (detail){ const c = w.addText(detail); c.font = Font.systemFont(9.5); c.textOpacity = 0.7; }
+  return w;
+}
+
 async function build(){
+  if (NO_KEY) return errWidget("no key set", "tap here, then paste your key");
   let d;
   try { d = await getSummary(); }
   catch (e) {
-    const w = new ListWidget();
-    w.addText("Max HQ").font = Font.boldSystemFont(12);
-    const msg = String(e).indexOf("unauthorized") &gt;= 0 ? "key rejected" : "offline";
-    const t = w.addText(msg); t.font = Font.systemFont(11); t.textColor = MUT;
-    return w;
+    const s = String(e);
+    const shape = KEY.length + " chars, starts " + KEY.slice(0, 4);
+    if (s.indexOf("unauthorized") &gt;= 0) return errWidget("key rejected", shape);
+    if (s.indexOf("forbidden") &gt;= 0)    return errWidget("wrong key type", "needs the widget key");
+    return errWidget("offline", "no answer from the backend");
   }
 
   const fam = config.widgetFamily || "accessoryRectangular";
@@ -241,9 +265,11 @@ Script.complete();
 </pre>
 </div>
 <script>
-/* The key is remembered on this device only (localStorage) and is never sent
-   anywhere -- it is substituted into the clipboard text at copy time, so the
-   published page and this repo stay free of secrets. */
+/* The key is remembered on this device only (localStorage) and is substituted into
+   the clipboard text at copy time, so the published page and this repo stay free of
+   secrets. The only place it is ever sent is Max HQ's own backend, and only when you
+   press Test. */
+const SYNC='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
 const KEYBOX=document.getElementById('wk');
 try{ KEYBOX.value=localStorage.getItem('maxhq_widget_key')||''; }catch(e){}
 KEYBOX.addEventListener('input',()=>{ try{ localStorage.setItem('maxhq_widget_key',KEYBOX.value.trim()); }catch(e){} });
@@ -253,6 +279,30 @@ function codeWithKey(){
   const k=(KEYBOX.value||'').trim();
   if(!k) return raw;
   return raw.replace('PASTE_YOUR_WIDGET_KEY_HERE', k.replace(/["\\]/g,''));
+}
+/* Answers the only question that matters when a widget says "key rejected":
+   is the key wrong, or did the paste into Scriptable go wrong? */
+async function testKey(btn){
+  const out=document.getElementById('wkout');
+  const k=(KEYBOX.value||'').trim();
+  const say=(msg,cls)=>{ out.innerHTML=msg; out.className='hint'+(cls?' '+cls:''); };
+  if(!k){ say('Type or paste the key above first.','no'); return; }
+  btn.disabled=true; btn.textContent='Checking…'; say('Asking the backend…');
+  try{
+    const r=await fetch(SYNC,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'summary',key:k})});
+    const j=await r.json();
+    if(j&&j.ok){
+      say('&#10003; This key works. Day '+j.day+' of 21, '+j.todayDone+'/8 habits today, '+
+          j.primary+' primary open. Now tap <b>Copy the widget code</b> &mdash; the key goes in for you.','ok');
+    }else{
+      const why = k.length!==42 ? 'It is '+k.length+' characters; it should be 42, so something was cut off or doubled.'
+                : /^[A-Z]/.test(k) ? 'It starts with a capital &mdash; iOS autocapitalised it. The key begins with a lower-case w.'
+                : 'Check for a stray space or a missing character.';
+      say('&#10007; The backend does not recognise this key. '+why,'no');
+    }
+  }catch(e){ say('&#10007; Could not reach the backend at all &mdash; check the connection and try again.','no'); }
+  btn.disabled=false; btn.textContent='Test this key';
 }
 function copyCode(btn){
   const t=codeWithKey();

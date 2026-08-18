@@ -9,6 +9,10 @@ const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkD
 // Paste your widget key here (Max HQ → I gave it to you privately; it is NOT in this repo).
 // This key can ONLY fetch progress counts — never to-do text, notes or calendar titles.
 const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
+// A key pasted on a phone picks up trailing spaces and newlines depressingly often,
+// so trim it rather than fail on something invisible.
+const KEY = String(WIDGET_KEY).trim();
+const NO_KEY = !KEY || KEY.indexOf("PASTE_") === 0;
 const CH_ITEMS = 8;                    // habits in the 21-day challenge
 const BRASS = new Color("#C9A96A");
 const SAGE  = new Color("#6FA396");
@@ -21,7 +25,7 @@ async function getSummary(){
   const req = new Request(SYNC);
   req.method = "POST";
   req.headers = { "Content-Type": "text/plain;charset=utf-8" };   // simple type → no CORS preflight
-  req.body = JSON.stringify({ action: "summary", key: WIDGET_KEY });
+  req.body = JSON.stringify({ action: "summary", key: KEY });
   req.timeoutInterval = 20;
   const j = await req.loadJSON();
   if (!j || !j.ok) throw new Error(j && j.error ? j.error : "unauthorized");
@@ -68,15 +72,31 @@ function bar(w, widget, pct, color){
   fill.backgroundColor = color;
 }
 
+/* "key rejected" on its own tells you nothing you can act on, so say which of the
+   three things went wrong and show the shape of the key it actually used: the first
+   four characters and the length give away every common mistake at a glance —
+   PAST… = the placeholder was never replaced, Wid_ = iOS autocapitalised it, a
+   length other than 42 = the paste was truncated. Four characters of a 42-character
+   random key reveal nothing. Tapping the widget opens the install page. */
+function errWidget(head, detail){
+  const w = new ListWidget();
+  w.url = "https://maxhq.netlify.app/widget.html";
+  const a = w.addText("MAX HQ"); a.font = Font.boldSystemFont(11); a.textOpacity = 0.7;
+  const b = w.addText(head); b.font = Font.boldSystemFont(13);
+  if (detail){ const c = w.addText(detail); c.font = Font.systemFont(9.5); c.textOpacity = 0.7; }
+  return w;
+}
+
 async function build(){
+  if (NO_KEY) return errWidget("no key set", "tap here, then paste your key");
   let d;
   try { d = await getSummary(); }
   catch (e) {
-    const w = new ListWidget();
-    w.addText("Max HQ").font = Font.boldSystemFont(12);
-    const msg = String(e).indexOf("unauthorized") >= 0 ? "key rejected" : "offline";
-    const t = w.addText(msg); t.font = Font.systemFont(11); t.textColor = MUT;
-    return w;
+    const s = String(e);
+    const shape = KEY.length + " chars, starts " + KEY.slice(0, 4);
+    if (s.indexOf("unauthorized") >= 0) return errWidget("key rejected", shape);
+    if (s.indexOf("forbidden") >= 0)    return errWidget("wrong key type", "needs the widget key");
+    return errWidget("offline", "no answer from the backend");
   }
 
   const fam = config.widgetFamily || "accessoryRectangular";
