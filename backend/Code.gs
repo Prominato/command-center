@@ -120,6 +120,7 @@ function doPost(e) {
     var action = body.action || (body.items ? 'save' : 'all');
 
     if (action === 'summary') return json_(summary_());          // widget-safe
+    if (action === 'panel')   return json_(panel_(body.view));   // widget-safe, see panel_
     if (auth.scope !== 'write') return json_({ ok: false, error: 'forbidden' });
 
     if (action === 'state') return json_({ ok: true, state: liveState_() });
@@ -160,7 +161,57 @@ function summary_() {
   for (var n = 0; n < 4; n++) if (st['water::' + today + '::' + n] && st['water::' + today + '::' + n].v === '1') water++;
   return { ok: true, day: Math.min(Math.max(dayIdx, 0) + 1, 21), todayDone: todayDone, items: CH,
            pct: Math.round(total / possible * 100), primary: primary, urgent: urgent,
-           dcDone: dcDone, dcAll: dcAll, water: water };
+           dcDone: dcDone, dcAll: dcAll, water: water,
+           theme: (st['cc_theme'] && String(st['cc_theme'].v)) || 'dark' };
+}
+
+/** What the home-screen widgets render.
+ *
+ *  SCOPE NOTE, deliberately loud: summary_ returns counts only, so a widget key lifted
+ *  off a lost phone reveals "5 of 8 habits" and nothing else. This endpoint breaks that
+ *  property on purpose, because Max asked for today's agenda and his Master list ON the
+ *  widget, and there is no way to render text you are not allowed to read. It is still
+ *  kept as narrow as the feature allows: TODAY's timeline only (no other day, no dates),
+ *  and only OPEN PRIMARY to-do titles, capped. No notes, no note bodies, no calendar
+ *  beyond what is already inside today's timeline, no completed history, no email.
+ *  If the phone is lost, revoke by rotating WIDGET_KEY in Script Properties.
+ */
+function panel_(view) {
+  var st = loadState_(), today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  function j(k, f) { try { return st[k] ? JSON.parse(st[k].v) : f; } catch (e) { return f; } }
+  var out = summary_();                       // counts + day number, always useful
+  out.theme = (st['cc_theme'] && String(st['cc_theme'].v)) || 'dark';
+  out.view  = String(view || 'agenda');
+
+  if (out.view === 'agenda') {
+    var t = j('cc_today', null);
+    out.stale = !t || t.d !== today;          // dashboard has not been opened today
+    out.blocks = (t && t.d === today && t.blocks) ? t.blocks.slice(0, 40) : [];
+  } else if (out.view === 'master') {
+    var L = j('cc_lists', {}), items = [];
+    ['todo', 'work', 'house', 'routine'].forEach(function (b) {
+      (L[b] || []).forEach(function (it) {
+        if (it.done || it.pri === 'secondary') return;
+        items.push({ t: String(it.text || '').slice(0, 60), u: !!it.urgent, b: b });
+      });
+    });
+    items.sort(function (a, b) { return (b.u ? 1 : 0) - (a.u ? 1 : 0); });
+    out.items = items.slice(0, 12);
+    out.more  = Math.max(0, items.length - 12);
+  } else if (out.view === 'challenge') {
+    var ch = j('cc_challenge', { start: today, checks: {} });
+    var dayIdx = 0;
+    if (ch.start) dayIdx = Math.round((new Date(today + 'T00:00:00') - new Date(ch.start + 'T00:00:00')) / 86400000);
+    var checks = ch.checks || {}, grid = [];
+    for (var i = 0; i < 8; i++) {
+      var row = [];
+      for (var d = 0; d < 21; d++) row.push(checks[i + '::' + d] ? 1 : 0);
+      grid.push(row);
+    }
+    out.grid = grid;
+    out.dayIdx = Math.max(0, dayIdx);
+  }
+  return out;
 }
 
 /** Send a real email FROM this account. Only to Max's own addresses -- this web app

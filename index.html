@@ -955,7 +955,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-18b';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-18c';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1800,6 +1800,25 @@ function renderToday(){
   const sorted=all.slice().sort((a,b)=>a.s-b.s); let clash=0;
   for(let i=1;i<sorted.length;i++) if(sorted[i].s < sorted[i-1].e) clash++;
   if(badge){badge.textContent=clash?(clash+' conflict'+(clash>1?'s':'')):'no conflicts'; badge.classList.toggle('warn',!!clash);}
+  publishToday(all);
+}
+/* Publish today's timeline for the iPhone widget. The routine lives here — it is
+   generated from dayRoutine() plus your inline edits plus today's calendar events —
+   and reimplementing that in Apps Script would guarantee the two drift apart. So the
+   dashboard writes a compact copy to cc_today and the widget reads that. Times are
+   minutes-from-midnight; the widget works out "now" itself so it stays right between
+   syncs. Written at most once a minute and only when it actually changes. */
+let __todayPub='';
+function publishToday(all){
+  try{
+    if(!window.__ccBooted) return;                 // never publish half-booted state
+    const blocks=all.slice().sort((a,b)=>a.s-b.s).map(b=>({s:b.s,e:b.e,l:String(b.label||'').slice(0,60),v:!!b.isEv}));
+    const payload=JSON.stringify({d:TODAY_ISO,blocks:blocks});
+    if(payload===__todayPub) return;
+    __todayPub=payload;
+    localStorage.setItem('cc_today',payload);
+    SYNC.queue('cc_today',payload);
+  }catch(e){}
 }
 function reEdit(id){
   const sp=document.querySelector(`[data-redit="${id}"]`); if(!sp)return;
@@ -2204,6 +2223,9 @@ window.ccRestoreLists=function(){
   setTimeout(()=>location.reload(),1200); return true;
 };
 window.__ccBooted=true;
+renderToday();   // again, now that __ccBooted is set — the first pass runs before it and
+                 // therefore skips publishToday(), which on a phone open for under a
+                 // minute meant the agenda widget never got today's timeline at all
 AUTH.init();
 SYNC.start();
 </script>
