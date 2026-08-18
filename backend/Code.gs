@@ -122,11 +122,12 @@ function doPost(e) {
     if (action === 'summary') return json_(summary_());          // widget-safe
     if (auth.scope !== 'write') return json_({ ok: false, error: 'forbidden' });
 
-    if (action === 'state') return json_({ ok: true, state: loadState_() });
+    if (action === 'state') return json_({ ok: true, state: liveState_() });
     if (action === 'cal')   return json_({ ok: true, events: calEvents_() });
     if (action === 'save')  return json_({ ok: true, n: saveBatch_(body.items || []) });
     if (action === 'mail')  return json_(sendMail_(body));
-    return json_({ ok: true, state: loadState_(), events: calEvents_() });
+    if (action === 'undo')  return json_({ ok: true, undo: undoState_() });   // the __prev snapshots
+    return json_({ ok: true, state: liveState_(), events: calEvents_() });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
@@ -213,6 +214,19 @@ function getSheet_() {
   return sh;
 }
 
+/** State as the app should see it: the undo snapshots are for recovery, not for
+ *  syncing down onto every device. Ask for them explicitly with action=undo. */
+function liveState_() {
+  var all = loadState_(), out = {};
+  for (var k in all) if (k.slice(-6) !== '__prev') out[k] = all[k];
+  return out;
+}
+function undoState_() {
+  var all = loadState_(), out = {};
+  for (var k in all) if (k.slice(-6) === '__prev') out[k] = all[k];
+  return out;
+}
+
 function loadState_() {
   var sh = getSheet_();
   var last = sh.getLastRow();
@@ -227,7 +241,24 @@ function loadState_() {
   return out;
 }
 
-/** Upsert [{k,v,t}] -- newer timestamp wins; locked against concurrent devices. */
+/** How many list items a cc_lists blob holds, or -1 if it will not parse. */
+function listCount_(s) {
+  try {
+    var o = JSON.parse(s || '{}'), n = 0;
+    for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k) && o[k] && o[k].length !== undefined) n += o[k].length;
+    return n;
+  } catch (e) { return -1; }
+}
+
+/** Upsert [{k,v,t}] -- newer timestamp wins; locked against concurrent devices.
+ *  Precious keys also get a server-side undo: whatever is about to be replaced is
+ *  copied to <key>__prev first. On 2026-08-18 a phone running a cached old build
+ *  published seed-shaped lists over a month of real ones, and the only surviving copy
+ *  happened to be in a laptop tab that had not refreshed yet. A client-side guard was
+ *  the wrong answer to that - it refused legitimate deletions and resurrected them.
+ *  One previous copy, kept where the data actually lives, is the right one. Nothing is
+ *  ever refused here: the newest write still wins, it is just recoverable. */
+var UNDO_KEYS = { cc_lists: 1, cc_gcal: 1, cc_challenge: 1 };
 function saveBatch_(items) {
   if (!items.length) return 0;
   var lock = LockService.getScriptLock();
@@ -239,8 +270,24 @@ function saveBatch_(items) {
     if (last >= 2) {
       var data = sh.getRange(2, 1, last - 1, 3).getValues();
       for (var i = 0; i < data.length; i++) {
-        index[data[i][0]] = { row: i + 2, t: Number(data[i][2]) || 0 };
+        index[data[i][0]] = { row: i + 2, t: Number(data[i][2]) || 0, v: String(data[i][1]) };
       }
+    }
+    // Snapshot pass first, so an undo copy exists before anything is overwritten.
+    for (var u = 0; u < items.length; u++) {
+      var it0 = items[u];
+      if (!it0 || typeof it0.k !== 'string' || !UNDO_KEYS[it0.k]) continue;
+      var cur = index[it0.k];
+      if (!cur || cur.v === it0.v || it0.t < cur.t) continue;
+      if (it0.k === 'cc_lists') {
+        var before = listCount_(cur.v), after = listCount_(it0.v);
+        if (before > 4 && after >= 0 && after < before * 0.7) {
+          console.warn('cc_lists shrinking ' + before + ' -> ' + after + ' items; previous copy kept in cc_lists__prev');
+        }
+      }
+      var pk = it0.k + '__prev', hitU = index[pk];
+      if (hitU && hitU.row > 0) { sh.getRange(hitU.row, 2, 1, 2).setValues([[cur.v, cur.t || 1]]); hitU.t = cur.t || 1; hitU.v = cur.v; }
+      else { sh.appendRow([pk, cur.v, cur.t || 1]); index[pk] = { row: sh.getLastRow(), t: cur.t || 1, v: cur.v }; }
     }
     var appends = [], n = 0;
     for (var j = 0; j < items.length; j++) {

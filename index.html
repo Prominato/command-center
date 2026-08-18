@@ -955,6 +955,8 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
+const BUILD='2026-08-18b';   // bump on every deploy; published per-device so a phone
+                             // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
    minted Google ID token, which the Apps Script verifies against Google and
@@ -1106,8 +1108,17 @@ const SYNC=(function(){
      up anything the cloud has not seen — so without this list they would be written
      into the Sheet and handed to every other device. */
   const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen',
-              'cc_lists_prev','cc_auth_tok','cc_auth_nonce','maxhq_widget_key'];
+              'cc_lists_prev','cc_auth_tok','cc_auth_nonce','maxhq_widget_key',
+              'cc_sync_epoch2','cc_dev_id','cc_lists_rescue_20260818'];
   let q={}, timer=null, meta={};
+  /* One-time bookkeeping amnesty. The retired shrink guard stamped meta[cc_lists]
+     = Date.now() every time it fired, so a device could carry timestamps newer than
+     anything real — and then both refuse the laptop's updates AND republish its own
+     stale copy over them. Those numbers cannot be trusted, so they are dropped once:
+     the next merge takes the cloud as truth, which is the correct starting point for
+     every device that has been misbehaving. */
+  try{ if(!localStorage.getItem('cc_sync_epoch2')){ localStorage.removeItem('cc_sync_meta');
+        localStorage.setItem('cc_sync_epoch2','1'); } }catch(e){}
   /* primed = this browser has merged the cloud at least once in this page load.
      Nothing may be PUSHED before that. Every "my phone reverted to an old version"
      bug traces back to a device publishing what it had at boot — a seeded or stale
@@ -1148,7 +1159,7 @@ const SYNC=(function(){
       const j=await apiPost({action:'all'}); if(!j.ok)throw new Error('bad response');
       const cloud=j.state||{}; let changed=false; const took=[];
       // ---- cloud -> local: newest timestamp wins, per key ----
-      Object.entries(cloud).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0)return;
+      Object.entries(cloud).forEach(([k,o])=>{ if(SKIP.indexOf(k)>=0||k.slice(-6)==='__prev')return;
         if(o.t < (meta[k]||0)) return;                       // ours is newer: keep it, republish below
         if(k==='cc_lists' && localStorage.getItem(k)!==o.v) backupIfShrinking(o.v);
         if(localStorage.getItem(k)!==o.v){ localStorage.setItem(k,o.v); changed=true; took.push(k); }
@@ -1158,7 +1169,7 @@ const SYNC=(function(){
       // pushing it back over the top.
       if(!primed) took.forEach(k=>{ delete q[k]; });
       // ---- local -> cloud: keys it has never seen, and our own edits that never landed ----
-      Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0)return;
+      Object.keys(localStorage).forEach(k=>{ if(SKIP.indexOf(k)>=0||k.indexOf('prominato_')===0||k.slice(-6)==='__prev')return;
         const c=cloud[k], v=localStorage.getItem(k);
         if(!c){ queue(k,v); return; }                        // cloud never had this key
         if((meta[k]||0)>c.t && v!==c.v) queue(k,v); });       // we edited it and the write was lost
@@ -1176,7 +1187,20 @@ const SYNC=(function(){
       if(changed && !typing && !AUTH.justSignedIn()){ try{ await flush(); }catch(e){} location.reload(); }
     }catch(e){ pill('offline'); }
     finally{ pulling=false; }}
-  function start(){ pull(); setInterval(pull,5*60*1000);
+  /* Publish which build this device is running. A stale cached copy of index.html on
+     one phone is enough to undo everyone else's data, and from the outside the two
+     are indistinguishable — this makes it a one-line query instead of a guess.
+     One tiny row per device; the id is local and never leaves as anything but a row key. */
+  function stampDevice(){
+    try{
+      let id=localStorage.getItem('cc_dev_id');
+      if(!id){ id=Math.random().toString(36).slice(2,8); localStorage.setItem('cc_dev_id',id); }
+      const ua=navigator.userAgent, kind=/iPhone|iPad/.test(ua)?(/CriOS/.test(ua)?'ios-chrome':/Safari/.test(ua)?'ios-safari':'ios-other')
+              :/Android/.test(ua)?'android':/Chrome/.test(ua)?'desktop-chrome':/Safari/.test(ua)?'desktop-safari':'other';
+      queue('cc_dev::'+id, JSON.stringify({build:BUILD,kind:kind,at:Date.now()}));
+    }catch(e){}
+  }
+  function start(){ pull(); setInterval(pull,5*60*1000); setTimeout(stampDevice,4000);
     // keepalive lets the browser finish the request after the page is gone; without it
     // iOS routinely killed the last save when you swiped away from Safari.
     document.addEventListener('visibilitychange',()=>{ if(document.hidden){flush({keepalive:true});} else {pull();} });

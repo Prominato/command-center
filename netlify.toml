@@ -2,3 +2,23 @@
 [build]
   publish = "."
   command = ""
+
+# The whole app is one HTML file, and a phone quietly serving a cached copy of it can
+# undo everyone else's data — that is exactly how seed-shaped lists reached the cloud
+# on 2026-08-18. no-cache does not mean "don't store"; it means revalidate every time,
+# so a device picks up a fix on its next load instead of whenever iOS feels like it.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+# The widget source is copy-pasted by hand, so staleness there is just as confusing.
+[[headers]]
+  for = "/maxhq-widget.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
