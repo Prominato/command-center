@@ -35,7 +35,7 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 </style></head><body><div class="wrap">
 <h1>Max HQ on your lock screen</h1>
 <p style="margin:0 0 14px"><a class="btn ghost" href="preview.html">See it on a phone first &rarr;</a></p>
-<div class="lede">The dashboard's backend is private — it answers nothing without a credential. The widget gets its own <b>summary-only key</b>: it can read progress <i>counts</i> and nothing else, so even if someone lifted it off your phone they'd learn that you did 5 of 8 habits, not a single word of your to-dos, notes or calendar. Copy the code once and it keeps itself updated.</div>
+<div class="lede">The dashboard's backend is private — it answers nothing without a credential. The widget gets its own key, scoped well below the dashboard's: it can read <b>today's timeline</b>, your <b>open primary to-dos</b> and challenge progress, and nothing else. No notes, no other day, no completed history, no calendar beyond today, and no write access whatsoever. Rotating the key revokes a lost phone. Copy the code once and it keeps itself updated.</div>
 
 <h2>Why this route</h2>
 <table>
@@ -62,7 +62,7 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 <p style="color:#8F8471;font-size:13.5px;margin:0 0 10px">Add the same <b>Max HQ</b> script as many times as you like. Which one you get is set by the widget's <b>Parameter</b> field &mdash; long-press the widget &rarr; <b>Edit Widget</b> &rarr; <b>Parameter</b>.</p>
 <table>
 <tr><th>Parameter</th><th>Size</th><th>Shows</th></tr>
-<tr><td><code>agenda</code></td><td>Medium / Large</td><td>Today's timeline: the block you are in <b>right now</b> with a progress bar through it, then the next four</td></tr>
+<tr><td><code>agenda</code></td><td>Medium / Large</td><td>Today's timeline: the block you are in <b>right now</b> with a progress bar through it, then the next three (five on Large)</td></tr>
 <tr><td><code>challenge</code></td><td>Small</td><td>21-day challenge &mdash; day number, habits ticked today, and a 21-column strip of the whole run</td></tr>
 <tr><td><code>master</code></td><td>Small</td><td>Master to-do list &mdash; open primaries, urgent ones flagged, &quot;+N more&quot;</td></tr>
 <tr><td colspan="3" style="color:#8F8471">Lock screen: circular, rectangular and inline all work too, and honour the same Parameter.</td></tr>
@@ -79,7 +79,7 @@ th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;tex
 <a class="btn ghost" href="maxhq-widget.js" download>Download .js</a>
 
 <div class="note">Tapping the widget opens the dashboard. It refreshes roughly every 15 minutes &mdash; iOS decides the exact cadence, so treat it as &ldquo;fresh within the hour&rdquo;, not live.</div>
-<div class="note warn">Lock screen widgets are rendered <b>monochrome</b> by iOS, so the lock screen versions are deliberately drawn in white/opacity rather than colour. The home screen versions keep the Almanac palette.</div>
+<div class="note warn">Lock screen widgets are rendered <b>monochrome</b> by iOS, so those are deliberately drawn in white and opacity rather than colour — no theme can change that. Home screen widgets do follow the colourway.</div>
 
 <h2>Android</h2>
 <p style="color:#8F8471;font-size:13.5px">Android 12+ dropped true lock-screen widgets. The equivalents are a home-screen widget via <b>KWGT</b> (it can pull the same JSON URL), or <b>Tasker</b> + AutoNotification for a persistent notification. Say the word and I&rsquo;ll write that config instead.</p>
