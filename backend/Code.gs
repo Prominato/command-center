@@ -196,7 +196,11 @@ function panel_(view) {
       });
     });
     items.sort(function (a, b) { return (b.u ? 1 : 0) - (a.u ? 1 : 0); });
-    out.items = items.slice(0, 12);
+    // Emitted under BOTH names on purpose. summary_ uses `items` for the habit
+    // count, so `list` is the unambiguous one; `items` stays so that a widget
+    // pasted before this rename keeps working. The widget prefers list.
+    out.list  = items.slice(0, 12);
+    out.items = out.list;
     out.more  = Math.max(0, items.length - 12);
   } else if (out.view === 'challenge') {
     var ch = j('cc_challenge', { start: today, checks: {} });
