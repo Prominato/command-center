@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Max HQ - widget preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0D0B09;color:#E9E2D6;font-family:'Inter',system-ui,sans-serif;
+     padding:26px 20px 70px;font-size:15px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:27px;margin:0 0 6px}
+.lede{color:#8F8471;font-size:13.5px;margin-bottom:22px;max-width:66ch}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:26px}
+.seg{display:inline-flex;background:#1A1611;border:1px solid #2E2820;border-radius:8px;overflow:hidden}
+.seg button{background:none;border:none;color:#8F8471;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;padding:9px 15px;cursor:pointer}
+.seg button.on{background:#C9A96A;color:#16130F;font-weight:600}
+select{background:#1A1611;color:#E9E2D6;border:1px solid #2E2820;border-radius:8px;padding:9px 12px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.stage{display:flex;gap:40px;flex-wrap:wrap;align-items:flex-start}
+.caption{color:#8F8471;font-size:12px;margin-top:12px;max-width:330px}
+.caption b{color:#C9A96A;font-weight:600}
+
+/* ---- the phone ---- */
+.phone{width:314px;height:640px;border-radius:52px;padding:11px;background:#1c1c1e;
+  box-shadow:0 0 0 2px #3a3a3c, 0 26px 70px rgba(0,0,0,.65);flex:0 0 auto}
+.screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center}
+.island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:104px;height:30px;
+  background:#000;border-radius:16px;z-index:9}
+.statusbar{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;
+  padding:0 26px;font-size:12.5px;font-weight:600;z-index:8;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;
+  border-radius:3px;background:rgba(255,255,255,.55);z-index:9}
+
+/* lock screen */
+.lock{background:radial-gradient(120% 90% at 30% 12%, #4a3f6b 0%, #241f36 45%, #0c0a14 100%)}
+.lockpad{width:100%;padding:62px 22px 0;display:flex;flex-direction:column;align-items:center;color:#fff}
+.inline{font-size:13px;font-weight:500;opacity:.92;display:flex;gap:5px;align-items:center;
+  margin-bottom:1px;text-shadow:0 1px 3px rgba(0,0,0,.4);max-width:100%}
+.inline span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clock{font-size:78px;line-height:.96;font-weight:600;letter-spacing:-2px;
+  text-shadow:0 2px 14px rgba(0,0,0,.35);font-feature-settings:"tnum"}
+.lockrow{display:flex;gap:10px;margin-top:16px;width:100%;justify-content:center;align-items:stretch}
+.acc{background:rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-radius:18px;color:#fff}
+.acc-c{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0}
+.acc-r{flex:1;max-width:198px;padding:9px 12px;display:flex;flex-direction:column;justify-content:center}
+.ring{position:relative;width:60px;height:60px}
+.ring svg{transform:rotate(-90deg)}
+.ringtxt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ringtxt b{font-size:17px;font-weight:700}
+.ringtxt i{font-size:9px;font-style:normal;opacity:.8;margin-top:1px}
+.rhead{display:flex;justify-content:space-between;font-size:9.5px;opacity:.72;font-weight:500;letter-spacing:.2px}
+.rmain{font-size:14.5px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsub{font-size:10.5px;opacity:.75;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbar{height:4px;border-radius:2px;background:rgba(255,255,255,.24);margin-top:5px;overflow:hidden}
+.rbar i{display:block;height:100%;border-radius:2px;background:rgba(255,255,255,.95)}
+.notif{margin-top:auto;margin-bottom:26px;width:calc(100% - 44px);background:rgba(255,255,255,.14);
+  backdrop-filter:blur(14px);border-radius:16px;padding:11px 13px;color:#fff;font-size:12px}
+.notif b{display:block;font-size:12.5px;margin-bottom:1px}
+.notif span{opacity:.75;font-size:11.5px}
+
+/* home screen */
+.home{background:radial-gradient(120% 90% at 70% 10%, #6b4a3f 0%, #34211c 48%, #100a08 100%)}
+.homepad{width:100%;padding:58px 16px 0;display:flex;flex-direction:column;gap:13px;align-items:center}
+.wgrid{display:flex;gap:13px;width:100%;justify-content:center}
+.w{border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.35);font-family:'Inter',sans-serif}
+.w-med{width:276px;height:132px}
+.w-sml{width:132px;height:132px}
+.wpad{padding:13px 14px;height:100%;display:flex;flex-direction:column}
+.whead{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;font-weight:700;letter-spacing:.7px}
+.wnow{font-weight:700;line-height:1.15;margin-top:7px}
+.wbar{height:4px;border-radius:2px;margin-top:6px;overflow:hidden}
+.wbar i{display:block;height:100%;border-radius:2px}
+.wrow{display:flex;gap:7px;align-items:center;font-size:11px;margin-top:4px}
+.wrow .t{font-size:10px;font-weight:600;min-width:38px}
+.wrow .l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wbig{font-size:29px;font-weight:700;line-height:1;margin-top:6px}
+.wcap{font-size:10.5px;margin-top:1px}
+.strip{display:flex;gap:1.5px;margin-top:9px}
+.strip i{display:block;flex:1;height:12px;border-radius:1.5px}
+.wfoot{font-size:9.5px;margin-top:auto}
+.mrow{display:flex;gap:5px;align-items:center;font-size:11px;margin-top:4px}
+.mrow .d{font-size:13px;line-height:1}
+.mrow .x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock{margin-top:auto;margin-bottom:22px;width:calc(100% - 32px);height:72px;border-radius:26px;
+  background:rgba(255,255,255,.16);backdrop-filter:blur(14px);display:flex;align-items:center;
+  justify-content:space-around;padding:0 16px}
+.icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.22)}
+.note{border-left:2px solid #6FA396;padding:8px 0 8px 13px;color:#8F8471;font-size:13px;margin:26px 0 0;max-width:70ch}
+a{color:#C9A96A}
+</style></head><body><div class="wrap">
+<h1>What it looks like on the phone</h1>
+<div class="lede">Rendered from a real snapshot of your backend, taken when this page was built &mdash;
+the same payload the widget receives. Switch colourways to see how the home-screen widgets follow the
+dashboard. Lock-screen widgets are drawn the way iOS actually renders them: monochrome white on a
+frosted panel, no colour, because that is a system rule rather than a choice.</div>
+
+<div class="controls">
+  <div class="seg" id="segScreen">
+    <button data-s="lock" class="on">Lock screen</button>
+    <button data-s="home">Home screen</button>
+  </div>
+  <select id="theme"></select>
+</div>
+
+<div class="stage">
+  <div>
+    <div class="phone"><div class="screen" id="screen"></div></div>
+  </div>
+  <div style="flex:1;min-width:260px">
+    <div class="caption" id="cap"></div>
+    <div class="note">Times shown are from the snapshot, so the &ldquo;now&rdquo; block is whatever was
+    current when it was taken. On your phone this tracks the real clock and re-renders when the current
+    block ends.</div>
+    <div class="note">Install steps and the code are on the
+    <a href="widget.html">widget page</a>.</div>
+  </div>
+</div>
+</div>
+<script>
+const SNAP = {"agenda":{"ok":true,"theme":"sunset","view":"agenda","blocks":[{"s":285,"e":305,"l":"Wake, hydrate, stretch","v":false},{"s":305,"e":330,"l":"Meditate + today\u2019s concept","v":false},{"s":340,"e":420,"l":"Gym \u2014 Legs day","v":false},{"s":420,"e":465,"l":"Shower, breakfast","v":false},{"s":465,"e":495,"l":"Inbox, day setup","v":false},{"s":495,"e":720,"l":"Prominato \u2014 searches, client calls","v":false},{"s":720,"e":750,"l":"Lunch","v":false},{"s":750,"e":930,"l":"Highmark block","v":false},{"s":930,"e":990,"l":"AI Creation","v":false},{"s":1050,"e":1140,"l":"Pickleball \u2014 open play","v":false},{"s":1140,"e":1185,"l":"Dinner","v":false},{"s":1185,"e":1245,"l":"Reading, Babbel","v":false},{"s":1245,"e":1275,"l":"Wind-down, screens off","v":false},{"s":1275,"e":1275,"l":"Lights out","v":false}],"stale":false,"day":2,"todayDone":0,"pct":31,"primary":17,"urgent":1,"dcDone":0,"dcAll":13,"water":0},"master":{"ok":true,"theme":"sunset","view":"master","list":[{"t":"FIX GLASS PIECE!!","u":true,"b":"todo"},{"t":"Carls Return","u":false,"b":"todo"},{"t":"get bikes fixed","u":false,"b":"todo"},{"t":"Schedule EKG","u":false,"b":"todo"},{"t":"Schedule Dental work","u":false,"b":"todo"},{"t":"parking ticket - birmingham","u":false,"b":"todo"},{"t":"LinkedIn responses","u":false,"b":"work"},{"t":"Get Linkedhelper campaign running","u":false,"b":"work"},{"t":"Create luxury concierge social account","u":false,"b":"work"},{"t":"reddit start-up ideas --> app build out","u":false,"b":"work"},{"t":"domain name predictor","u":false,"b":"work"},{"t":"Bathroom Wallpaper","u":false,"b":"house"}],"more":5,"day":2,"todayDone":0,"pct":31,"primary":17,"urgent":1,"dcDone":0,"dcAll":13,"water":0},"challenge":{"ok":true,"theme":"sunset","view":"challenge","grid":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"dayIdx":1,"day":2,"todayDone":0,"pct":31,"primary":17,"urgent":1,"dcDone":0,"dcAll":13,"water":0}};
+const THEMES = {
+  dark:     { bg:"#16130F", ink:"#E9E2D6", mut:"#8F8471", acc:"#C9A96A", sage:"#6FA396", red:"#C2705C", line:"#2E2820", label:"Almanac (dark)" },
+  light:    { bg:"#EFEBE3", ink:"#2A251C", mut:"#7A7060", acc:"#8A6E3A", sage:"#3E7A6C", red:"#A04A36", line:"#DBD3C2", label:"Parchment (light)" },
+  forest:   { bg:"#0F1512", ink:"#E2EADF", mut:"#85947F", acc:"#C2A24E", sage:"#7FB489", red:"#C86F5E", line:"#25322B", label:"Forest" },
+  midnight: { bg:"#0E1219", ink:"#DDE6F2", mut:"#7E8CA0", acc:"#63C6DB", sage:"#5FC3A6", red:"#E2736B", line:"#233040", label:"Midnight Ink" },
+  steel:    { bg:"#F0F2F5", ink:"#171C23", mut:"#5C6570", acc:"#16687C", sage:"#1D6350", red:"#943E34", line:"#DADEE5", label:"Steel" },
+  ember:    { bg:"#14100E", ink:"#F2E7E0", mut:"#9C8578", acc:"#FF6B35", sage:"#4ECDC4", red:"#E01E37", line:"#33251F", label:"Ember" },
+  citrus:   { bg:"#FFF6EE", ink:"#26160C", mut:"#7A5A44", acc:"#E85D04", sage:"#0B7A5E", red:"#C1121F", line:"#F0DCC8", label:"Citrus" },
+  sunset:   { bg:"#F4573F", ink:"#1B0F0C", mut:"#7C574C", acc:"#C2300F", sage:"#0A7057", red:"#A50E1E", line:"#F2D9D2", label:"Sunset Pop" }
+};
+const CH_ITEMS = 8;
+let screenMode = "lock";
+let theme = SNAP.agenda.theme && THEMES[SNAP.agenda.theme] ? SNAP.agenda.theme : "dark";
+
+/* Same two helpers the widget uses, so the preview cannot flatter the real thing. */
+function hhmm(m){ let h=Math.floor(m/60)%24, mm=m%60; const ap=h<12?"a":"p"; h=h%12; if(h===0)h=12;
+  return h+":"+(mm<10?"0":"")+mm+ap; }
+function splitDay(blocks, now){ let cur=null, next=[];
+  blocks.forEach(b=>{ if(now>=b.s && now<Math.max(b.e,b.s+1)){ if(!cur)cur=b; } else if(b.s>now) next.push(b); });
+  return {cur, next}; }
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// The snapshot has no clock of its own, so anchor "now" to a block that was live in it.
+const A = SNAP.agenda, NOW = (function(){
+  const b = A.blocks && A.blocks.length ? A.blocks[Math.min(9, A.blocks.length-1)] : null;
+  return b ? Math.floor((b.s + b.e) / 2) : 15*60;
+})();
+const S = splitDay(A.blocks||[], NOW);
+
+function ringSvg(pct, r, sw){
+  const c = 2*Math.PI*r, off = c*(1-Math.max(0,Math.min(1,pct/100)));
+  return `<svg width="${(r+sw)*2}" height="${(r+sw)*2}" viewBox="0 0 ${(r+sw)*2} ${(r+sw)*2}">
+    <circle cx="${r+sw}" cy="${r+sw}" r="${r}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="${sw}"/>
+    <circle cx="${r+sw}" cy="${r+sw}" r="${r}" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="${sw}"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg>`;
+}
+
+function lockScreen(){
+  const ch = SNAP.challenge, cur = S.cur, nx = S.next[0];
+  const pctThrough = cur ? Math.round((NOW-cur.s)/Math.max(1,cur.e-cur.s)*100) : 0;
+  return `<div class="island"></div>
+  <div class="statusbar"><span>${hhmm(NOW).replace(/[ap]$/,"")}</span><span>&#9679;&#9679;&#9679; &#9899; &#9632;</span></div>
+  <div class="lockpad">
+    <div class="inline">&#9656;<span>${cur?esc(cur.l)+" &middot; until "+hhmm(cur.e):"nothing scheduled"}</span></div>
+    <div class="clock">${hhmm(NOW).replace(/[ap]$/,"")}</div>
+    <div class="lockrow">
+      <div class="acc acc-c"><div class="ring">${ringSvg(ch.pct,26,7)}
+        <div class="ringtxt"><b>${ch.todayDone}/${CH_ITEMS}</b><i>d${ch.day}</i></div></div></div>
+      <div class="acc acc-r">
+        <div class="rhead"><span>MAX HQ</span><span>${cur?hhmm(cur.s)+"&ndash;"+hhmm(cur.e):"today"}</span></div>
+        <div class="rmain">${cur?esc(cur.l):"nothing scheduled"}</div>
+        <div class="rbar"><i style="width:${pctThrough}%"></i></div>
+        <div class="rsub">${nx?"next "+hhmm(nx.s)+"  "+esc(nx.l):"nothing after this"}</div>
+      </div>
+    </div>
+  </div>
+  <div class="notif"><b>Max HQ</b><span>${SNAP.master.primary} primary open &middot; ${SNAP.master.urgent} urgent</span></div>
+  <div class="homebar"></div>`;
+}
+
+function homeScreen(){
+  const p = THEMES[theme], ch = SNAP.challenge, m = SNAP.master;
+  const cur = S.cur, pctThrough = cur ? Math.round((NOW-cur.s)/Math.max(1,cur.e-cur.s)*100) : 0;
+  const rows = S.next.slice(0,3).map(b=>
+    `<div class="wrow"><span class="t" style="color:${p.mut}">${hhmm(b.s)}</span>
+       <span class="l" style="color:${p.ink}">${esc(b.l)}</span>
+       ${b.v?`<span style="color:${p.sage};font-size:8.5px">cal</span>`:""}</div>`).join("");
+  const strip = (ch.grid||[]).length ? `<div class="strip">${
+    Array.from({length:21},(_,d)=>{ let done=0; ch.grid.forEach(r=>{ if(r[d]) done++; });
+      const bg = done ? hexA(p.sage, .3+.7*(done/CH_ITEMS)) : hexA(p.ink, d===ch.dayIdx?.42:.12);
+      return `<i style="background:${bg}"></i>`; }).join("")}</div>` : "";
+  const items = (m.list||[]).slice(0,4).map(it=>
+    `<div class="mrow"><span class="d" style="color:${it.u?p.red:p.mut};font-size:${it.u?9:13}px">${it.u?"&#9679;":"&middot;"}</span>
+       <span class="x" style="color:${it.u?p.red:p.ink};font-weight:${it.u?600:400}">${esc(it.t)}</span></div>`).join("");
+  const hidden = Math.max(0,(m.list||[]).length-4) + (m.more||0);
+
+  return `<div class="island"></div>
+  <div class="statusbar"><span>${hhmm(NOW).replace(/[ap]$/,"")}</span><span>&#9679;&#9679;&#9679; &#9899; &#9632;</span></div>
+  <div class="homepad">
+    <div class="wgrid">
+      <div class="w w-med" style="background:${p.bg}"><div class="wpad">
+        <div class="whead"><span style="color:${p.acc}">TODAY</span>
+          <span style="color:${p.mut};font-weight:500">${cur?hhmm(cur.s)+"&ndash;"+hhmm(cur.e):""}</span></div>
+        <div class="wnow" style="color:${p.ink};font-size:17px">${cur?esc(cur.l):"Between blocks"}</div>
+        <div class="wbar" style="background:${p.line}"><i style="width:${pctThrough}%;background:${p.acc}"></i></div>
+        <div style="margin-top:5px">${rows}</div>
+      </div></div>
+    </div>
+    <div class="wgrid">
+      <div class="w w-sml" style="background:${p.bg}"><div class="wpad">
+        <div class="whead"><span style="color:${p.acc}">21-DAY</span>
+          <span style="color:${p.mut};font-weight:500">${ch.day}/21</span></div>
+        <div class="wbig" style="color:${p.ink}">${ch.todayDone}/${CH_ITEMS}</div>
+        <div class="wcap" style="color:${p.mut}">habits today</div>
+        <div class="wbar" style="background:${p.line}"><i style="width:${Math.round(ch.todayDone/CH_ITEMS*100)}%;background:${p.sage}"></i></div>
+        ${strip}
+        <div class="wfoot" style="color:${p.mut}">${ch.pct}% banked</div>
+      </div></div>
+      <div class="w w-sml" style="background:${p.bg}"><div class="wpad">
+        <div class="whead"><span style="color:${p.acc}">MASTER</span>
+          <span style="color:${p.mut};font-weight:500">${m.primary}${m.urgent?" &middot; "+m.urgent+"!":""}</span></div>
+        <div style="margin-top:5px">${items}</div>
+        ${hidden?`<div class="wfoot" style="color:${p.mut}">+${hidden} more</div>`:""}
+      </div></div>
+    </div>
+    <div class="dock"><div class="icon"></div><div class="icon"></div><div class="icon"></div><div class="icon"></div></div>
+  </div>
+  <div class="homebar"></div>`;
+}
+
+function hexA(hex,a){ const n=parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+
+function caption(){
+  if(screenMode==="lock") return `<b>Lock screen.</b> Inline slot above the clock, then the circular
+    (21-day ring) and rectangular (today's agenda) widgets below it. iOS renders these monochrome, so
+    the colourway does not apply here &mdash; that is why they are white.`;
+  return `<b>Home screen.</b> The long widget is today's agenda with the block you are in now and a bar
+    running through it; the two small ones are the 21-day challenge and the Master list. These follow the
+    dashboard's colourway &mdash; currently <b>${THEMES[theme].label}</b>.`;
+}
+
+function render(){
+  document.getElementById("screen").className = "screen " + (screenMode==="lock"?"lock":"home");
+  document.getElementById("screen").innerHTML = screenMode==="lock" ? lockScreen() : homeScreen();
+  document.getElementById("cap").innerHTML = caption();
+}
+const sel = document.getElementById("theme");
+Object.keys(THEMES).forEach(k=>{ const o=document.createElement("option");
+  o.value=k; o.textContent=THEMES[k].label + (k===SNAP.agenda.theme?"  (yours)":""); sel.appendChild(o); });
+sel.value = theme;
+sel.addEventListener("change", e=>{ theme=e.target.value; render(); });
+document.querySelectorAll("#segScreen button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#segScreen button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); screenMode=b.dataset.s; render(); }));
+render();
+</script></body></html>

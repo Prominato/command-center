@@ -284,7 +284,7 @@ function homeAgenda(d, p, fam){
   }
   w.addSpacer(8);
 
-  const rows = s.next.slice(0, fam === "small" ? 2 : 4);
+  const rows = s.next.slice(0, fam === "small" ? 2 : (fam === "large" ? 5 : 3));
   if (!rows.length){
     const t = w.addText("nothing after this"); t.font = Font.systemFont(11); t.textColor = C(p.mut);
   }
@@ -324,8 +324,10 @@ function homeChallenge(d, p, fam){
       for (let i = 0; i < grid.length; i++) if (grid[i][day]) done++;
       const cell = strip.addStack();
       cell.size = new Size(cw, 12); cell.cornerRadius = 1.5;
-      cell.backgroundColor = done ? C(p.sage, 0.25 + 0.75 * (done / CH_ITEMS))
-                                  : C(p.line, day === d.dayIdx ? 1 : 0.55);
+      // Empty cells come from ink, not line: `line` is tuned for a light panel, but these
+      // sit on the theme BACKGROUND - on Sunset that turned the strip into a white barcode.
+      cell.backgroundColor = done ? C(p.sage, 0.3 + 0.7 * (done / CH_ITEMS))
+                                  : C(p.ink, day === d.dayIdx ? 0.42 : 0.12);
       strip.addSpacer(fam === "small" ? 1 : 2);
     }
   }
@@ -346,7 +348,7 @@ function homeMaster(d, p, fam){
     const t = w.addText("All clear"); t.font = Font.boldSystemFont(16); t.textColor = C(p.ink);
     return w;
   }
-  const max = fam === "small" ? 5 : 8;
+  const max = fam === "small" ? 4 : 8;   // 5 clipped on a small tile
   items.slice(0, max).forEach(function (it){
     const r = w.addStack(); r.centerAlignContent();
     const dot = r.addText(it.u ? "●" : "·");
