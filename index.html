@@ -967,7 +967,11 @@ function applyTheme(key,fromUser){key=normSkin(key);
   const s=document.getElementById("themeSelect"); if(s)s.value=key;
   ["--bg","--bg2","--card","--card-hover","--ink","--ink-muted","--amber","--gold","--teal","--dusk","--rain","--rose","--gym","--urgent","--divider","--wknd","--wknd-bd","--wknd-hover","--accent"]
     .forEach(p=>document.documentElement.style.removeProperty(p));   // clear inline vars from the old theme system
+  // Goals must repaint too: their urgency colour is interpolated from the LIVE CSS
+  // custom properties at render time, so goals rendered before the skin was applied
+  // (or before you switched colourway) keep the previous palette's green and amber.
   try{ renderEvents(); renderMonths(); renderWeek(); if(!EDIT_ID)evTintReset();
+       if(typeof renderGoals==='function')renderGoals();
 window.__ccBooted=true; }catch(e){}   // default colors are skin-derived — repaint on toggle (no-op at boot)
 }
 function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.innerHTML=Object.entries(SKINS).map(([k,t])=>`<option value="${k}">${t.name}</option>`).join(""); s.onchange=()=>applyTheme(s.value,true);}
@@ -976,7 +980,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-20c';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20d';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
