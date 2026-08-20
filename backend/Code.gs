@@ -134,18 +134,55 @@ function doPost(e) {
   }
 }
 
+
+/** Daily Habits -- the rolling 21-day meter the dashboard shows, recomputed here so
+ *  the widget and the email brief agree with the app instead of guessing. Mirrors
+ *  hbStats() in index.html: window is the last 21 days ending today, score is out of
+ *  1000 where 1000 means every habit on every day. Storage is date-keyed:
+ *    cc_habits = { items:[{id,e,t,c}], log:{ "YYYY-MM-DD":[ids...] } }              */
+var HB_WINDOW = 21;
+function habits_(st, today) {
+  var HB = null;
+  try { HB = st['cc_habits'] ? JSON.parse(st['cc_habits'].v) : null; } catch (e) {}
+  var items = (HB && HB.items && HB.items.length) ? HB.items : [];
+  var n = items.length || 16;                       // 16 is the shipped default list
+  var log = (HB && HB.log) ? HB.log : {};
+  var ids = {}; items.forEach(function (it) { ids[it.id] = 1; });
+
+  var days = [], d = new Date(today + 'T12:00:00');
+  d.setDate(d.getDate() - (HB_WINDOW - 1));
+  for (var i = 0; i < HB_WINDOW; i++) {
+    days.push(Utilities.formatDate(d, TZ, 'yyyy-MM-dd'));
+    d.setDate(d.getDate() + 1);
+  }
+
+  var perDay = [], done = 0, perfect = 0, perItem = {};
+  items.forEach(function (it) { perItem[it.id] = 0; });
+  days.forEach(function (iso) {
+    var t = log[iso] || [];
+    if (items.length) t = t.filter(function (id) { return ids[id]; });
+    perDay.push(t.length);
+    done += t.length;
+    if (items.length && t.length === n) perfect++;
+    t.forEach(function (id) { if (perItem[id] !== undefined) perItem[id]++; });
+  });
+
+  var need = Math.ceil(n * 0.8), streak = 0;
+  for (var k = perDay.length - 1; k >= 0; k--) { if (perDay[k] >= need) streak++; else break; }
+
+  var possible = Math.max(1, n * HB_WINDOW);
+  return { n: n, days: days, perDay: perDay, done: done, possible: possible,
+           score: Math.round(1000 * done / possible),
+           today: perDay[perDay.length - 1] || 0,
+           perfect: perfect, streak: streak, items: items, perItem: perItem };
+}
+
 /** Counts only -- deliberately no to-do text, note bodies or event titles, so a
  *  leaked widget key exposes progress numbers and nothing personal. */
 function summary_() {
   var st = loadState_(), today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   function j(k, f) { try { return st[k] ? JSON.parse(st[k].v) : f; } catch (e) { return f; } }
-  var L = j('cc_lists', {}), ch = j('cc_challenge', { start: today, checks: {} });
-  var dayIdx = 0;
-  if (ch.start) dayIdx = Math.round((new Date(today + 'T00:00:00') - new Date(ch.start + 'T00:00:00')) / 86400000);
-  var checks = ch.checks || {}, CH = 8, todayDone = 0;
-  for (var i = 0; i < CH; i++) if (checks[i + '::' + dayIdx]) todayDone++;
-  var total = Object.keys(checks).length;
-  var possible = Math.max(1, (Math.min(Math.max(dayIdx, 0), 20) + 1) * CH);
+  var L = j('cc_lists', {}), H = habits_(st, today);
   var primary = 0, urgent = 0;
   ['todo', 'work', 'house', 'routine'].forEach(function (b) {
     (L[b] || []).forEach(function (it) {
@@ -154,14 +191,15 @@ function summary_() {
       if (it.urgent) urgent++;
     });
   });
-  var dcAll = (L.dconst || []).length || 13;
-  var dcT = j('cc_dc_state', {})[today] || {}, dcDone = 0;
-  Object.keys(dcT).forEach(function (k) { if (dcT[k]) dcDone++; });
   var water = 0;
-  for (var n = 0; n < 4; n++) if (st['water::' + today + '::' + n] && st['water::' + today + '::' + n].v === '1') water++;
-  return { ok: true, day: Math.min(Math.max(dayIdx, 0) + 1, 21), todayDone: todayDone, items: CH,
-           pct: Math.round(total / possible * 100), primary: primary, urgent: urgent,
-           dcDone: dcDone, dcAll: dcAll, water: water,
+  for (var w = 0; w < 4; w++) if (st['water::' + today + '::' + w] && st['water::' + today + '::' + w].v === '1') water++;
+  // todayDone/items/pct/day keep their old names so a widget pasted before the habits
+  // merge still renders something sensible rather than blanks.
+  return { ok: true, score: H.score, todayDone: H.today, items: H.n, habits: H.n,
+           streak: H.streak, perfect: H.perfect, window: HB_WINDOW,
+           pct: Math.round(H.score / 10), day: HB_WINDOW,
+           dcDone: H.today, dcAll: H.n,
+           primary: primary, urgent: urgent, water: water,
            theme: (st['cc_theme'] && String(st['cc_theme'].v)) || 'dark' };
 }
 
@@ -203,17 +241,14 @@ function panel_(view) {
     out.items = out.list;
     out.more  = Math.max(0, items.length - 12);
   } else if (out.view === 'challenge') {
-    var ch = j('cc_challenge', { start: today, checks: {} });
-    var dayIdx = 0;
-    if (ch.start) dayIdx = Math.round((new Date(today + 'T00:00:00') - new Date(ch.start + 'T00:00:00')) / 86400000);
-    var checks = ch.checks || {}, grid = [];
-    for (var i = 0; i < 8; i++) {
-      var row = [];
-      for (var d = 0; d < 21; d++) row.push(checks[i + '::' + d] ? 1 : 0);
-      grid.push(row);
-    }
-    out.grid = grid;
-    out.dayIdx = Math.max(0, dayIdx);
+    // perDay (21 counts) is all the widget's strip needs - far smaller than the old
+    // 8x21 grid, and it survives the habit list changing length.
+    var H2 = habits_(st, today);
+    out.perDay = H2.perDay;
+    out.dayIdx = HB_WINDOW - 1;                     // today is always the last column now
+    out.grid = H2.items.map(function (it) {
+      return { e: it.e, t: it.t, hits: H2.perItem[it.id] || 0 };
+    });
   }
   return out;
 }

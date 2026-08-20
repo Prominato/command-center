@@ -24,7 +24,7 @@ const SYNC = "https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkD
 // single-line field eats a multi-line paste.
 const WIDGET_KEY = "PASTE_YOUR_WIDGET_KEY_HERE";
 const KEY_STORE  = "maxhq_widget_key";
-const CH_ITEMS   = 8;                    // habits in the 21-day challenge
+const CH_ITEMS   = 16;                   // fallback habit count if the backend is old
 
 // The dashboard's eight colourways, lifted from its CSS so the widget cannot drift
 // from the app. The backend reports which one is active.
@@ -183,7 +183,7 @@ function ring(pct, label, sub){
 function lockCircular(d, view){
   const w = new ListWidget();
   if (view === "master") w.backgroundImage = ring(d.primary ? 100 : 0, String(d.primary), d.urgent ? d.urgent + "!" : "open");
-  else w.backgroundImage = ring(d.pct, d.todayDone + "/" + CH_ITEMS, "d" + d.day);
+  else w.backgroundImage = ring((d.score || 0) / 10, String(d.score || 0), "/1000");
   return w;
 }
 
@@ -197,7 +197,7 @@ function lockInline(d, view){
     w.addText("▸ " + d.primary + " open" + (d.urgent ? " · " + d.urgent + "!" : "") +
               ((function(){ const L = Array.isArray(d.list) ? d.list : (Array.isArray(d.items) ? d.items : []); return L[0] ? " · " + L[0].t : ""; })()));
   } else {
-    w.addText("⌁ " + d.todayDone + "/" + CH_ITEMS + " · day " + d.day + "/21");
+    w.addText("⌁ " + (d.score || 0) + "/1000 · today " + (d.todayDone || 0) + "/" + (d.habits || d.items || 16));
   }
   return w;
 }
@@ -233,12 +233,13 @@ function lockRect(d, view){
     });
     return w;
   }
-  const h2 = head.addText("DAY " + d.day + "/21"); h2.font = Font.mediumSystemFont(11); h2.textOpacity = 0.7;
+  const h2 = head.addText((d.score || 0) + "/1000"); h2.font = Font.mediumSystemFont(11); h2.textOpacity = 0.7;
   w.addSpacer(3);
-  const mid = w.addText(d.todayDone + "/" + CH_ITEMS + " habits · " + d.dcDone + "/" + d.dcAll + " daily");
+  const mid = w.addText("today " + (d.todayDone || 0) + "/" + (d.habits || d.items || 16) + " habits" +
+                        (d.streak ? " · " + d.streak + "d streak" : ""));
   mid.font = Font.boldSystemFont(14);
   w.addSpacer(3);
-  bar(w, 150, Math.round(d.todayDone / CH_ITEMS * 100), new Color("#ffffff", 0.95), new Color("#ffffff", 0.22));
+  bar(w, 150, (d.score || 0) / 10, new Color("#ffffff", 0.95), new Color("#ffffff", 0.22));
   w.addSpacer(3);
   const bot = w.addText(d.primary + " primary" + (d.urgent ? " · " + d.urgent + " urgent" : "") + " · " + d.water + "/4 water");
   bot.font = Font.systemFont(11); bot.textOpacity = 0.75;
@@ -304,35 +305,38 @@ function homeAgenda(d, p, fam){
 
 function homeChallenge(d, p, fam){
   const w = homeShell(p);
-  homeHead(w, p, "21-DAY CHALLENGE", "DAY " + d.day + "/21");
-  w.addSpacer(8);
-  const big = w.addText(d.todayDone + "/" + CH_ITEMS);
-  big.font = Font.boldSystemFont(30); big.textColor = C(p.ink);
-  const cap = w.addText("habits today");
-  cap.font = Font.systemFont(11); cap.textColor = C(p.mut);
-  w.addSpacer(8);
-  bar(w, fam === "small" ? 120 : 290, Math.round(d.todayDone / CH_ITEMS * 100), C(p.sage), C(p.line));
-  w.addSpacer(9);
+  const n = d.habits || d.items || 16;
+  homeHead(w, p, "DAILY HABITS", "LAST " + (d.window || 21) + "D");
+  w.addSpacer(6);
 
-  // One column per day: fuller column = more habits ticked that day.
-  const grid = d.grid || [];
-  if (grid.length){
+  // The score is the headline now - a rolling 0-1000 over the window, not a day count.
+  const row = w.addStack(); row.centerAlignContent();
+  const big = row.addText(String(d.score === undefined ? 0 : d.score));
+  big.font = Font.boldSystemFont(fam === "small" ? 28 : 32); big.textColor = C(p.ink);
+  const den = row.addText(" /1000");
+  den.font = Font.systemFont(11); den.textColor = C(p.mut);
+  w.addSpacer(6);
+  bar(w, fam === "small" ? 120 : 290, (d.score || 0) / 10, C(p.sage), C(p.line));
+  w.addSpacer(8);
+
+  // One column per day in the window, fuller column = more habits ticked that day.
+  const perDay = d.perDay || [];
+  if (perDay.length){
     const strip = w.addStack(); strip.centerAlignContent();
     const cw = fam === "small" ? 4 : 11;
-    for (let day = 0; day < 21; day++){
-      let done = 0;
-      for (let i = 0; i < grid.length; i++) if (grid[i][day]) done++;
+    for (let i = 0; i < perDay.length; i++){
       const cell = strip.addStack();
       cell.size = new Size(cw, 12); cell.cornerRadius = 1.5;
       // Empty cells come from ink, not line: `line` is tuned for a light panel, but these
       // sit on the theme BACKGROUND - on Sunset that turned the strip into a white barcode.
-      cell.backgroundColor = done ? C(p.sage, 0.3 + 0.7 * (done / CH_ITEMS))
-                                  : C(p.ink, day === d.dayIdx ? 0.42 : 0.12);
+      cell.backgroundColor = perDay[i] ? C(p.sage, 0.3 + 0.7 * (perDay[i] / n))
+                                       : C(p.ink, i === perDay.length - 1 ? 0.42 : 0.12);
       strip.addSpacer(fam === "small" ? 1 : 2);
     }
   }
-  w.addSpacer(6);
-  const foot = w.addText(d.pct + "% banked");
+  w.addSpacer(7);
+  const foot = w.addText("today " + (d.todayDone || 0) + "/" + n +
+                         (d.streak ? "  ·  " + d.streak + "d streak" : ""));
   foot.font = Font.systemFont(10); foot.textColor = C(p.mut);
   return w;
 }

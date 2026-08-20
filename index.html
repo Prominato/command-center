@@ -637,7 +637,19 @@
   .tacal{font-family:var(--fmono); font-size:0.52rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:4px; padding:1px 5px;}
   .tarow .iconbtn{opacity:0; transition:opacity .12s;}
   .tarow:hover .iconbtn{opacity:1;}
-  .dcwrap{margin-top:14px; padding-top:2px; border-top:1px solid var(--line);}
+    .hbmeter{display:flex; gap:14px; align-items:center; margin:2px 0 12px;}
+  .hbscore{display:flex; align-items:baseline; gap:2px; font-family:var(--fdisp);}
+  .hbscore b{font-size:30px; font-weight:600; color:var(--ink); line-height:1;}
+  .hbscore i{font-style:normal; font-size:12px; color:var(--mut);}
+  .hbbarwrap{flex:1; min-width:0;}
+  .hbbar{height:6px; border-radius:3px; background:var(--line); overflow:hidden;}
+  .hbbar span{display:block; height:100%; border-radius:3px; background:var(--sage); width:0;
+    transition:width .35s ease;}
+  .hbstats{display:flex; gap:12px; margin-top:6px; font-family:var(--fmono); font-size:9.5px;
+    letter-spacing:.7px; text-transform:uppercase; color:var(--mut);}
+  .chhit{font-family:var(--fmono); font-size:9.5px; color:var(--mut); min-width:16px; text-align:right;}
+  .chhit.full{color:var(--sage);}
+  .chlbl i{font-style:normal; margin-right:5px;}
   #dcList li{border-bottom:none; padding:1px 2px; font-size:12.5px; gap:7px; min-height:0;}
   #dcList li input[type=checkbox]{width:13px; height:13px; margin:0; flex:0 0 auto;}
   @media(max-width:520px){ .tatime{flex-basis:96px; font-size:0.67rem} .tadur{display:none} .talabel{font-size:0.79rem} }
@@ -795,22 +807,25 @@
     <div class="drop-body">
       <div class="tahead"><span class="tabadge" id="taBadge">—</span></div>
       <div id="todayTimeline"></div>
-      <div class="dcwrap">
-        <div class="trisec">Daily Constants <span class="wcount" id="dcCount"></span></div>
-        <ul class="items dclist" id="dcList"></ul>
-      </div>
     </div>
   </details>
 
   <details class="drop" data-sec="challenge" open>
-    <summary><span class="arrow">▸</span> 21-Day Challenge</summary>
+    <summary><span class="arrow">▸</span> Daily Habits</summary>
     <div class="drop-body">
-      <div class="chhead">
-        <span class="chday" id="chDay">—</span>
-        <span class="chscore" id="chScore">—</span>
+      <div class="hbmeter">
+        <div class="hbscore"><b id="hbScore">—</b><i>/1000</i></div>
+        <div class="hbbarwrap">
+          <div class="hbbar"><span id="hbFill"></span></div>
+          <div class="hbstats">
+            <span id="hbToday">—</span>
+            <span id="hbStreak">—</span>
+            <span id="hbPerfect">—</span>
+          </div>
+        </div>
       </div>
-      <div id="chMatrix"></div>
-      <div class="chfoot"><button class="nnew" onclick="chReset()">RESTART</button><span class="chtot" id="chTotal"></span></div>
+      <div id="hbMatrix"></div>
+      <div class="chfoot"><span class="chtot" id="hbTotal"></span></div>
     </div>
   </details>
 
@@ -955,7 +970,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-18c';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20a';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1181,10 +1196,15 @@ const SYNC=(function(){
       applyCal(__cal);
       pill('synced');
       const ae=document.activeElement, typing=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable);
-      // Pick up remote changes. Skipped while you're typing, and on the first pull after
-      // signing in. Flush first: a reload used to discard whatever was still sitting in
-      // the 800ms debounce, so an edit made just before a reload never reached the cloud.
-      if(changed && !typing && !AUTH.justSignedIn()){ try{ await flush(); }catch(e){} location.reload(); }
+      /* Pick up remote changes. Flush first: a reload used to discard whatever was still
+         sitting in the 800ms debounce, so an edit made just before it never reached the cloud.
+         The old version also skipped this whenever AUTH.justSignedIn() was true - which is
+         EVERY page load, because rehydrating the stored token counts as signing in. So the
+         first pull merged the laptop's changes into localStorage and then never rendered
+         them: the phone looked a day behind until the 5-minute pull, by which time you had
+         put it down. Cosmetics lost to correctness; a reload here is cheap and the session
+         survives it. It cannot loop, because after reloading local already matches cloud. */
+      if(changed && !typing){ try{ await flush(); }catch(e){} location.reload(); }
     }catch(e){ pill('offline'); }
     finally{ pulling=false; }}
   /* Publish which build this device is running. A stale cached copy of index.html on
@@ -1708,7 +1728,7 @@ function wirePersistence(){document.querySelectorAll('[data-key]').forEach(el=>{
 
 /* ===== sections ===== */
 const SEC_DEFAULT=['today','lists','week','goals','notes','trips','calendar'];
-const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',goals:'Goals 30/60/90',notes:'Notes',trips:'Trips & Events',challenge:'21-Day Challenge',calendar:'3-Month Calendar'};
+const SEC_LABEL={today:"Today's Agenda",lists:'To-Do Lists',week:'This Week',goals:'Goals 30/60/90',notes:'Notes',trips:'Trips & Events',challenge:'Daily Habits',calendar:'3-Month Calendar'};
 function secLoad(){let o; try{o=JSON.parse(localStorage.getItem('cc_secorder'));}catch(e){} if(!Array.isArray(o))o=SEC_DEFAULT.slice();
   SEC_DEFAULT.forEach((id,idx)=>{ if(o.indexOf(id)<0){
     if(id==='today'){o.unshift(id); return;}                                        // Today's Agenda pins to the very top…
@@ -1829,25 +1849,9 @@ function reEdit(id){
   sp.addEventListener('blur',fin,{once:true});
   sp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();sp.blur();} if(ev.key==='Escape'){delete ROUTINE_EDIT[id]; sp.blur();}});
 }
-/* ===== Daily Constants — Max's real dconst list, checked per-day (auto-resets each morning) ===== */
-let DC_STATE={};
-function dcLoad(){try{DC_STATE=JSON.parse(localStorage.getItem('cc_dc_state'))||{};}catch(e){DC_STATE={};}
-  const keep={}; const cutoff=new Date(TODAY.getTime()-30*86400000);
-  Object.keys(DC_STATE).forEach(k=>{ if(new Date(k+'T12:00:00')>=cutoff) keep[k]=DC_STATE[k]; });  // prune >30d
-  DC_STATE=keep;}
-function dcSave(){const v=JSON.stringify(DC_STATE); localStorage.setItem('cc_dc_state',v); SYNC.queue('cc_dc_state',v);}
-function dcToggle(id){const d=DC_STATE[TODAY_ISO]=DC_STATE[TODAY_ISO]||{}; d[id]=!d[id]; dcSave(); renderDC(); renderGlance();}
-function renderDC(){
-  const ul=document.getElementById('dcList'); if(!ul)return;
-  const arr=LISTS.dconst||[]; const st=DC_STATE[TODAY_ISO]||{};
-  if(!arr.length){ul.innerHTML='<div class="empty">No daily constants yet.</div>'; return;}
-  ul.innerHTML=arr.map(it=>`<li class="${st[it.id]?'done':''}">
-      <input type="checkbox" ${st[it.id]?'checked':''} onchange="dcToggle('${it.id}')">
-      <span class="txt">${escHtml(it.text)}</span></li>`).join('');
-  const c=document.getElementById('dcCount'); if(c)c.textContent=arr.filter(x=>st[x.id]).length+'/'+arr.length;
-  if(typeof setCount==='function')setCount('today', arr.filter(x=>st[x.id]).length+'/'+arr.length+' daily');
-}
-
+/* Daily Constants retired 2026-08-19 — merged into Daily Habits (see hbLoad).
+   The cc_dc_state key is deliberately left in storage: it is the migration
+   source, and nothing reads it any more. */
 
 /* ===== Concept of the day — kept from the retired Daily Agenda, now pinned under the hero ===== */
 function renderConcept(){
@@ -2003,51 +2007,144 @@ function renderGoals(){
   if(typeof updateCounts==='function')updateCounts();
 }
 
-/* ===== 21-Day Challenge — 8 habits x 21 days, cumulative score ============ */
-const CH_ITEMS=[
-  ['fit','Gym'],['fit','Home workout'],['fit','Stretching'],
-  ['know','2 podcasts'],['know','Read 10 pages'],['know','Spanish 10 min'],
-  ['diet','1 gal water'],
-  ['mind','Outdoor walk']
+/* ===== Daily Habits — the old Daily Constants and 21-Day Challenge, merged ==
+   Rolling, not a programme: the meter always looks at the LAST 21 days ending
+   today, so there is no start date to reset and no "day 22" cliff. Score is
+   out of 1000, where 1000 means every habit ticked on all 21 days.
+   Storage is keyed by DATE and by a stable habit id — the old challenge used
+   an array index and a day-number offset, which silently reassigns history the
+   moment the list changes order or length. ========================================= */
+const HB_CATS={fit:'💪 Fitness',know:'🧠 Knowledge',diet:'🥗 Diet',mind:'🌬️ Mindset',care:'🧴 Upkeep'};
+const HB_DEFAULT=[
+  {id:'gym',     e:'🏋️',t:'Gym',                c:'fit'},
+  {id:'home',    e:'🏠',t:'Home workout',       c:'fit'},
+  {id:'stretch', e:'🧘',t:'Stretch',            c:'fit'},
+  {id:'walk',    e:'🚶',t:'Outdoor walk',       c:'fit'},
+  {id:'pods',    e:'🎧',t:'2 podcasts',         c:'know'},
+  {id:'read',    e:'📚',t:'Read 10 pages',      c:'know'},
+  {id:'spanish', e:'🇪🇸',t:'10 min Spanish',     c:'know'},
+  {id:'tao',     e:'📖',t:'Tao of Joy passage', c:'know'},
+  {id:'water',   e:'💧',t:'1 gallon water',     c:'diet'},
+  {id:'clean',   e:'🥗',t:'Eat clean 10a–6p',   c:'diet'},
+  {id:'vits',    e:'💊',t:'Vitamins',           c:'diet'},
+  {id:'meditate',e:'🌬️',t:'Meditate + concept', c:'mind'},
+  {id:'wake',    e:'⏰',t:'Up at 4:45',         c:'mind'},
+  {id:'bed',     e:'🛏️',t:'Make the bed',       c:'care'},
+  {id:'shower',  e:'🚿',t:'Shower AM & PM',     c:'care'},
+  {id:'skin',    e:'🧴',t:'Nightly skincare',   c:'care'}
 ];
-const CH_CATS={fit:'Fitness',know:'Knowledge',diet:'Diet',mind:'Mindset'};
-let CH={start:null,checks:{}};
-function chLoad(){try{CH=JSON.parse(localStorage.getItem('cc_challenge'))||{start:null,checks:{}};}catch(e){CH={start:null,checks:{}};}
-  if(!CH.checks)CH.checks={};
-  if(!CH.start||isNaN(new Date(CH.start+'T12:00:00'))){CH.start=TODAY_ISO; chSave();}}
-function chSave(){const v=JSON.stringify(CH); localStorage.setItem('cc_challenge',v); if(typeof SYNC!=='undefined')SYNC.queue('cc_challenge',v);}
-function chDayIndex(){
-  if(!CH.start||isNaN(new Date(CH.start+'T12:00:00'))){ CH.start=TODAY_ISO; }
-  const st=new Date(CH.start+'T00:00:00'); st.setHours(0,0,0,0);
-  const n=Math.round((TODAY-st)/DAY_MS);
-  return isNaN(n)?0:n; }
-function chToggle(i,d){const k=i+'::'+d; if(CH.checks[k])delete CH.checks[k]; else CH.checks[k]=1; chSave(); renderChallenge();}
-function chReset(){ if(!confirm('Restart the 21-day challenge? All ticks are cleared.'))return; CH={start:TODAY_ISO,checks:{}}; chSave(); renderChallenge(); }
-function renderChallenge(){
-  const host=document.getElementById('chMatrix'); if(!host)return;
-  const di=chDayIndex();
-  let html='', lastCat='';
-  CH_ITEMS.forEach((it,i)=>{
-    if(it[0]!==lastCat){ lastCat=it[0]; html+=`<div class="chcat">${CH_CATS[it[0]]}</div>`; }
-    let cells='';
-    for(let d=0;d<21;d++){
-      const on=!!CH.checks[i+'::'+d];
-      const cls=['chcell']; if(on)cls.push('on'); if(d===di)cls.push('today'); if(d>di)cls.push('future');
-      if(d%7===0&&d>0)cells+='<span class="chgap"></span>';
-      cells+=`<button class="${cls.join(' ')}" title="Day ${d+1}" onclick="chToggle(${i},${d})"></button>`;
+const HB_WINDOW=21;
+let HB={v:1,items:null,log:{}};
+
+function hbIso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+/** The 21 dates the meter covers, oldest first, ending today. */
+function hbDays(){
+  const out=[], d=new Date(TODAY_ISO+'T12:00:00');
+  d.setDate(d.getDate()-(HB_WINDOW-1));
+  for(let i=0;i<HB_WINDOW;i++){ out.push(hbIso(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+function hbItems(){ return (HB.items&&HB.items.length)?HB.items:HB_DEFAULT; }
+function hbTicked(iso){ const a=HB.log[iso]; return Array.isArray(a)?a:[]; }
+function hbHas(iso,id){ return hbTicked(iso).indexOf(id)>=0; }
+
+/* Fold the two retired stores in, once, so no history is lost:
+     cc_challenge  {start, checks:{"<itemIndex>::<dayOffset>":1}}
+     cc_dc_state   {"YYYY-MM-DD":{"<dconstId>":true}}                        */
+const HB_OLD_CH=['gym','home','stretch','pods','read','spanish','water','walk'];
+const HB_OLD_DC={dc0:'wake',dc1:'bed',dc2:'meditate',dc3:'stretch',dc4:'tao',dc5:'vits',
+                 dc6:'spanish',dc7:'shower',dc8:'clean',dc9:'skin',dc10:'pods',dc11:'water',dc_read20:'read'};
+function hbAdopt(iso,id){
+  if(!iso||!id) return;
+  const a=HB.log[iso]=hbTicked(iso).slice();
+  if(a.indexOf(id)<0){ a.push(id); HB.log[iso]=a; }
+}
+function hbMigrate(){
+  let moved=0;
+  try{
+    const ch=JSON.parse(localStorage.getItem('cc_challenge')||'null');
+    if(ch&&ch.checks&&ch.start){
+      Object.keys(ch.checks).forEach(k=>{
+        if(!ch.checks[k])return;
+        const p=k.split('::'), i=Number(p[0]), off=Number(p[1]);
+        const id=HB_OLD_CH[i]; if(!id||isNaN(off))return;
+        const d=new Date(ch.start+'T12:00:00'); d.setDate(d.getDate()+off);
+        hbAdopt(hbIso(d),id); moved++;
+      });
     }
-    html+=`<div class="chrow"><span class="chlbl">${it[1]}</span><span class="chcells">${cells}</span></div>`;
+  }catch(e){}
+  try{
+    const dc=JSON.parse(localStorage.getItem('cc_dc_state')||'null');
+    if(dc) Object.keys(dc).forEach(iso=>{
+      const day=dc[iso]||{};
+      Object.keys(day).forEach(k=>{ if(day[k]&&HB_OLD_DC[k]){ hbAdopt(iso,HB_OLD_DC[k]); moved++; } });
+    });
+  }catch(e){}
+  if(moved) console.log('[Max HQ] habits: carried over '+moved+' ticks from the old challenge + daily constants');
+  return moved;
+}
+function hbLoad(){
+  try{ HB=JSON.parse(localStorage.getItem('cc_habits'))||{v:1,items:null,log:{}}; }
+  catch(e){ HB={v:1,items:null,log:{}}; }
+  if(!HB.log||typeof HB.log!=='object')HB.log={};
+  if(!HB.items||!HB.items.length)HB.items=HB_DEFAULT.slice();
+  if(!localStorage.getItem('cc_habits_mig')){ hbMigrate(); localStorage.setItem('cc_habits_mig','1'); hbSave(); }
+}
+function hbSave(){ const v=JSON.stringify(HB); localStorage.setItem('cc_habits',v);
+  if(typeof SYNC!=='undefined')SYNC.queue('cc_habits',v); }
+function hbToggle(id,iso){
+  const a=hbTicked(iso).slice(), k=a.indexOf(id);
+  if(k>=0)a.splice(k,1); else a.push(id);
+  if(a.length)HB.log[iso]=a; else delete HB.log[iso];
+  hbSave(); renderHabits(); renderGlance();
+}
+/** Everything the meter reports, computed over the rolling window. */
+function hbStats(){
+  const days=hbDays(), items=hbItems(), n=items.length, ids={};
+  items.forEach(it=>ids[it.id]=1);
+  let done=0, perfect=0, streak=0, streakLive=true;
+  const perDay={}, perItem={};
+  items.forEach(it=>perItem[it.id]=0);
+  days.forEach(iso=>{
+    const t=hbTicked(iso).filter(id=>ids[id]);
+    perDay[iso]=t.length; done+=t.length;
+    t.forEach(id=>perItem[id]++);
+    if(t.length===n)perfect++;
+  });
+  for(let i=days.length-1;i>=0;i--){                 // consecutive 80%+ days ending today
+    if(streakLive && perDay[days[i]]>=Math.ceil(n*0.8)) streak++; else streakLive=false;
+  }
+  const possible=Math.max(1,n*HB_WINDOW);
+  return {days,items,n,done,possible,perDay,perItem,perfect,streak,
+          score:Math.round(1000*done/possible),
+          today:perDay[TODAY_ISO]||0};
+}
+function renderHabits(){
+  const host=document.getElementById('hbMatrix'); if(!host)return;
+  const S=hbStats();
+  let html='', lastCat='';
+  S.items.forEach(it=>{
+    if(it.c!==lastCat){ lastCat=it.c; html+=`<div class="chcat">${HB_CATS[it.c]||it.c}</div>`; }
+    let cells='';
+    S.days.forEach((iso,d)=>{
+      const on=hbHas(iso,it.id), today=iso===TODAY_ISO;
+      const cls=['chcell']; if(on)cls.push('on'); if(today)cls.push('today');
+      if(d%7===0&&d>0)cells+='<span class="chgap"></span>';
+      cells+=`<button class="${cls.join(' ')}" title="${it.t} · ${iso}" onclick="hbToggle('${it.id}','${iso}')"></button>`;
+    });
+    const hit=S.perItem[it.id]||0;
+    html+=`<div class="chrow"><span class="chlbl"><i>${it.e}</i>${escHtml(it.t)}</span>`+
+          `<span class="chcells">${cells}</span><span class="chhit${hit===HB_WINDOW?' full':''}">${hit}</span></div>`;
   });
   host.innerHTML=html;
-  // scores
-  const todayDone=CH_ITEMS.filter((_,i)=>CH.checks[i+'::'+di]).length;
-  const total=Object.keys(CH.checks).length;
-  const possible=Math.max(1,(Math.min(di,20)+1)*CH_ITEMS.length);
-  const pct=Math.round(total/possible*100);
-  const dEl=document.getElementById('chDay'), sEl=document.getElementById('chScore'), tEl=document.getElementById('chTotal');
-  if(dEl)dEl.textContent=(di<0?'starts '+CH.start:(di>20?'complete':'Day '+(di+1)+' of 21'));
-  if(sEl)sEl.textContent='today '+todayDone+'/'+CH_ITEMS.length;
-  if(tEl)tEl.textContent=total+'/'+possible+' · '+pct+'%';
+  const set=(id,v)=>{const el=document.getElementById(id); if(el)el.textContent=v;};
+  set('hbScore',S.score);
+  set('hbToday','today '+S.today+'/'+S.n);
+  set('hbPerfect',S.perfect+' perfect');
+  set('hbStreak',S.streak+'d streak');
+  set('hbTotal',S.done+'/'+S.possible+' ticks · last '+HB_WINDOW+' days');
+  const fill=document.getElementById('hbFill'); if(fill)fill.style.width=(S.score/10)+'%';
+  if(typeof setCount==='function')setCount('challenge', S.score+'/1000');
 }
 
 /* ===== counts + glance ===== */
@@ -2178,7 +2275,7 @@ document.getElementById('datePill').textContent=DOW[TODAY.getDay()]+" "+MON[TODA
 renderThemeSelect();
 evload(); renderEvents(); renderMonths(); renderWeek(); fetchEventWeather(); fetchHomeWeather();
 try{ const __g=localStorage.getItem('cc_gcal'); if(__g){ const __a=JSON.parse(__g); if(Array.isArray(__a)&&__a.length) applyCal(__a); } }catch(_){}   // instant calendar from last synced feed
-lload(); mcload(); reLoad(); dcLoad(); chLoad();
+lload(); mcload(); reLoad(); hbLoad();
 if(!localStorage.getItem('cc_mig_books')){
   if(!MC_LABELS.some(l=>/finish 1 book/i.test(l))) MC_LABELS.push('📚 Finish 1 book');
   mcsave(); localStorage.setItem('cc_mig_books','1');
@@ -2206,7 +2303,7 @@ function migrateMC(){
 setTimeout(migrateMC,6000);
 
 renderList('todo'); renderList('work'); renderList('house'); renderList('routine'); renderList('goals'); renderForSale(); nInit(); renderMaster(); ccTab(localStorage.getItem('cc_listtab')||'master');
-renderToday(); renderDC(); renderConcept(); renderTrips(); renderGoals(); renderChallenge(); initCardDrag(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
+renderToday(); renderConcept(); renderTrips(); renderGoals(); renderHabits(); initCardDrag(); setInterval(renderToday,60000);   // re-render each minute so the "now" marker tracks
 wirePersistence();
 refreshDayTrackers();
 applySectionOrder();
