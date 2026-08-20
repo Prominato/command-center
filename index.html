@@ -831,7 +831,7 @@
         </div>
       </div>
       <div id="hbMatrix"></div>
-      <div class="chfoot"><span class="chtot" id="hbTotal"></span></div>
+      <div class="chfoot"><button class="nnew" onclick="hbReset()">RESET</button><span class="chtot" id="hbTotal"></span></div>
     </div>
   </details>
 
@@ -980,7 +980,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-20d';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20e';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1134,7 +1134,7 @@ const SYNC=(function(){
      into the Sheet and handed to every other device. */
   const SKIP=['cc_wx_home','cc_sync_meta','cc_sync_init','cc_seed_v1','cell_seen',
               'cc_lists_prev','cc_auth_tok','cc_auth_nonce','maxhq_widget_key',
-              'cc_sync_epoch2','cc_dev_id','cc_lists_rescue_20260818'];
+              'cc_sync_epoch2','cc_dev_id','cc_lists_rescue_20260818','cc_habits_prev'];
   let q={}, timer=null, meta={};
   /* One-time bookkeeping amnesty. The retired shrink guard stamped meta[cc_lists]
      = Date.now() every time it fired, so a device could carry timestamps newer than
@@ -2184,6 +2184,26 @@ function hbStats(){
           score:Math.round(1000*done/possible),
           today:perDay[TODAY_ISO]||0};
 }
+/* Wipes the tick history, keeps the habits. The dialog quotes the real numbers -
+   "clear all habit history?" is easy to click through, "18 ticks across 2 days,
+   score 26 -> 0" is not - and a copy goes to cc_habits_prev first (device-local,
+   never synced) so a mis-tap is recoverable via ccRestoreHabits(). */
+function hbReset(){
+  const days=Object.keys(HB.log||{});
+  const ticks=days.reduce((n,k)=>n+hbTicked(k).length,0);
+  if(!ticks){ alert('Nothing to clear yet — no habits have been ticked.'); return; }
+  const S=hbStats();
+  const msg='Clear all habit history?\n\n'+
+            ticks+' tick'+(ticks===1?'':'s')+' across '+days.length+' day'+(days.length===1?'':'s')+
+            ' will be deleted, and your score drops from '+S.score+' to 0.\n\n'+
+            'Your '+S.n+' habits stay — only the ticks go.';
+  if(!confirm(msg)) return;                       // default is cancel; nothing happens
+  try{ localStorage.setItem('cc_habits_prev',JSON.stringify(HB)); }catch(e){}
+  HB.log={};
+  hbSave(); renderHabits();
+  if(typeof renderGlance==='function')renderGlance();
+  console.log('[Max HQ] habit history cleared ('+ticks+' ticks); previous copy in cc_habits_prev — ccRestoreHabits() to undo');
+}
 function renderHabits(){
   const host=document.getElementById('hbMatrix'); if(!host)return;
   const S=hbStats();
@@ -2383,6 +2403,12 @@ window.ccRestoreLists=function(){
   localStorage.setItem('cc_lists',prev); SYNC.queue('cc_lists',prev); SYNC.flush();
   console.log('[Max HQ] restored the previous cc_lists and published it; reloading');
   setTimeout(()=>location.reload(),1200); return true;
+};
+window.ccRestoreHabits=function(){
+  const prev=localStorage.getItem('cc_habits_prev');
+  if(!prev){ console.warn('[Max HQ] no cc_habits_prev to restore'); return false; }
+  localStorage.setItem('cc_habits',prev); SYNC.queue('cc_habits',prev); SYNC.flush();
+  console.log('[Max HQ] habit history restored; reloading'); setTimeout(()=>location.reload(),1200); return true;
 };
 window.__ccBooted=true;
 renderToday();   // again, now that __ccBooted is set — the first pass runs before it and
