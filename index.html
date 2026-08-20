@@ -976,7 +976,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-20b';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20c';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1969,6 +1969,27 @@ function goalMeta(it){
   return {horizon,start,end,left,used};
 }
 function goalTone(left){ return left<0?'over' : left<=7?'hot' : left<=14?'warm' : 'ok'; }
+/* Urgency as a gradient, not three steps. The old warm/hot/over classes jumped
+   colour at 14 and 7 days, so a goal looked identical on day 20 and day 15 and
+   then lurched. This interpolates sage -> amber -> red across the whole window,
+   holding green for the first 60% and spending the last 40% turning red, which
+   is where the pressure actually is. Colours are read from the live CSS custom
+   properties, so it follows whichever colourway is active instead of hardcoding
+   Almanac. Overdue pins to red. */
+function hb_hex2rgb(h){ h=String(h||'').trim().replace('#','');
+  if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  const n=parseInt(h,16); return isNaN(n)?[136,136,136]:[(n>>16)&255,(n>>8)&255,n&255]; }
+function goalRamp(){
+  const cs=getComputedStyle(document.body), g=k=>cs.getPropertyValue(k);
+  const sage=hb_hex2rgb(g('--sage')), amber=hb_hex2rgb(g('--amber')), red=hb_hex2rgb(g('--red'));
+  const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*Math.max(0,Math.min(1,t))));
+  return function(used,over){
+    if(over) return 'rgb('+red.join(',')+')';
+    const t=Math.max(0,Math.min(1,used/100));
+    const c = t<0.6 ? mix(sage,amber,t/0.6) : mix(amber,red,(t-0.6)/0.4);
+    return 'rgb('+c.join(',')+')';
+  };
+}
 function addGoal(){
   const inp=document.getElementById('goalsInput'); const t=(inp.value||'').trim(); if(!t)return;
   const sel=document.getElementById('goalHorizon');
@@ -1996,6 +2017,7 @@ function renderGoals(){
   // partial list to the cloud. The defaults are harmless in memory and persist on the next real edit.
   if(migrated && window.__ccBooted){try{lsave();}catch(e){}}
   const open=arr.filter(x=>!x.done), done=arr.filter(x=>x.done);
+  const RAMP=goalRamp();
   let html='';
   GOAL_HORIZONS.forEach(h=>{
     const items=open.filter(x=>Number(x.horizon)===h);
@@ -2003,6 +2025,7 @@ function renderGoals(){
     const by=new Date(Date.now()+0); // header shows each goal's own date, so just label the band
     html+=`<div class="gband"><span class="gbandh">${h} day</span><span class="gbandn">${items.length}</span></div>`;
     html+=items.map(it=>{const m=goalMeta(it), tone=goalTone(m.left);
+      const col=RAMP(m.used, m.left<0);
       const endTxt=new Date(m.end).toLocaleDateString('en-US',{month:'short',day:'numeric'});
       return `<div class="goal ${tone}">
         <div class="goalrow">
@@ -2011,8 +2034,8 @@ function renderGoals(){
           <button class="ghz" title="Switch horizon" onclick="goalCycle('${it.id}')">${m.horizon}d</button>
           <button class="iconbtn del" title="Delete" onclick="delItem('goals','${it.id}')">✕</button>
         </div>
-        <div class="goalbar"><i style="width:${m.used}%"></i></div>
-        <div class="goalmeta"><span class="gleft">${m.left<0?Math.abs(m.left)+'d over':m.left+'d left'}</span><span class="gby">by ${endTxt}</span><button class="grestart" title="Restart this window" onclick="goalRestart('${it.id}')">↺</button></div>
+        <div class="goalbar"><i style="width:${m.used}%;background:${col}"></i></div>
+        <div class="goalmeta"><span class="gleft" style="color:${col}">${m.left<0?Math.abs(m.left)+'d over':m.left+'d left'}</span><span class="gby">by ${endTxt}</span><button class="grestart" title="Restart this window" onclick="goalRestart('${it.id}')">↺</button></div>
       </div>`;}).join('');
   });
   if(!open.length)html+='<div class="empty">No goals yet — add one above.</div>';
@@ -2029,25 +2052,33 @@ function renderGoals(){
    Storage is keyed by DATE and by a stable habit id — the old challenge used
    an array index and a day-number offset, which silently reassigns history the
    moment the list changes order or length. ========================================= */
-const HB_CATS={fit:'💪 Fitness',know:'🧠 Knowledge',diet:'🥗 Diet',mind:'🌬️ Mindset',care:'🧴 Upkeep'};
+const HB_CATS={fit:'💪 Health & Fitness',mind:'🧠 Mental',know:'📚 Knowledge',diet:'🥗 Diet',care:'🧴 Upkeep'};
 const HB_DEFAULT=[
-  {id:'gym',     e:'🏋️',t:'Gym',                c:'fit'},
-  {id:'home',    e:'🏠',t:'Home workout',       c:'fit'},
+  {id:'workout', e:'💪',t:'Work out',           c:'fit'},
+  {id:'cardio',  e:'🏃',t:'Cardio',             c:'fit'},
+  {id:'lift',    e:'🏋️',t:'Lift',               c:'fit'},
   {id:'stretch', e:'🧘',t:'Stretch',            c:'fit'},
   {id:'walk',    e:'🚶',t:'Outdoor walk',       c:'fit'},
-  {id:'pods',    e:'🎧',t:'2 podcasts',         c:'know'},
-  {id:'read',    e:'📚',t:'Read 10 pages',      c:'know'},
+  {id:'meditate',e:'🌬️',t:'Meditate & manifest',c:'mind'},
+  {id:'journal', e:'✍️',t:'Journal',            c:'mind'},
   {id:'spanish', e:'🇪🇸',t:'10 min Spanish',     c:'know'},
+  {id:'pods',    e:'🎧',t:'2 podcasts',         c:'know'},
+  {id:'read',    e:'📚',t:'10 min reading',     c:'know'},
   {id:'tao',     e:'📖',t:'Tao of Joy passage', c:'know'},
   {id:'water',   e:'💧',t:'1 gallon water',     c:'diet'},
   {id:'clean',   e:'🥗',t:'Eat clean 10a–6p',   c:'diet'},
   {id:'vits',    e:'💊',t:'Vitamins',           c:'diet'},
-  {id:'meditate',e:'🌬️',t:'Meditate + concept', c:'mind'},
-  {id:'wake',    e:'⏰',t:'Up at 4:45',         c:'mind'},
+  {id:'wake',    e:'⏰',t:'Up at 4:45',         c:'care'},
   {id:'bed',     e:'🛏️',t:'Make the bed',       c:'care'},
   {id:'shower',  e:'🚿',t:'Shower AM & PM',     c:'care'},
   {id:'skin',    e:'🧴',t:'Nightly skincare',   c:'care'}
 ];
+const HB_VERSION=2;
+/* v2 (2026-08-20) split training into Work out / Cardio / Lift and added Journal.
+   The two old training habits both fold into 'workout' — remapping rather than
+   dropping them keeps the history attached to something real, and the per-day
+   dedupe below stops a day that had BOTH counting twice. */
+const HB_REMAP={gym:'workout',home:'workout'};
 const HB_WINDOW=21;
 let HB={v:1,items:null,log:{}};
 
@@ -2098,12 +2129,27 @@ function hbMigrate(){
   if(moved) console.log('[Max HQ] habits: carried over '+moved+' ticks from the old challenge + daily constants');
   return moved;
 }
+function hbUpgrade(){
+  if(Number(HB.v||1)>=HB_VERSION) return false;
+  Object.keys(HB.log).forEach(iso=>{
+    const seen={}, out=[];
+    hbTicked(iso).forEach(id=>{ const to=HB_REMAP[id]||id; if(!seen[to]){seen[to]=1; out.push(to);} });
+    if(out.length)HB.log[iso]=out; else delete HB.log[iso];
+  });
+  HB.items=HB_DEFAULT.slice();
+  HB.v=HB_VERSION;
+  console.log('[Max HQ] habits upgraded to v'+HB_VERSION+' — '+HB.items.length+' habits');
+  return true;
+}
 function hbLoad(){
   try{ HB=JSON.parse(localStorage.getItem('cc_habits'))||{v:1,items:null,log:{}}; }
   catch(e){ HB={v:1,items:null,log:{}}; }
   if(!HB.log||typeof HB.log!=='object')HB.log={};
-  if(!HB.items||!HB.items.length)HB.items=HB_DEFAULT.slice();
-  if(!localStorage.getItem('cc_habits_mig')){ hbMigrate(); localStorage.setItem('cc_habits_mig','1'); hbSave(); }
+  if(!HB.items||!HB.items.length){ HB.items=HB_DEFAULT.slice(); HB.v=HB_VERSION; }
+  let dirty=false;
+  if(!localStorage.getItem('cc_habits_mig')){ hbMigrate(); localStorage.setItem('cc_habits_mig','1'); dirty=true; }
+  if(hbUpgrade()) dirty=true;
+  if(dirty) hbSave();
 }
 function hbSave(){ const v=JSON.stringify(HB); localStorage.setItem('cc_habits',v);
   if(typeof SYNC!=='undefined')SYNC.queue('cc_habits',v); }
