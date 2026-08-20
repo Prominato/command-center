@@ -237,9 +237,25 @@ function panel_(view) {
     // Emitted under BOTH names on purpose. summary_ uses `items` for the habit
     // count, so `list` is the unambiguous one; `items` stays so that a widget
     // pasted before this rename keeps working. The widget prefers list.
-    out.list  = items.slice(0, 12);
+    // 24, not 12: a Large tile can show ~16 and the widget decides how many to draw.
+    out.list  = items.slice(0, 24);
     out.items = out.list;
-    out.more  = Math.max(0, items.length - 12);
+    out.more  = Math.max(0, items.length - 24);
+  } else if (out.view === 'done') {
+    // Today's habits split into ticked and not, by name. Same cc_habits model the
+    // dashboard writes: items[{id,e,t}] plus log{ 'YYYY-MM-DD': [ids] }.
+    var HB = j('cc_habits', null);
+    var hits = {}, its = (HB && HB.items) ? HB.items : [];
+    ((HB && HB.log && HB.log[today]) || []).forEach(function (id) { hits[id] = 1; });
+    var done = [], left = [];
+    its.forEach(function (it) {
+      var row = { e: it.e || '', t: String(it.t || '').slice(0, 40) };
+      (hits[it.id] ? done : left).push(row);
+    });
+    out.done = done;
+    out.left = left;
+    out.doneN = done.length;
+    out.allN = its.length;
   } else if (out.view === 'challenge') {
     // perDay (21 counts) is all the widget's strip needs - far smaller than the old
     // 8x21 grid, and it survives the habit list changing length.

@@ -53,7 +53,8 @@ function looksLikeKey(s){
 }
 
 const VIEWS = { agenda:"agenda", today:"agenda", timeline:"agenda",
-                challenge:"challenge", habits:"challenge",
+                challenge:"challenge", habits:"challenge", meter:"challenge",
+                done:"done", completed:"done", ticked:"done", checked:"done",
                 master:"master", todo:"master", todos:"master" };
 
 /** The Parameter field may hold a view, a key, or both in either order. */
@@ -341,6 +342,53 @@ function homeChallenge(d, p, fam){
   return w;
 }
 
+/* "What have I actually done today" - the ticked habits by name, with the rest
+   listed underneath in muted type so the tile doubles as the to-do side of it. */
+function homeDone(d, p, fam){
+  const w = homeShell(p);
+  const done = d.done || [], left = d.left || [];
+  homeHead(w, p, "DONE TODAY", d.doneN + "/" + d.allN);
+  w.addSpacer(6);
+  bar(w, fam === "small" ? 120 : 290, d.allN ? Math.round(d.doneN / d.allN * 100) : 0, C(p.sage), C(p.line));
+  w.addSpacer(8);
+  if (!done.length){
+    const t = w.addText("Nothing ticked yet");
+    t.font = Font.mediumSystemFont(13); t.textColor = C(p.mut);
+  }
+  const roomDone = fam === "small" ? 4 : (fam === "large" ? 12 : 5);
+  done.slice(0, roomDone).forEach(function (it){
+    const r = w.addStack(); r.centerAlignContent();
+    const c = r.addText("\u2713"); c.font = Font.boldSystemFont(11); c.textColor = C(p.sage);
+    r.addSpacer(5);
+    const t = r.addText((it.e ? it.e + " " : "") + it.t);
+    t.font = Font.systemFont(11.5); t.textColor = C(p.ink);
+    t.lineLimit = 1; t.minimumScaleFactor = 0.85;
+    r.addSpacer();
+    w.addSpacer(3);
+  });
+  const moreDone = Math.max(0, done.length - roomDone);
+  // On the bigger tiles, show what is still outstanding underneath.
+  const roomLeft = fam === "small" ? 0 : (fam === "large" ? 8 : 2);
+  if (roomLeft && left.length){
+    w.addSpacer(3);
+    left.slice(0, roomLeft).forEach(function (it){
+      const r = w.addStack(); r.centerAlignContent();
+      const c = r.addText("\u25cb"); c.font = Font.systemFont(9); c.textColor = C(p.mut);
+      r.addSpacer(5);
+      const t = r.addText((it.e ? it.e + " " : "") + it.t);
+      t.font = Font.systemFont(11); t.textColor = C(p.mut);
+      t.lineLimit = 1; t.minimumScaleFactor = 0.85;
+      r.addSpacer();
+      w.addSpacer(2);
+    });
+  }
+  const hidden = moreDone + Math.max(0, left.length - roomLeft);
+  if (hidden > 0){
+    const m = w.addText("+" + hidden + " more"); m.font = Font.systemFont(9.5); m.textColor = C(p.mut);
+  }
+  return w;
+}
+
 function homeMaster(d, p, fam){
   const w = homeShell(p);
   homeHead(w, p, "MASTER", d.primary + " open" + (d.urgent ? " · " + d.urgent + "!" : ""));
@@ -352,7 +400,7 @@ function homeMaster(d, p, fam){
     const t = w.addText("All clear"); t.font = Font.boldSystemFont(16); t.textColor = C(p.ink);
     return w;
   }
-  const max = fam === "small" ? 4 : 8;   // 5 clipped on a small tile
+  const max = fam === "small" ? 4 : (fam === "large" ? 16 : 8);   // 5 clipped on a small tile
   items.slice(0, max).forEach(function (it){
     const r = w.addStack(); r.centerAlignContent();
     const dot = r.addText(it.u ? "●" : "·");
@@ -405,7 +453,8 @@ async function build(){
       : lockRect(d, view);
   } else {
     const p = palette(d.theme);
-    w = view === "challenge" ? homeChallenge(d, p, fam)
+    w = view === "done"      ? homeDone(d, p, fam)
+      : view === "challenge" ? homeChallenge(d, p, fam)
       : view === "master"    ? homeMaster(d, p, fam)
       : homeAgenda(d, p, fam);
   }
