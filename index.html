@@ -983,7 +983,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-20f';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20g';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1757,7 +1757,13 @@ function nRender(){
     : `<div class="empty">${NACTIVE==='all'?'No notes yet — hit “+ NEW”.':'Nothing in this folder yet.'}</div>`;
   if(hidden>0)main.innerHTML+=`<div class="nmore">+${hidden} more in this folder</div>`;
   updateCounts();}
-function nInit(){nfLoad(); nMigrateHtml(); nRender();}
+function nInit(){nfLoad(); nfTidy(); nMigrateHtml(); nRender();}
+/* The concepts folder was only renamed as a side effect of SAVING a concept, so
+   the tidy never ran for someone who already had one. Do it on load instead. */
+function nfTidy(){
+  const f=NFOLDERS.find(x=>x.name==='💭 Concepts');
+  if(f){ f.name='💭 Daily Concepts'; nfSave(); }
+}
 /* concept-of-the-day → favorites bank (stored as notes in a 💭 Concepts folder) */
 function conceptFolder(){ let f=NFOLDERS.find(x=>/💭|concept/i.test(x.name||''));
   if(!f){ f={id:'nf'+Date.now(),name:'💭 Daily Concepts'}; NFOLDERS.push(f); nfSave(); }
