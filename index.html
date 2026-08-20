@@ -619,6 +619,9 @@
   .nfolders{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; padding:0; border:none; background:none;}
   .nfolders .addrow{width:100%; margin-bottom:6px;}
   #nfList{display:flex; flex-wrap:wrap; gap:6px;}
+  #nfList{margin-bottom:10px;}
+  .nmore{font-family:var(--fmono); font-size:9.5px; letter-spacing:.7px; text-transform:uppercase;
+    color:var(--mut); padding:8px 2px 2px;}
   #nfList[hidden]{display:none;}
   .nfolder{font-family:var(--fmono); font-size:9px; letter-spacing:.9px; text-transform:uppercase; padding:4px 9px; border:1px solid var(--line); border-radius:5px; color:var(--mut); cursor:pointer; background:transparent;}
   .nfolder.active{color:var(--brass); border-color:var(--brass); background:var(--tint);}
@@ -925,10 +928,10 @@
     <summary><span class="arrow">▸</span> Notes</summary>
     <div class="drop-body">
       <div class="notes-wrap">
-        <div class="nhead"><span class="nrecent">Recent</span>
+        <div class="nhead"><span class="nrecent" id="nWhere">All notes</span>
           <span class="nacts"><button class="nnew" onclick="nfAdd()">+ FOLDER</button><button class="nnew" onclick="nNew()">+ NEW</button></span></div>
         <input id="nSearch" type="hidden">
-        <div id="nfList" hidden></div>
+        <div id="nfList"></div>
         <div id="nList"></div>
         <div id="nEditor" style="display:none"></div>
       </div>
@@ -980,7 +983,7 @@ function renderThemeSelect(){const s=document.getElementById("themeSelect"); s.i
    localStorage stays the instant cache; the backend Google Sheet is the
    cross-device source of truth, merged last-write-wins per key. */
 const SYNC_URL='https://script.google.com/macros/s/AKfycbyic_f4k-yyeE50v45XhZ4_PkDvqkPxUGlSecj9BbbOuYer6ZZQBZBk2FRvl6WfTkuw/exec';
-const BUILD='2026-08-20e';   // bump on every deploy; published per-device so a phone
+const BUILD='2026-08-20f';   // bump on every deploy; published per-device so a phone
                              // still serving a cached old copy is visible, not guessed
 /* ===== auth: Google Identity Services =====================================
    The backend now rejects anonymous traffic. Every call carries a freshly
@@ -1668,15 +1671,42 @@ const NF_DEFAULT=[{id:'nf1',name:'📁 General'},{id:'nf2',name:'Prominato'},{id
 let NFOLDERS=[], NACTIVE=null, NOPEN=null;
 function nfLoad(){try{NFOLDERS=JSON.parse(localStorage.getItem('cc_notefolders'))||null;}catch(e){NFOLDERS=null;}
   if(!NFOLDERS||!NFOLDERS.length){NFOLDERS=NF_DEFAULT.slice(); localStorage.setItem('cc_notefolders',JSON.stringify(NFOLDERS));} // local persist only at boot — cloud wins on pull
-  if(!NACTIVE||!NFOLDERS.some(f=>f.id===NACTIVE))NACTIVE=NFOLDERS[0].id;}
+  if(!NACTIVE||(NACTIVE!=='all'&&!NFOLDERS.some(f=>f.id===NACTIVE)))NACTIVE='all';}   // 'all' is the default view
 function nfSave(){const v=JSON.stringify(NFOLDERS); localStorage.setItem('cc_notefolders',v); SYNC.queue('cc_notefolders',v);}
+/* Notes used to be edited in a contentEditable, which stores innerHTML. The editor
+   is a plain <textarea> now, so those old bodies rendered as literal markup -
+   "<div>Aug</div><div>- Traverse City</div>" instead of a travel list. Convert them
+   once, preserving the line structure the tags implied. */
+function nHtmlToText(v){
+  let t=String(v||'');
+  if(!/<[a-z!\/][^>]*>/i.test(t)) return t;              // already plain, leave alone
+  t=t.replace(/<br\s*\/?>/gi,'\n')
+     .replace(/<\/(div|p|li|h[1-6]|tr)>/gi,'\n')
+     .replace(/<li[^>]*>/gi,'- ')
+     .replace(/<[^>]+>/g,'')
+     .replace(/&nbsp;/gi,' ').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>')
+     .replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/&amp;/gi,'&')
+     .replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n')
+     .replace(/^(\s*)-\s+-\s+/gm,'$1- ');    // <li>- Japan</li> would otherwise become "- - Japan"
+  return t.trim();
+}
+function nMigrateHtml(){
+  if(localStorage.getItem('cc_notes_txt_mig'))return;
+  const all=nAll();
+  if(!all.length)return;            // nothing loaded yet - retry on the next boot
+  let fixed=0;
+  all.forEach(n=>{ const t=nHtmlToText(n.body); if(t!==n.body){ n.body=t; nSaveNote(n); fixed++; } });
+  localStorage.setItem('cc_notes_txt_mig','1');
+  if(fixed)console.log('[Max HQ] notes: converted '+fixed+' HTML note'+(fixed===1?'':'s')+' to plain text');
+}
 function nAll(){const out=[]; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(k.indexOf('note::')!==0)continue; try{const n=JSON.parse(localStorage.getItem(k)); if(n&&n.id&&!n.del)out.push(n);}catch(e){}} return out;}
 function nSaveNote(n){n.updated=Date.now(); const v=JSON.stringify(n); localStorage.setItem('note::'+n.id,v); SYNC.queue('note::'+n.id,v);}
 function nfAdd(){const inp=document.getElementById('nfName'); const v=(inp?inp.value:(prompt('New folder name:')||'')).trim(); if(!v)return; if(!inp){} const f={id:'nf'+Date.now(),name:v}; NFOLDERS.push(f); if(inp)inp.value=''; nfSave(); NACTIVE=f.id; NOPEN=null; nRender();}
-function nfDel(id){if(nAll().some(n=>n.folder===id)){alert('This folder still has notes — move or delete them first.');return;} if(NFOLDERS.length<=1){alert('Keep at least one folder.');return;} if(!confirm('Delete this folder?'))return; NFOLDERS=NFOLDERS.filter(f=>f.id!==id); if(NACTIVE===id)NACTIVE=NFOLDERS[0].id; nfSave(); nRender();}
-function nfRename(id){const f=NFOLDERS.find(x=>x.id===id); if(!f)return; const v=prompt('Folder name:',f.name); if(v&&v.trim()){f.name=v.trim(); nfSave(); nRender();}}
+function nfDel(id){if(id==='all')return; if(nAll().some(n=>n.folder===id)){alert('This folder still has notes — move or delete them first.');return;} if(NFOLDERS.length<=1){alert('Keep at least one folder.');return;} if(!confirm('Delete this folder?'))return; NFOLDERS=NFOLDERS.filter(f=>f.id!==id); if(NACTIVE===id)NACTIVE='all'; nfSave(); nRender();}
+function nfRename(id){if(id==='all')return; const f=NFOLDERS.find(x=>x.id===id); if(!f)return; const v=prompt('Folder name:',f.name); if(v&&v.trim()){f.name=v.trim(); nfSave(); nRender();}}
 function nfPick(id){NACTIVE=id; NOPEN=null; const s=document.getElementById('nSearch'); if(s)s.value=''; nRender();}
-function nNew(){const n={id:String(Date.now())+Math.floor(Math.random()*1000), folder:NACTIVE, title:'', body:'', pinned:false, created:Date.now(), updated:Date.now()};
+function nNew(){const dest=(NACTIVE==='all')?(NFOLDERS[0]&&NFOLDERS[0].id):NACTIVE;   // 'All' is a view, not a home
+  const n={id:String(Date.now())+Math.floor(Math.random()*1000), folder:dest, title:'', body:'', pinned:false, created:Date.now(), updated:Date.now()};
   nSaveNote(n); NOPEN=n.id; nRender(); setTimeout(function(){const t=document.querySelector('#nEditor .ntitle'); if(t)t.focus();},60);}
 function nDel(id){if(!confirm('Delete this note?'))return; const v=JSON.stringify({id:id,del:1,updated:Date.now()}); localStorage.setItem('note::'+id,v); SYNC.queue('note::'+id,v); NOPEN=null; nRender();}
 function nPin(id){const n=nAll().find(x=>x.id===id); if(!n)return; n.pinned=!n.pinned; nSaveNote(n); nRender();}
@@ -1689,10 +1719,17 @@ function nEdit(id,field,val){const n=nAll().find(x=>x.id===id); if(!n)return; n[
   const all=nAll(); document.querySelectorAll('[data-nfcount]').forEach(el=>{const fid=el.getAttribute('data-nfcount'); el.textContent=all.filter(x=>x.folder===fid).length;});}
 function nRender(){
   const all=nAll();
-  const nfl=document.getElementById('nfList'); if(nfl)nfl.innerHTML=NFOLDERS.map(f=>
+  const nfl=document.getElementById('nfList');
+  if(nfl)nfl.innerHTML=
+    `<button class="nfolder ${NACTIVE==='all'?'active':''}" onclick="nfPick('all')"><span class="fname">🗂 All</span>`+
+    `<span class="wcount">${all.length}</span></button>`+
+    NFOLDERS.map(f=>
     `<button class="nfolder ${f.id===NACTIVE?'active':''}" onclick="nfPick('${f.id}')"><span class="fname">${escHtml(f.name)}</span>`+
     (f.id===NACTIVE?`<span class="iconbtn" title="Rename" onclick="event.stopPropagation();nfRename('${f.id}')">✎</span><span class="iconbtn del" title="Delete folder" onclick="event.stopPropagation();nfDel('${f.id}')">✕</span>`:``)+
     `<span class="wcount" data-nfcount="${f.id}">${all.filter(n=>n.folder===f.id).length}</span></button>`).join('');
+  const whereEl=document.getElementById('nWhere');
+  if(whereEl){ const af=NFOLDERS.find(f=>f.id===NACTIVE);
+    whereEl.textContent = NACTIVE==='all' ? 'All notes' : (af?af.name:'Notes'); }
   const main=document.getElementById('nList'), ed=document.getElementById('nEditor');
   if(NOPEN){const n=all.find(x=>x.id===NOPEN);
     if(n){ main.style.display='none'; ed.style.display='';
@@ -1708,19 +1745,24 @@ function nRender(){
     NOPEN=null; }
   ed.style.display='none'; main.style.display='';
   // sample layout: every note, newest first, tagged with its folder — no sidebar, no search box
-  let list=all.slice().sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0)) || (b.updated-a.updated)).slice(0,8);
+  const scope=(NACTIVE==='all')?all:all.filter(n=>n.folder===NACTIVE);
+  const sorted=scope.slice().sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0)) || (b.updated-a.updated));
+  const CAP=12, list=sorted.slice(0,CAP), hidden=sorted.length-list.length;
   main.innerHTML=list.length? list.map(n=>{const f=NFOLDERS.find(x=>x.id===n.folder);
     const when=new Date(n.updated).toLocaleDateString('en-US',{month:'short',day:'numeric'})+' · '+new Date(n.updated).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase();
     return `<div class="ncard" onclick="nOpen('${n.id}')"><div class="nt">${n.pinned?'📌 ':''}${escHtml(n.title||'Untitled')}</div>`+
       (f?`<div class="ntag">${escHtml(stripEmoji(f.name)||f.name)}</div>`:'')+
       (n.body&&n.body.trim()?`<div class="np">${escHtml(plainText(n.body).slice(0,72))}…</div>`:'')+
       `<div class="nm">edited ${when}</div></div>`;}).join('')
-    : '<div class="empty">No notes yet — hit “+ NEW”.</div>';
+    : `<div class="empty">${NACTIVE==='all'?'No notes yet — hit “+ NEW”.':'Nothing in this folder yet.'}</div>`;
+  if(hidden>0)main.innerHTML+=`<div class="nmore">+${hidden} more in this folder</div>`;
   updateCounts();}
-function nInit(){nfLoad(); nRender();}
+function nInit(){nfLoad(); nMigrateHtml(); nRender();}
 /* concept-of-the-day → favorites bank (stored as notes in a 💭 Concepts folder) */
 function conceptFolder(){ let f=NFOLDERS.find(x=>/💭|concept/i.test(x.name||''));
-  if(!f){ f={id:'nf'+Date.now(),name:'💭 Concepts'}; NFOLDERS.push(f); nfSave(); } return f; }
+  if(!f){ f={id:'nf'+Date.now(),name:'💭 Daily Concepts'}; NFOLDERS.push(f); nfSave(); }
+  else if(f.name==='💭 Concepts'){ f.name='💭 Daily Concepts'; nfSave(); }   // one-time tidy
+  return f; }
 function saveConcept(date,btn){ const c=conceptFor(date), f=conceptFolder();
   if(nAll().some(n=>n.folder===f.id && n.title===c.t)){ if(btn)btn.textContent='✓ Already in favorites'; return; }
   const n={id:String(Date.now())+Math.floor(Math.random()*1000), folder:f.id, title:c.t,
